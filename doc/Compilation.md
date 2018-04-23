@@ -10,8 +10,9 @@ This file reviews the following aspects:
 ## <a name="library"></a> Compiling the library, application and tests
 For people in a hurry:
 ```bash
-git clone ...
+git clone https://github.com/STORM-IRIT/OpenGR.git
 mkdir build
+cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./install
 make install
 cd install/scripts/
@@ -25,19 +26,22 @@ The libraries and the standalone application require:
 * [Eigen](http://eigen.tuxfamily.org/). The library is automagically downloaded and configured by the cmake process. If you need to force using Eigen from a specific path, call CMAKE with `-DEIGEN3_INCLUDE_DIR=/path/to/eigen`.
 
 In order to load textures for 3d meshes, the IO module needs:
-* [OpenCV](http://opencv.org/): binaries can be downloaded from the [OpenCV website](http://opencv.org/downloads.html). Texture loading is disabled if OpenCV is not available. Point-clouds with colors are not affected.
+* [OpenCV](http://opencv.org/): binaries can be downloaded from the [OpenCV github](https://github.com/opencv/opencv) or [OpenCV sourceForge] (https://sourceforge.net/projects/opencvlibrary/). If you use Linux, you can also download the OpenCV library using the terminal. Texture loading is disabled if OpenCV is not available. Point-clouds with colors are not affected.
 
 Tests:
 * [Boost-filesystem](http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm), used to read dataset folders. Tests can be disabled by calling CMAKE with `-DSUPER4PCS_BUILD_TEST=FALSE`. Required Boost version: 1.57 or more.
 
 ### CMake Options
 Our CMake scripts can be configured using the following options:
-* `OPTION (SUPER4PCS_COMPILE_TESTS "Enable testing" TRUE)`
-* `OPTION (SUPER4PCS_COMPILE_DEMOS "Compile demo applications (including the Super4PCS standalone)" TRUE)`
-* `OPTION (IO_USE_OPENCV "Use OpenCV for texture loading" TRUE)`
-* `OPTION (ENABLE_TIMING "Enable computation time recording" FALSE)`
-* `OPTION (SUPER4PCS_USE_CHEALPIX "Use Chealpix for orientation filtering (deprecated)" FALSE)` We recommend to keep this option to `FALSE`.
-* `OPTION (DL_DATASETS "Download demo datasets and associated run scripts" FALSE)`
+* Compilation rules
+    * `OPTION (SUPER4PCS_COMPILE_TESTS "Enable testing" TRUE)`
+    * `OPTION (SUPER4PCS_COMPILE_DEMOS "Compile demo applications (including the Super4PCS standalone)" TRUE)`
+    * `OPTION (IO_USE_OPENCV "Use OpenCV for texture loading" TRUE)`
+    * `OPTION (SUPER4PCS_USE_CHEALPIX "Use Chealpix for orientation filtering (deprecated)" FALSE)` We recommend to keep this option to `FALSE`.
+* Extras
+    * `OPTION (DL_DATASETS "Download demo datasets and associated run scripts" FALSE)`
+* Debug options
+    * `OPTION (ENABLE_TIMING "Enable computation time recording" FALSE)`
 
 Options can be set by calling `cmake -DMY_OPTION=TRUE`, or by editing the file [CMakeList.txt](https://github.com/nmellado/Super4PCS/blob/master/CMakeLists.txt) (not recommended).
 
@@ -82,7 +86,7 @@ By default, the project can be opened and compiled straight away with no paramet
 
 If you want to compile with OpenCV and/or Boost support, the dependency directories must be properly configured in Visual Studio.
 They can be set either when calling [CMake](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/#configure-cmake) or globally by configuring Visual Studio (see how-to [here](https://social.msdn.microsoft.com/Forums/vstudio/en-US/a494abb8-3561-4ebe-9eb0-6f644a679862/visual-studio-2010-professional-how-to-add-include-directory-for-all-projects?forum=vcgeneral#7b5ab5f2-f793-4b0e-a18a-679948d12bdd)):
-* Include directories: ``path-to-opencv\build\include`,
+* Include directories: `path-to-opencv\build\include`,
 * Library directories: `path-to-opencv\build\x64\vc14\lib`.
 
 ![](img/VStudio-globalFolders.jpg)
