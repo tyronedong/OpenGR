@@ -1,4 +1,4 @@
-project (Super4PCS-Tests)
+project (OpenGR-Tests)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -53,10 +53,10 @@ ExternalProject_Add(
         EXCLUDE_FROM_ALL
 )
 
-add_dependencies(externalAppTestTarget ForceSuper4PCSInstallation)
+add_dependencies(externalAppTestTarget ForceOpenGRInstallation)
 add_dependencies(buildtests externalAppTestTarget)
 add_test(NAME externalAppTest
-         COMMAND Super4PCS-externalAppTest)
+         COMMAND OpenGR-externalAppTest)
 
 #############################################
 ## pair extraction
@@ -68,10 +68,10 @@ add_dependencies(buildtests pair_extraction)
 add_test(NAME pair_extraction
          #CONFIGURATIONS Release
          COMMAND pair_extraction)
-target_link_libraries(pair_extraction super4pcs_accel super4pcs_algo super4pcs_utils)
-if(SUPER4PCS_USE_CHEALPIX)
+target_link_libraries(pair_extraction opengr_accel opengr_algo opengr_utils)
+if(OpenGR_USE_CHEALPIX)
     target_link_libraries(pair_extraction ${Chealpix_LIBS} )
-endif(SUPER4PCS_USE_CHEALPIX)
+endif(OpenGR_USE_CHEALPIX)
 
 #############################################
 ## quad extraction
@@ -83,10 +83,10 @@ endif(SUPER4PCS_USE_CHEALPIX)
 #add_test(NAME quad_extraction
 #         #CONFIGURATIONS Release
 #         COMMAND quad_extraction)
-#target_link_libraries(quad_extraction super4pcs_accel super4pcs_algo)
-#if(SUPER4PCS_USE_CHEALPIX)
+#target_link_libraries(quad_extraction open_accel open_algo)
+#if(OpenGR_USE_CHEALPIX)
 #    target_link_libraries(quad_extraction ${Chealpix_LIBS} )
-#endif(SUPER4PCS_USE_CHEALPIX)
+#endif(OpenGR_USE_CHEALPIX)
 
 #############################################
 ## matching
@@ -106,10 +106,10 @@ if (Boost_FOUND)
                  COMMAND matching ${subtest_id})
         set_tests_properties ( "matching_${subtest_id}" PROPERTIES TIMEOUT 600) # in seconds
     endforeach()
-    target_link_libraries(matching super4pcs_io super4pcs_accel super4pcs_algo super4pcs_utils)
+    target_link_libraries(matching opengr_io opengr_accel opengr_algo opengr_utils)
     target_link_libraries(matching ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
     add_dependencies(matching dataset-standford-armadillo dataset-standford-bunny)
-    if(SUPER4PCS_USE_CHEALPIX)
+    if(OpenGR_USE_CHEALPIX)
         target_link_libraries(matching ${Chealpix_LIBS} )
-    endif(SUPER4PCS_USE_CHEALPIX)
+    endif(OpenGR_USE_CHEALPIX)
 endif (Boost_FOUND)

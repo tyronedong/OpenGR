@@ -19,7 +19,7 @@ else()
 
                 if(OPENMP_FOUND)
                   message(STATUS "Enable OpenMP")
-                  add_definitions("-DSUPER4PCS_USE_OPENMP -DEIGEN_DONT_PARALLELIZE")
+                  add_definitions("-DOpenGR_USE_OPENMP -DEIGEN_DONT_PARALLELIZE")
                   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
                   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
                   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
