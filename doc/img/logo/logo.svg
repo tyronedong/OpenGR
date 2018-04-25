@@ -15,7 +15,10 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="logo.svg">
+   sodipodi:docname="logo.svg"
+   inkscape:export-filename="/export/home/cezanne/nmellado/git/OpenGR/doc/img/logo_dox.png"
+   inkscape:export-xdpi="19.139999"
+   inkscape:export-ydpi="19.139999">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,11 +28,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="585.92799"
-     inkscape:cy="153.23004"
+     inkscape:zoom="0.5"
+     inkscape:cx="560.79153"
+     inkscape:cy="166.06821"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g4592"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -57,7 +60,7 @@
        id="guide4548"
        inkscape:locked="false" />
     <sodipodi:guide
-       position="186.37393,25.622456"
+       position="103.0353,112.92427"
        orientation="0.70710678,0.70710678"
        id="guide4550"
        inkscape:locked="false" />
@@ -106,7 +109,9 @@
      transform="translate(209.6328,-50.828427)">
     <g
        id="g4592"
-       transform="translate(-118.97525,-1.7820384e-6)">
+       transform="translate(-118.97525,-1.7820384e-6)"
+       inkscape:export-xdpi="76.547554"
+       inkscape:export-ydpi="76.547554">
       <rect
          transform="rotate(-45)"
          y="102.55766"
