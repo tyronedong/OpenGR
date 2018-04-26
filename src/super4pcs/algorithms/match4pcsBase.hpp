@@ -980,7 +980,7 @@ template <typename Functor>
 #endif
 
             RangeQuery query;
-            query.queryPoint = (mat * sampled_Q_3D_[i].pos().homogeneous()).head<3>();
+            query.queryPoint = (mat * sampled_Q_3D_[i].pos().homogeneous()).template head<3>();
             query.sqdist     = sq_eps;
 
             auto result = kd_tree_.doQueryRestrictedClosestIndex( query );

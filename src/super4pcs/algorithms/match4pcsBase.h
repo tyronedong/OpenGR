@@ -76,7 +76,7 @@ public:
     using MatrixType = Eigen::Matrix<Scalar, 4, 4>;
     using LogLevel = Utils::LogLevel;
     struct DummyTransformVisitor {
-        inline void operator() (float, float, Eigen::Ref<Match4PCSBase<Functor>::MatrixType>) const {}
+        inline void operator() (float, float, Eigen::Ref<typename Match4PCSBase<Functor>::MatrixType>) const {}
         constexpr bool needsGlobalTransformation() const { return false; }
     };
     using DefaultSampler = Sampling::UniformDistSampler;
