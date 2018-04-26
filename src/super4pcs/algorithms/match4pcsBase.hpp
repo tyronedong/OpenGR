@@ -605,7 +605,7 @@ typename Match4PCSBase<Functor>::Scalar
 
             RangeQuery query;
             query.sqdist = P_diameter_ * kDiameterFraction;
-            query.queryPoint = sampled_P_3D_[i].pos().cast<Scalar>();
+            query.queryPoint = sampled_P_3D_[i].pos().template cast<Scalar>();
 
             auto resId = kd_tree_.doQueryRestrictedClosestIndex(query , i).first;
 

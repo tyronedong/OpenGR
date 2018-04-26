@@ -76,7 +76,7 @@ public:
     using MatrixType = Eigen::Matrix<Scalar, 4, 4>;
     using LogLevel = Utils::LogLevel;
     struct DummyTransformVisitor {
-        inline void operator() (float, float, Eigen::Ref<Match4PCSBase::MatrixType>) const {}
+        inline void operator() (float, float, Eigen::Ref<Match4PCSBase<Functor>::MatrixType>) const {}
         constexpr bool needsGlobalTransformation() const { return false; }
     };
     using DefaultSampler = Sampling::UniformDistSampler;
@@ -349,7 +349,7 @@ protected:
                          const Visitor &v,
                          size_t &nbCongruent);
 private:
-    void initKdTree(); //TODO : void initKdTree(KdTree kd_tree_, std::vector<Point3D> sampled_P_3D_);
+    void initKdTree();
 
 }; /// class Match4PCSBase
 } /// namespace Super4PCS
