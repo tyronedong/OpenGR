@@ -510,7 +510,7 @@ Match4PCSBase::Verify(const Eigen::Ref<const MatrixType> &mat) const {
 
   // We allow factor 2 scaling in the normalization.
   const Scalar epsilon = options_.delta;
-#ifdef SUPER4PCS_USE_WEIGHTED_LCP
+#ifdef OPENGR_USE_WEIGHTED_LCP
   std::atomic<float> good_points(0);
 
   auto kernel = [](Scalar x) {
@@ -527,7 +527,7 @@ Match4PCSBase::Verify(const Eigen::Ref<const MatrixType> &mat) const {
   const size_t terminate_value = best_LCP_ * number_of_points;
 
   const Scalar sq_eps = epsilon*epsilon;
-#ifdef SUPER4PCS_USE_WEIGHTED_LCP
+#ifdef OPENGR_USE_WEIGHTED_LCP
   const Scalar    eps = std::sqrt(sq_eps);
 #endif
 
@@ -558,7 +558,7 @@ Match4PCSBase::Verify(const Eigen::Ref<const MatrixType> &mat) const {
 //                           ? fabs(p.normal().ddot(q.normal())) >= cos_dist
 //                           : true;
 //      if (rgb_good && norm_good) {
-#ifdef SUPER4PCS_USE_WEIGHTED_LCP
+#ifdef OPENGR_USE_WEIGHTED_LCP
         assert (result.second <= query.sqdist);
         good_points = good_points + computeWeight(result.second, eps);
 #else

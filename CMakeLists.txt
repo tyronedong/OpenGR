@@ -11,6 +11,7 @@ OPTION (IO_USE_BOOST "Use boost::filesystem for texture loading" TRUE)
 OPTION (ENABLE_TIMING "Enable computation time recording" FALSE)
 OPTION (OpenGR_USE_CHEALPIX "Use Chealpix for orientation filtering (deprecated)" FALSE)
 OPTION (DL_DATASETS "Download demo datasets and associated run scripts" FALSE)
+OPTION (OpenGR_USE_WEIGHTED_LCP "Use gaussian weights for point samples when computing LCP" FALSE)
 
 ################################################################################
 ## DO NOT EDIT AFTER THIS LINE
@@ -60,6 +61,11 @@ if (ENABLE_TIMING)
     ADD_DEFINITIONS( -DTEST_GLOBAL_TIMINGS )
     message (STATUS "OPT: Enable timing recording")
 endif (ENABLE_TIMING)
+
+if (OpenGR_USE_WEIGHTED_LCP)
+    ADD_DEFINITIONS( -DOPENGR_USE_WEIGHTED_LCP )
+    message (STATUS "Enable Weighted LCP")
+endif (OpenGR_USE_WEIGHTED_LCP)
 
 if (DL_DATASETS)
     add_custom_target(dl-datasets)

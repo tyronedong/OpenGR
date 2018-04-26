@@ -607,8 +607,7 @@ typename Match4PCSBase<Functor>::Scalar
             query.sqdist = P_diameter_ * kDiameterFraction;
             query.queryPoint = sampled_P_3D_[i].pos().cast<Scalar>();
 
-            GlobalRegistration::KdTree<Scalar>::Index resId =
-                    kd_tree_.doQueryRestrictedClosestIndex(query , i);
+            auto resId = kd_tree_.doQueryRestrictedClosestIndex(query , i).first;
 
             if (resId != GlobalRegistration::KdTree<Scalar>::invalidIndex()) {
                 distance += (sampled_P_3D_[i].pos() - sampled_P_3D_[resId].pos()).norm();
@@ -952,11 +951,26 @@ template <typename Functor>
 
         // We allow factor 2 scaling in the normalization.
         const Scalar epsilon = options_.delta;
+#ifdef OPENGR_USE_WEIGHTED_LCP
+        std::atomic<float> good_points(0);
+
+        auto kernel = [](Scalar x) {
+            return std::pow(std::pow(x,4) - Scalar(1), 2);
+        };
+
+        auto computeWeight = [kernel](Scalar sqx, Scalar th) {
+            return kernel( std::sqrt(sqx) / th );
+        };
+#else
         std::atomic_uint good_points(0);
+#endif
         const size_t number_of_points = sampled_Q_3D_.size();
         const size_t terminate_value = best_LCP_ * number_of_points;
 
         const Scalar sq_eps = epsilon*epsilon;
+#ifdef OPENGR_USE_WEIGHTED_LCP
+        const Scalar    eps = std::sqrt(sq_eps);
+#endif
 
         for (size_t i = 0; i < number_of_points; ++i) {
 
@@ -969,14 +983,13 @@ template <typename Functor>
             query.queryPoint = (mat * sampled_Q_3D_[i].pos().homogeneous()).head<3>();
             query.sqdist     = sq_eps;
 
-            GlobalRegistration::KdTree<Scalar>::Index resId =
-                    kd_tree_.doQueryRestrictedClosestIndex( query );
+            auto result = kd_tree_.doQueryRestrictedClosestIndex( query );
 
 #ifdef TEST_GLOBAL_TIMINGS
             kdTreeTime += Scalar(t.elapsed().count()) / Scalar(CLOCKS_PER_SEC);
 #endif
 
-            if ( resId != GlobalRegistration::KdTree<Scalar>::invalidIndex() ) {
+            if ( result.first != GlobalRegistration::KdTree<Scalar>::invalidIndex() ) {
 //      Point3D& q = sampled_P_3D_[near_neighbor_index[0]];
 //      bool rgb_good =
 //          (p.rgb()[0] >= 0 && q.rgb()[0] >= 0)
@@ -986,7 +999,12 @@ template <typename Functor>
 //                           ? fabs(p.normal().ddot(q.normal())) >= cos_dist
 //                           : true;
 //      if (rgb_good && norm_good) {
+#ifdef OPENGR_USE_WEIGHTED_LCP
+                assert (result.second <= query.sqdist);
+                good_points = good_points + computeWeight(result.second, eps);
+#else
                 good_points++;
+#endif
 //      }
             }
 
