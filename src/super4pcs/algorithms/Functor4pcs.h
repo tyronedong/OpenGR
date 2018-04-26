@@ -13,9 +13,9 @@
 #include <fstream>
 #include <time.h>  //clock
 
+//template <typename FiltreFunctor>
 
 namespace GlobalRegistration {
-    //template <typename Scalar>
     struct Match4PCS {
     public :
         using TypeBase = std::vector<Point3D>;
@@ -130,6 +130,13 @@ namespace GlobalRegistration {
 #ifndef MULTISCALE
                     if (std::abs(distance - pair_distance) > pair_distance_epsilon) continue;
 #endif
+
+                    //FiltreFunctor fun (myOptions);
+                    // std:pair<bool,bool> res = fun(params);
+                    //if (res.first)
+                        //add (i,j)
+                    //if (rest.second)
+                        //add(j,i)
 
                     if ( myOptions_.max_normal_difference > 0 &&
                          q.normal().squaredNorm() > 0 &&
