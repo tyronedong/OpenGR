@@ -10,6 +10,7 @@
 #include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
 #include "super4pcs/accelerators/pairExtraction/intersectionFunctor.h"
 #include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
+#include "FunctorFeaturePointTest.h"
 
 namespace GlobalRegistration {
 
@@ -162,58 +163,12 @@ public:
 #ifndef MULTISCALE
       if (std::abs(distance - pair_distance) > pair_distance_epsilon) return;
 #endif
-
-      if ( options_.max_normal_difference > 0 &&
-           q.normal().squaredNorm() > 0 &&
-           p.normal().squaredNorm() > 0) {
-          const Scalar norm_threshold =
-                  0.5 * options_.max_normal_difference * M_PI / 180.0;
-          const double first_normal_angle = (q.normal() - p.normal()).norm();
-          const double second_normal_angle = (q.normal() + p.normal()).norm();
-          // Take the smaller normal distance.
-          const Scalar first_norm_distance =
-                  std::min(std::abs(first_normal_angle - pair_normals_angle),
-                           std::abs(second_normal_angle - pair_normals_angle));
-          // Verify appropriate angle between normals and distance.
-
-          if (first_norm_distance > norm_threshold) return;
-      }
-      // Verify restriction on the rotation angle, translation and colors.
-      if (options_.max_color_distance > 0) {
-          const bool use_rgb = (p.rgb()[0] >= 0 && q.rgb()[0] >= 0 &&
-                  base_3D_[base_point1_].rgb()[0] >= 0 &&
-                  base_3D_[base_point2_].rgb()[0] >= 0);
-          bool color_good = (p.rgb() - base_3D_[base_point1_].rgb()).norm() <
-                  options_.max_color_distance &&
-                  (q.rgb() - base_3D_[base_point2_].rgb()).norm() <
-                  options_.max_color_distance;
-
-          if (use_rgb && ! color_good) return;
-      }
-
-      if (options_.max_translation_distance > 0) {
-          const bool dist_good = (p.pos() - base_3D_[base_point1_].pos()).norm() <
-                  options_.max_translation_distance &&
-                  (q.pos() - base_3D_[base_point2_].pos()).norm() <
-                  options_.max_translation_distance;
-          if (! dist_good) return;
-      }
-
-      // need cleaning here
-      if (options_.max_angle > 0){
-          VectorType segment2 = (q.pos() - p.pos()).normalized();
-          if (std::acos(segment1.dot(segment2)) <= options_.max_angle * M_PI / 180.0) {
-              pairs->emplace_back(j, i);
-          }
-
-          if (std::acos(segment1.dot(- segment2)) <= options_.max_angle * M_PI / 180.0) {
-              // Add ordered pair.
-              pairs->emplace_back(i, j);
-          }
-      }else {
-          pairs->emplace_back(j, i);
-          pairs->emplace_back(i, j);
-      }
+        FilterTests fun(options_,base_3D_);
+        std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_point1_,base_point2_);
+        if (res.first)
+            pairs->emplace_back(i, j);
+        if (res.second)
+            pairs->emplace_back(j, i);
     }
   }
 };
