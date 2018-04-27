@@ -1,5 +1,5 @@
 //
-// Created by shiro on 24/04/18.
+// Created by Sandra Alfaro on 24/04/18.
 //
 
 #ifndef SUPER4PCS_FUNCTOR4PCS_H
@@ -9,13 +9,14 @@
 #include "../shared4pcs.h"
 #include "../accelerators/kdtree.h"
 #include "../accelerators/utils.h"
+#include "FunctorFeaturePointTest.h"
 
 #include <fstream>
 #include <time.h>  //clock
 
-//template <typename FiltreFunctor>
 
 namespace GlobalRegistration {
+    template <typename PointFilterFunctor = FilterTests>
     struct Match4PCS {
     public :
         using TypeBase = std::vector<Point3D>;
@@ -131,64 +132,12 @@ namespace GlobalRegistration {
                     if (std::abs(distance - pair_distance) > pair_distance_epsilon) continue;
 #endif
 
-                    //FiltreFunctor fun (myOptions);
-                    // std:pair<bool,bool> res = fun(params);
-                    //if (res.first)
-                        //add (i,j)
-                    //if (rest.second)
-                        //add(j,i)
-
-                    if ( myOptions_.max_normal_difference > 0 &&
-                         q.normal().squaredNorm() > 0 &&
-                         p.normal().squaredNorm() > 0) {
-                        const Scalar norm_threshold =
-                                0.5 * myOptions_.max_normal_difference * M_PI / 180.0;
-                        const double first_normal_angle = (q.normal() - p.normal()).norm();
-                        const double second_normal_angle = (q.normal() + p.normal()).norm();
-                        // Take the smaller normal distance.
-                        const Scalar first_norm_distance =
-                                std::min(std::abs(first_normal_angle - pair_normals_angle),
-                                         std::abs(second_normal_angle - pair_normals_angle));
-                        // Verify appropriate angle between normals and distance.
-
-                        if (first_norm_distance > norm_threshold) continue;
-                    }
-                    // Verify restriction on the rotation angle, translation and colors.
-                    if (myOptions_.max_color_distance > 0) {
-                        const bool use_rgb = (p.rgb()[0] >= 0 && q.rgb()[0] >= 0 &&
-                                myBase_3D_[base_point1].rgb()[0] >= 0 &&
-                                myBase_3D_[base_point2].rgb()[0] >= 0);
-                        bool color_good = (p.rgb() - myBase_3D_[base_point1].rgb()).norm() <
-                                                  myOptions_.max_color_distance &&
-                                          (q.rgb() - myBase_3D_[base_point2].rgb()).norm() <
-                                                  myOptions_.max_color_distance;
-
-                        if (use_rgb && ! color_good) return;
-                    }
-
-                    if (myOptions_.max_translation_distance > 0) {
-                        const bool dist_good = (p.pos() - myBase_3D_[base_point1].pos()).norm() <
-                                                       myOptions_.max_translation_distance &&
-                                               (q.pos() - myBase_3D_[base_point2].pos()).norm() <
-                                                       myOptions_.max_translation_distance;
-                        if (! dist_good) return;
-                    }
-
-                    // need cleaning here
-                    if (myOptions_.max_angle > 0){
-                        VectorType segment2 = (q.pos() - p.pos()).normalized();
-                        if (std::acos(segment1.dot(segment2)) <= myOptions_.max_angle * M_PI / 180.0) {
-                            pairs->emplace_back(j, i);
-                        }
-
-                        if (std::acos(segment1.dot(- segment2)) <= myOptions_.max_angle * M_PI / 180.0) {
-                            // Add ordered pair.
-                            pairs->emplace_back(i, j);
-                        }
-                    }else {
-                        pairs->emplace_back(j, i);
+                    PointFilterFunctor fun(myOptions_, myBase_3D_);
+                    std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_point1,base_point2);
+                    if (res.first)
                         pairs->emplace_back(i, j);
-                    }
+                    if (res.second)
+                        pairs->emplace_back(j, i);
                 }
             }
         }
