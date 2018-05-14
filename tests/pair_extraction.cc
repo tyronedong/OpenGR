@@ -292,13 +292,13 @@ void callMatchSubTests()
         match.init(P, Q);
 
         std::vector<std::pair<int, int>> pairs1, pairs2;
-        match.ExtractPairs(distance1,
+        match.getFunctor().ExtractPairs(distance1,
                            normal_angle1,
                            pair_distance_epsilon,
                            0,
                            1,
                            &pairs1);
-        match.ExtractPairs(distance2,
+        match.getFunctor().ExtractPairs(distance2,
                            normal_angle2,
                            pair_distance_epsilon,
                            2,

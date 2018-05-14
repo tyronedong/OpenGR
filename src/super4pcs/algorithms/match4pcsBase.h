@@ -122,6 +122,8 @@ public:
                           const Sampler& sampler = Sampler(),
                           const Visitor& v = Visitor());
 
+    inline const Functor& getFunctor() const { return fun_; }
+
 
 protected:
     /// Number of trials. Every trial picks random base from P.
@@ -286,22 +288,6 @@ protected :
                          const std::vector<Quadrilateral> &congruent_quads,
                          const Visitor &v,
                          size_t &nbCongruent);
-    //TODO
-    void ExtractPairs(Scalar pair_distance,
-                      Scalar pair_normals_angle,
-                      Scalar pair_distance_epsilon,
-                      int base_point1,
-                      int base_point2,
-                      PairsVector* pairs) const;
-    bool FindCongruentQuadrilaterals(
-            Scalar invariant1,
-            Scalar invariant2,
-            Scalar /*distance_threshold1*/,
-            Scalar distance_threshold2,
-            const std::vector <std::pair<int, int>> &P_pairs,
-            const std::vector <std::pair<int, int>> &Q_pairs,
-            std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const;
-
 private:
     void initKdTree();
 

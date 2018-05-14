@@ -1031,33 +1031,6 @@ template <typename Functor>
 template <typename Functor>
 Match4PCSBase<Functor>::~Match4PCSBase(){}
 
-
-// TODO
-template <typename Functor>
-void Match4PCSBase<Functor>::ExtractPairs(Scalar pair_distance,
-                                          Scalar pair_normals_angle,
-                                          Scalar pair_distance_epsilon,
-                                          int base_point1, int base_point2,
-                                          PairsVector *pairs) const {
-        fun_.ExtractPairs(pair_distance,pair_normals_angle,pair_distance_epsilon,base_point1,base_point2,pairs);
-}
-
-template <typename Functor>
-bool Match4PCSBase<Functor>::FindCongruentQuadrilaterals( Scalar invariant1,
-                                  Scalar invariant2,
-                                  Scalar /*distance_threshold1*/,
-                                  Scalar distance_threshold2,
-                                  const std::vector <std::pair<int, int>> &P_pairs,
-                                  const std::vector <std::pair<int, int>> &Q_pairs,
-                                  std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const {
-
-        fun_.FindCongruentQuadrilaterals(invariant1,invariant2,
-                                         distance_threshold2,
-                                         distance_threshold2,
-                                         P_pairs,Q_pairs,
-                                         quadrilaterals);
-    }
-
 } // namespace Super4PCS
 
 #endif

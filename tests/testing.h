@@ -110,37 +110,6 @@ public:
     inline const std::vector<Point3D>& base3D() const
     { return BaseMatcher::base3D(); }
 
-    virtual void
-    ExtractPairs( Scalar pair_distance,
-                  Scalar pair_normals_angle,
-                  Scalar pair_distance_epsilon, int base_point1,
-                  int base_point2,
-                  PairsVector* pairs) const
-    {
-        BaseMatcher::ExtractPairs(pair_distance,
-                                  pair_normals_angle,
-                                  pair_distance_epsilon,
-                                  base_point1,
-                                  base_point2,
-                                  pairs);
-    }
-
-    virtual bool
-    FindCongruentQuadrilaterals(Scalar inv1, Scalar inv2,
-                                Scalar distance_threshold1,
-                                Scalar distance_threshold2,
-                                const PairsVector& P_pairs,
-                                const PairsVector& Q_pairs,
-                                std::vector<Quadrilateral>* quadrilaterals) const
-    {
-        return BaseMatcher::FindCongruentQuadrilaterals(inv1, inv2,
-                                                        distance_threshold1,
-                                                        distance_threshold2,
-                                                        P_pairs,
-                                                        Q_pairs,
-                                                        quadrilaterals);
-    }
-
     inline bool TryCongruentSet(int base_id1,
                                 int base_id2,
                                 int base_id3,
