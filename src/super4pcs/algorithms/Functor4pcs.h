@@ -23,10 +23,11 @@ namespace GlobalRegistration {
         using Scalar      = typename Point3D::Scalar;
         using PairsVector = std::vector< std::pair<int, int> >;
         using VectorType  = typename Point3D::VectorType;
+        using OptionType  = Match4PCSOptions;
 
 
     private :
-        Match4PCSOptions myOptions_;
+        OptionType myOptions_;
         std::vector<Point3D> mySampled_Q_3D_;
         TypeBase myBase_3D_;
 
@@ -36,7 +37,7 @@ namespace GlobalRegistration {
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {}
 
-        inline void setOptions (Match4PCSOptions options) {
+        inline void setOptions (OptionType options) {
             myOptions_ = options;
         }
 

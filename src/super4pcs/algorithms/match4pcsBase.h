@@ -63,12 +63,14 @@ namespace GlobalRegistration{
 
 struct DefaultFunctor {
     using TypeBase = std::vector<Point3D>;
+    using OptionType = Match4PCSOptions;
 };
 
 template <typename Functor>
 class Match4PCSBase {
 
 public:
+    using FunOptionsType = typename Functor::OptionType;
     using TypeBase = typename Functor::TypeBase;
     using PairsVector =  std::vector< std::pair<int, int> >;
     using Scalar = typename Point3D::Scalar;
@@ -172,8 +174,8 @@ protected:
     /// KdTree used to compute the LCP
     KdTree<Scalar> kd_tree_;
     /// Parameters.
-    const Match4PCSOptions options_;
-    // conts MatchOptions options_;
+    //const Match4PCSOptions options_;
+     const MatchOptions options_;
     std::mt19937 randomGenerator_;
     const Utils::Logger &logger_;
     Functor fun_;

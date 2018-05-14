@@ -80,8 +80,6 @@ namespace GlobalRegistration{
     , omp_nthread_congruent_(1)
 #endif
     {
-        //using FunOptType = typename Functor::OptionType;
-        //fun_.setOptions(static_cast<FunOptType >(options));
         fun_.setOptions(options);
         base_3D_.resize(4);
     }
