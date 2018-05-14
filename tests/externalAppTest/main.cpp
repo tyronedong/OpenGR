@@ -1,4 +1,5 @@
-#include "super4pcs/algorithms/super4pcs.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
+#include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/io/io.h"
 #include "super4pcs/utils/geometry.h"
 
@@ -8,6 +9,8 @@
 int main(int argc, char **argv) {
   using namespace GlobalRegistration;
   using namespace std;
+
+  using Matcher = Match4PCSBase<MatchSuper4PCS>;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;
@@ -28,18 +31,18 @@ int main(int argc, char **argv) {
   Match4PCSOptions options;
 
   // Set parameters.
-  Match4PCSBase<>::MatrixType mat;
+  typename Matcher::MatrixType mat;
   double overlap (1);
   options.configureOverlap(overlap);
 
   typename Point3D::Scalar score = 0;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using TrVisitorType = Match4PCSBase<>::DummyTransformVisitor;
-  using SamplerType   = Match4PCSBase<>::DefaultSampler;
+  using TrVisitorType = typename Matcher::DummyTransformVisitor;
+  using SamplerType   = typename Matcher::DefaultSampler;
   Utils::Logger logger(loglvl);
 
-  MatchSuper4PCS matcher(options, logger);
+  Matcher matcher(options, logger);
   score = matcher.ComputeTransformation<SamplerType,TrVisitorType>(set1, &set2, mat);
 
   logger.Log<Utils::Verbose>( "Score: ", score );

@@ -81,7 +81,7 @@ bool
 MatchSuper4PCS::FindCongruentQuadrilaterals(
         Scalar invariant1,
         Scalar invariant2,
-        Scalar /*distance_threshold1*,
+        Scalar *distance_threshold1*,
         Scalar distance_threshold2,
         const std::vector<std::pair<int, int>>& First_pairs,
         const std::vector<std::pair<int, int>>& Second_pairs,
@@ -228,8 +228,8 @@ MatchSuper4PCS::ExtractPairs(Scalar pair_distance,
 
 // Initialize all internal data structures and data members.
 void
-MatchSuper4PCS::Initialize(const std::vector<Point3D>& /*P*,
-                           const std::vector<Point3D>& /*Q*) {
+MatchSuper4PCS::Initialize(const std::vector<Point3D>& *P*,
+                           const std::vector<Point3D>& *Q*) {
   pcfunctor_.synch3DContent();
 }
 
