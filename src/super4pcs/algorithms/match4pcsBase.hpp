@@ -66,6 +66,27 @@
 
 namespace GlobalRegistration{
 
+    template <typename Functor>
+    Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
+            , const Utils::Logger& logger)
+            :number_of_trials_(0)
+            , max_base_diameter_(-1)
+            , P_mean_distance_(1.0)
+            , best_LCP_(0.0)
+            , options_(options)
+            , randomGenerator_(options.randomSeed)
+            , logger_(logger)
+#ifdef SUPER4PCS_USE_OPENMP
+    , omp_nthread_congruent_(1)
+#endif
+    {
+        //using FunOptType = typename Functor::OptionType;
+        //fun_.setOptions(static_cast<FunOptType >(options));
+        fun_.setOptions(options);
+        base_3D_.resize(4);
+    }
+
+
 // The main 4PCS function. Computes the best rigid transformation and transfoms
 // Q toward P by this transformation
 template <typename Functor>
@@ -208,8 +229,9 @@ void Match4PCSBase<Functor>::init(const std::vector<Point3D>& P,
     transform_ = Eigen::Matrix<Scalar, 4, 4>::Identity();
 
     // call Virtual handler
-    Initialize(P, Q);
-    //fun_.Initialize(P,Q);
+    fun_.setBase_3D(base_3D_);
+    fun_.setSampled_Q_3D(sampled_Q_3D_);
+    fun_.Initialize(P,Q);
 
     best_LCP_ = Verify(transform_);
     Log<LogLevel::Verbose>( "Initial LCP: ", best_LCP_ );
@@ -321,8 +343,6 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
       return false;
 
 #else
-    // if (!fun_.SelectQuadrilateral(invariant1, invariant2, base_id1, base_id2,
-        //                           base_id3, base_id4)) {
   if (!SelectQuadrilateral(invariant1, invariant2, base_id1, base_id2,
                            base_id3, base_id4)) {
     return false;
@@ -340,14 +360,8 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
   const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
   const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
 
-  //fun_.setBase_3D(base_3D_);
-  //fun_.setSampled_Q_3D(sampled_Q_3D_);
-      //fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
-  ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0,
-                  1, &pairs1);
-  //fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
-  ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2,
-                  3, &pairs2);
+  fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
+  fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
 
 //  Log<LogLevel::Verbose>( "Pair creation ouput: ", pairs1.size(), " - ", pairs2.size());
 
@@ -355,20 +369,13 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
     return false;
   }
 
-  //if (!fun_.FindCongruentQuadrilaterals(invariant1, invariant2,
-        //                                   distance_factor * options_.delta,
-        //                                   distance_factor * options_.delta,
-        //                                   pairs1,
-        //                                   pairs2,
-        //                                   &congruent_quads)) {
-
-  if (!FindCongruentQuadrilaterals(invariant1, invariant2,
-                                   distance_factor * options_.delta,
-                                   distance_factor * options_.delta,
-                                   pairs1,
-                                   pairs2,
-                                   &congruent_quads)) {
-    return false;
+  if (!fun_.FindCongruentQuadrilaterals(invariant1, invariant2,
+                                           distance_factor * options_.delta,
+                                           distance_factor * options_.delta,
+                                           pairs1,
+                                           pairs2,
+                                           &congruent_quads)) {
+      return false;
   }
 
   size_t nb = 0;
@@ -1024,27 +1031,31 @@ template <typename Functor>
 template <typename Functor>
 Match4PCSBase<Functor>::~Match4PCSBase(){}
 
-template <typename Functor> //TODO: MatchOptions
-Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
-            , const Utils::Logger& logger
-#ifdef SUPER4PCS_USE_OPENMP
-            , const int omp_nthread_congruent
-#endif
-    )
-            :number_of_trials_(0)
-            , max_base_diameter_(-1)
-            , P_mean_distance_(1.0)
-            , best_LCP_(0.0)
-            , options_(options)
-            , randomGenerator_(options.randomSeed)
-            , logger_(logger)
-#ifdef SUPER4PCS_USE_OPENMP
-    , omp_nthread_congruent_(omp_nthread_congruent)
-#endif
-    {
-        //using FunOptType = typename Functor::OptionType;
-        //fun_.setOption(static_cast<FunOptType >(options));
-        base_3D_.resize(4);
+
+// TODO
+template <typename Functor>
+void Match4PCSBase<Functor>::ExtractPairs(Scalar pair_distance,
+                                          Scalar pair_normals_angle,
+                                          Scalar pair_distance_epsilon,
+                                          int base_point1, int base_point2,
+                                          PairsVector *pairs) const {
+        fun_.ExtractPairs(pair_distance,pair_normals_angle,pair_distance_epsilon,base_point1,base_point2,pairs);
+}
+
+template <typename Functor>
+bool Match4PCSBase<Functor>::FindCongruentQuadrilaterals( Scalar invariant1,
+                                  Scalar invariant2,
+                                  Scalar /*distance_threshold1*/,
+                                  Scalar distance_threshold2,
+                                  const std::vector <std::pair<int, int>> &P_pairs,
+                                  const std::vector <std::pair<int, int>> &Q_pairs,
+                                  std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const {
+
+        fun_.FindCongruentQuadrilaterals(invariant1,invariant2,
+                                         distance_threshold2,
+                                         distance_threshold2,
+                                         P_pairs,Q_pairs,
+                                         quadrilaterals);
     }
 
 } // namespace Super4PCS

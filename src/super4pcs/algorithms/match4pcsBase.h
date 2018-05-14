@@ -65,7 +65,7 @@ struct DefaultFunctor {
     using TypeBase = std::vector<Point3D>;
 };
 
-template <typename Functor = DefaultFunctor>
+template <typename Functor>
 class Match4PCSBase {
 
 public:
@@ -85,6 +85,10 @@ public:
     static constexpr Scalar distance_factor = 2.0;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+
+    Match4PCSBase(const Match4PCSOptions& options
+            , const Utils::Logger &logger);
 
     virtual ~Match4PCSBase();
 
@@ -152,7 +156,6 @@ protected:
     std::vector<Point3D> sampled_Q_3D_;
     /// The 3D points of the base.
     TypeBase base_3D_;
-    //std::vector<Point3D> base_3D_;
     /// The copy of the input Q. We transform Q to match P and returned the
     /// transformed version.
     std::vector<Point3D> Q_copy_;
@@ -188,21 +191,7 @@ protected:
 
 #endif
 
-protected:
-    // Match4PCSBase(const MatchOptions& options
-    //                  , const Utils::Logger &logger
-    //#ifdef SUPER4PCS_USE_OPENMP
-    //                  , const int omp_nthread_congruent = omp_get_max_threads()
-    //#endif
-    //        );
-
-    Match4PCSBase(const Match4PCSOptions& options
-                  , const Utils::Logger &logger
-#ifdef SUPER4PCS_USE_OPENMP
-                  , const int omp_nthread_congruent = omp_get_max_threads()
-#endif
-        );
-
+protected :
     template <Utils::LogLevel level, typename...Args>
     inline void Log(Args...args) const { logger_.Log<level>(args...); }
 
@@ -271,17 +260,6 @@ protected:
     template <typename Visitor>
     bool TryOneBase(const Visitor &v);
 
-    /// Initializes the data structures and needed values before the match
-    /// computation.
-    /// @param [in] point_P First input set.
-    /// @param [in] point_Q Second input set.
-    /// expected to be in the inliers.
-    /// This method is called once the internal state of the Base class as been
-    /// set.
-    virtual void
-    Initialize(const std::vector<Point3D>& P,
-               const std::vector<Point3D>& Q) = 0;
-
     template <typename Sampler>
     void init(const std::vector<Point3D>& P,
               const std::vector<Point3D>& Q,
@@ -296,46 +274,6 @@ protected:
     const TypeBase base3D() const { return base_3D_; }
     //const std::vector<Point3D>& base3D() const { return base_3D_; }
 
-    /// Constructs pairs of points in Q, corresponding to a single pair in the
-    /// in basein P.
-    /// @param [in] pair_distance The distance between the pairs in P that we have
-    /// to match in the pairs we select from Q.
-    /// @param [in] pair_normal_distance The angle between the normals of the pair
-    /// in P.
-    /// @param [in] pair_distance_epsilon Tolerance on the pair distance. We allow
-    /// candidate pair in Q to have distance of
-    /// pair_distance+-pair_distance_epsilon.
-    /// @param [in] base_point1 The index of the first point in P.
-    /// @param [in] base_point2 The index of the second point in P.
-    /// @param [out] pairs A set of pairs in Q that match the pair in P with
-    /// respect to distance and normals, up to the given tolerance.
-    virtual void
-    ExtractPairs( Scalar pair_distance,
-                  Scalar pair_normals_angle,
-                  Scalar pair_distance_epsilon, int base_point1,
-                  int base_point2,
-                  PairsVector* pairs) const = 0;
-
-    /// Finds congruent candidates in the set Q, given the invariants and threshold
-    /// distances. Returns true if a non empty set can be found, false otherwise.
-    /// @param invariant1 [in] The first invariant corresponding to the set P_pairs
-    /// of pairs, previously extracted from Q.
-    /// @param invariant2 [in] The second invariant corresponding to the set
-    /// Q_pairs of pairs, previously extracted from Q.
-    /// @param [in] distance_threshold1 The distance for verification.
-    /// @param [in] distance_threshold2 The distance for matching middle points due
-    /// to the invariants (See the paper for e1, e2).
-    /// @param [in] First_pairs The first set of pairs found in Q.
-    /// @param [in] Second_pairs The second set of pairs found in Q.
-    /// @param [out] quadrilaterals The set of congruent quadrilateral. In fact,
-    /// it's a super set from which we extract the real congruent set.
-    virtual bool
-    FindCongruentQuadrilaterals(Scalar invariant1, Scalar invariant2,
-                                Scalar distance_threshold1,
-                                Scalar distance_threshold2,
-                                const PairsVector& First_pairs,
-                                const PairsVector& Second_pairs,
-                                std::vector<Quadrilateral>* quadrilaterals) const = 0;
 
     /// Loop over the set of congruent 4-points and test the compatibility with the
     /// input base.
@@ -348,6 +286,22 @@ protected:
                          const std::vector<Quadrilateral> &congruent_quads,
                          const Visitor &v,
                          size_t &nbCongruent);
+    //TODO
+    void ExtractPairs(Scalar pair_distance,
+                      Scalar pair_normals_angle,
+                      Scalar pair_distance_epsilon,
+                      int base_point1,
+                      int base_point2,
+                      PairsVector* pairs) const;
+    bool FindCongruentQuadrilaterals(
+            Scalar invariant1,
+            Scalar invariant2,
+            Scalar /*distance_threshold1*/,
+            Scalar distance_threshold2,
+            const std::vector <std::pair<int, int>> &P_pairs,
+            const std::vector <std::pair<int, int>> &Q_pairs,
+            std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const;
+
 private:
     void initKdTree();
 

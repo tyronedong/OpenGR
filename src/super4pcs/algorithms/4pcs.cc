@@ -41,7 +41,7 @@
 // Use google search on "4-points congruent sets" to see many related papers
 // and applications.
 
-
+/*
 #include "super4pcs/algorithms/4pcs.h"
 #include "super4pcs/algorithms/match4pcsBase.h"
 #include "super4pcs/accelerators/utils.h"
@@ -63,7 +63,7 @@ Match4PCS::~Match4PCS() { }
 bool Match4PCS::FindCongruentQuadrilaterals(
         Scalar invariant1,
         Scalar invariant2,
-        Scalar /*distance_threshold1*/,
+        Scalar /*distance_threshold1*,
         Scalar distance_threshold2,
         const std::vector<std::pair<int, int>>& First_pairs,
         const std::vector<std::pair<int, int>>& Second_pairs,
@@ -154,7 +154,8 @@ void Match4PCS::ExtractPairs(Scalar pair_distance,
 
 
 // Initialize all internal data structures and data members.
-void Match4PCS::Initialize(const std::vector<Point3D>& /*P*/,
-                               const std::vector<Point3D>& /*Q*/) {}
+void Match4PCS::Initialize(const std::vector<Point3D>& /*P*,
+                               const std::vector<Point3D>& /*Q*) {}
 
 }
+*/

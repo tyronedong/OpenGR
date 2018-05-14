@@ -23,7 +23,6 @@ namespace GlobalRegistration {
         using Scalar      = typename Point3D::Scalar;
         using PairsVector = std::vector< std::pair<int, int> >;
         using VectorType  = typename Point3D::VectorType;
-        using OptionType  = Match4PCSOptions;
 
 
     private :
@@ -59,7 +58,7 @@ namespace GlobalRegistration {
                                          const std::vector <std::pair<int, int>> &P_pairs,
                                          const std::vector <std::pair<int, int>> &Q_pairs,
                                          std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const {
-            using RangeQuery = GlobalRegistration::KdTree<Scalar>::RangeQuery<>;
+            using RangeQuery = typename GlobalRegistration::KdTree<Scalar>::template RangeQuery<>;
 
             if (quadrilaterals == nullptr) return false;
 
@@ -102,7 +101,7 @@ namespace GlobalRegistration {
         }
 
 
-       inline void Match4PCS::ExtractPairs(Scalar pair_distance,
+       inline void ExtractPairs(Scalar pair_distance,
                                      Scalar pair_normals_angle,
                                      Scalar pair_distance_epsilon,
                                      int base_point1,

@@ -50,8 +50,9 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#include "super4pcs/algorithms/4pcs.h"
-#include "super4pcs/algorithms/super4pcs.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
+#include "super4pcs/algorithms/Functor4pcs.h"
+#include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/io/io.h"
 #include "super4pcs/utils/geometry.h"
 
@@ -84,7 +85,7 @@ struct TrVisitorType {
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<Match4PCSBase<>::MatrixType> /*transformation*/) {
+            Eigen::Ref<Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) {
         std::cout << "New LCP: "
                   << static_cast<int>(fraction * 100)
                   << '%'
@@ -234,7 +235,7 @@ void test_model(const vector<Transform> &transforms,
     // accumulate error during the matching process
     // Transforms Q by the new transformation.
     {
-        Match4PCSBase<>::MatrixType transformation = transforms[i-1].inverse().matrix();
+        Match4PCSBase<DefaultFunctor>::MatrixType transformation = transforms[i-1].inverse().matrix();
         for (int j = 0; j < set1.size(); ++j) {
             set1[j].pos() = (transformation * set1[j].pos().homogeneous()).head<3>();
 
@@ -253,10 +254,10 @@ void test_model(const vector<Transform> &transforms,
     mergedset.insert(mergedset.end(), set1.begin(), set1.end());
 
     // Our matcher.
-    Match4PCSOptions options; //TODO: MatchOptions
+    Match4PCSOptions options;
 
     // Set parameters.
-    Match4PCSBase<>::MatrixType mat (Match4PCSBase<>::MatrixType::Identity());
+    Match4PCSBase<DefaultFunctor>::MatrixType mat (Match4PCSBase<DefaultFunctor>::MatrixType::Identity());
     VERIFY(options.configureOverlap(overlaps[param_i]));
     options.sample_size = n_points[param_i];
     options.max_time_seconds = max_time_seconds;
@@ -265,7 +266,7 @@ void test_model(const vector<Transform> &transforms,
     Scalar score = 0.;
 
     if(use_super4pcs){
-        MatchSuper4PCS matcher(options, logger);
+        Match4PCSBase<MatchSuper4PCS> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -278,7 +279,7 @@ void test_model(const vector<Transform> &transforms,
              << endl;
         score = matcher.ComputeTransformation(mergedset, &set2, mat);
     }else{
-        Match4PCS matcher(options, logger);
+        Match4PCSBase<Match4PCS<>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()

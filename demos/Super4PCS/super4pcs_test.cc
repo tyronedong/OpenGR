@@ -1,7 +1,8 @@
-#include "super4pcs/algorithms/4pcs.h"
-#include "super4pcs/algorithms/super4pcs.h"
 #include "super4pcs/io/io.h"
 #include "super4pcs/utils/geometry.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
+#include "super4pcs/algorithms/Functor4pcs.h"
+#include "super4pcs/algorithms/FunctorSuper4pcs.h"
 
 #include <Eigen/Dense>
 
@@ -30,7 +31,7 @@ struct TransformVisitor {
     inline void operator()(
             float fraction,
             float best_LCP,
-            Eigen::Ref<typename  Match4PCSBase<>::MatrixType> /*transformation*/) const {
+            Eigen::Ref<typename  Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) const {
       if (fraction >= 0)
         {
           printf("done: %d%c best: %f                  \r",
@@ -56,7 +57,7 @@ int main(int argc, char **argv) {
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
   using SamplerType   = GlobalRegistration::Sampling::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
-                            typename Match4PCSBase<>::DummyTransformVisitor,
+                            typename Match4PCSBase<DefaultFunctor>::DummyTransformVisitor,
                             TransformVisitor>::type;
   SamplerType sampler;
   TrVisitorType visitor;
@@ -75,8 +76,8 @@ int main(int argc, char **argv) {
   }
 
   // prepare matcher ressources
-  Match4PCSOptions options; //TODO : MatchOptions
-  using MatrixType = typename Match4PCSBase<>::MatrixType;
+  Match4PCSOptions options;
+  using MatrixType = typename Match4PCSBase<DefaultFunctor>::MatrixType;
   MatrixType mat (MatrixType::Identity());
 
   if(! Demo::setOptionsFromArgs(options, logger))
@@ -109,7 +110,7 @@ int main(int argc, char **argv) {
   try {
 
       if (use_super4pcs) {
-          MatchSuper4PCS matcher(options, logger); //TODO : MatchBase<FunctorSuper4pcs> matcher(options, logger); ?
+          Match4PCSBase<MatchSuper4PCS> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use Super4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
 
@@ -139,7 +140,7 @@ int main(int argc, char **argv) {
           }
       }
       else {
-          Match4PCS matcher(options, logger); //TODO : MatchBase<Functor4pcs> matcher(options, logger); ?
+          Match4PCSBase<Match4PCS<>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use old 4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
       }

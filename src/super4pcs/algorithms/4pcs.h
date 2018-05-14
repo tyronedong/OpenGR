@@ -40,7 +40,7 @@
 // demo): http://graphics.stanford.edu/~niloy/research/fpcs/fpcs_sig_08.html
 // Use google search on "4-points congruent sets" to see many related papers
 // and applications.
-
+/*
 #ifndef _SUPER4PCS_ALGO_4PCS_H_
 #define _SUPER4PCS_ALGO_4PCS_H_
 
@@ -118,3 +118,4 @@ protected:
 } /// namespace match_4pcs
 
 #endif  /// _4PCS_H_
+*/

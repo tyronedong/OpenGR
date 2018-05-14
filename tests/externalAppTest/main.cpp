@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     Utils::CleanInvalidNormals(set1, normals1);
 
   // Our matcher.
-  Match4PCSOptions options; //TODO : MatchOptions
+  Match4PCSOptions options;
 
   // Set parameters.
   Match4PCSBase<>::MatrixType mat;

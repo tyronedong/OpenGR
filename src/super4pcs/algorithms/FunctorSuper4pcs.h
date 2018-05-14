@@ -34,7 +34,7 @@ namespace GlobalRegistration {
 
 
     private :
-        Match4PCSOptions myOptions_;
+        OptionType myOptions_;
         std::vector<Point3D> mySampled_Q_3D_;
         TypeBase myBase_3D_;
 
@@ -46,14 +46,17 @@ namespace GlobalRegistration {
 
         mutable PairCreationFunctor<Scalar> pcfunctor_;
 
+
     public :
+        MatchSuper4PCS () : pcfunctor_ (myOptions_,mySampled_Q_3D_) { } //TODO
+
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {
             pcfunctor_.synch3DContent();
         }
 
-        inline void setOptions (Match4PCSOptions options) {
+        inline void setOptions (OptionType options) {
             myOptions_ = options;
         }
 

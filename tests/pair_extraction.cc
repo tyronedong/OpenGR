@@ -48,8 +48,9 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#include "super4pcs/algorithms/4pcs.h"
-#include "super4pcs/algorithms/super4pcs.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
+#include "super4pcs/algorithms/Functor4pcs.h"
+#include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
 #include "super4pcs/accelerators/pairExtraction/intersectionFunctor.h"
 #include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
@@ -93,7 +94,7 @@ struct TrVisitorType {
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<typename Match4PCSBase<>::MatrixType> /*transformation*/) {
+            Eigen::Ref<typename Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) {
 #ifdef TRACE
         std::cout << "New LCP: "
                   << static_cast<int>(fraction * 100)
@@ -255,7 +256,7 @@ void callMatchSubTests()
     using Scalar = typename MatchType::Scalar;
     using PairsVector = typename MatchType::PairsVector;
 
-    Match4PCSOptions opt; //TODO: MatchOptions
+    Match4PCSOptions opt;
     opt.delta = 0.1;
     VERIFY(opt.configureOverlap(0.5));
 
@@ -377,11 +378,11 @@ int main(int argc, const char **argv) {
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4PCS>();
+    callMatchSubTests<Match4PCSBase<Match4PCS<> >>();
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<MatchSuper4PCS>();
+    callMatchSubTests<Match4PCSBase<MatchSuper4PCS>>();
     cout << "Ok..." << endl;
 
     return EXIT_SUCCESS;
