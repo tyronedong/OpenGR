@@ -68,7 +68,11 @@ namespace GlobalRegistration{
 
     template <typename Functor>
     Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
-            , const Utils::Logger& logger)
+            , const Utils::Logger& logger
+#ifdef SUPER4PCS_USE_OPENMP
+            , const int omp_nthread_congruent_
+#endif
+)
             :number_of_trials_(0)
             , max_base_diameter_(-1)
             , P_mean_distance_(1.0)
@@ -77,7 +81,7 @@ namespace GlobalRegistration{
             , randomGenerator_(options.randomSeed)
             , logger_(logger)
 #ifdef SUPER4PCS_USE_OPENMP
-    , omp_nthread_congruent_(1)
+    , omp_nthread_congruent_(omp_nthread_congruent_)
 #endif
     {
         fun_.setOptions(options);
@@ -227,7 +231,7 @@ void Match4PCSBase<Functor>::init(const std::vector<Point3D>& P,
     transform_ = Eigen::Matrix<Scalar, 4, 4>::Identity();
 
     // call Virtual handler
-    fun_.setBase_3D(base_3D_);
+    fun_.setBase_3D(base_3D_); //TODO
     fun_.setSampled_Q_3D(sampled_Q_3D_);
     fun_.Initialize(P,Q);
 
@@ -358,6 +362,7 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
   const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
   const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
 
+  fun_.setBase_3D(base_3D_); //TODO
   fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
   fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
 

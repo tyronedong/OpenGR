@@ -91,10 +91,11 @@ struct MyPairCreationFunctor{
 };
 
 struct TrVisitorType {
+    template <typename Derived>
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<typename Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) {
+            const Eigen::MatrixBase<Derived>& /*transformation*/) {
 #ifdef TRACE
         std::cout << "New LCP: "
                   << static_cast<int>(fraction * 100)

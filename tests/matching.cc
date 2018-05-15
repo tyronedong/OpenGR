@@ -82,10 +82,11 @@ typedef Eigen::Transform<Scalar, Dim, Eigen::Affine> Transform;
 const int nbSet = 2;
 
 struct TrVisitorType {
+    template <typename Derived>
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) {
+            const Eigen::MatrixBase<Derived>& /*transformation*/) {
         std::cout << "New LCP: "
                   << static_cast<int>(fraction * 100)
                   << '%'
@@ -224,6 +225,8 @@ void test_model(const vector<Transform> &transforms,
     VERIFY(iomanager.ReadObject((char *)input1.c_str(), set1, tex_coords1, normals1, tris1, mtls1));
     VERIFY(iomanager.ReadObject((char *)input2.c_str(), set2, tex_coords2, normals2, tris2, mtls2));
 
+
+    using MatrixType = Eigen::Matrix<typename Point3D::Scalar, 4, 4>;
     // clean only when we have pset to avoid wrong face to point indexation
     if (tris1.size() == 0)
         Utils::CleanInvalidNormals(set1, normals1);
@@ -235,7 +238,7 @@ void test_model(const vector<Transform> &transforms,
     // accumulate error during the matching process
     // Transforms Q by the new transformation.
     {
-        Match4PCSBase<DefaultFunctor>::MatrixType transformation = transforms[i-1].inverse().matrix();
+        MatrixType transformation = transforms[i-1].inverse().matrix();
         for (int j = 0; j < set1.size(); ++j) {
             set1[j].pos() = (transformation * set1[j].pos().homogeneous()).head<3>();
 
@@ -257,7 +260,7 @@ void test_model(const vector<Transform> &transforms,
     Match4PCSOptions options;
 
     // Set parameters.
-    Match4PCSBase<DefaultFunctor>::MatrixType mat (Match4PCSBase<DefaultFunctor>::MatrixType::Identity());
+    MatrixType mat (MatrixType::Identity());
     VERIFY(options.configureOverlap(overlaps[param_i]));
     options.sample_size = n_points[param_i];
     options.max_time_seconds = max_time_seconds;

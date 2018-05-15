@@ -33,6 +33,8 @@ namespace GlobalRegistration {
 
 
     public :
+        inline Match4PCS() {};
+
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {}

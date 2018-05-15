@@ -61,9 +61,10 @@
 
 namespace GlobalRegistration{
 
-struct DefaultFunctor {
-    using TypeBase = std::vector<Point3D>;
-    using OptionType = Match4PCSOptions;
+struct DummyTransformVisitor {
+    template <typename Derived>
+    inline void operator() (float, float, const Eigen::MatrixBase<Derived>&) const {}
+    constexpr bool needsGlobalTransformation() const { return false; }
 };
 
 template <typename Functor>
@@ -77,10 +78,6 @@ public:
     using VectorType = typename Point3D::VectorType;
     using MatrixType = Eigen::Matrix<Scalar, 4, 4>;
     using LogLevel = Utils::LogLevel;
-    struct DummyTransformVisitor {
-        inline void operator() (float, float, Eigen::Ref<typename Match4PCSBase<Functor>::MatrixType>) const {}
-        constexpr bool needsGlobalTransformation() const { return false; }
-    };
     using DefaultSampler = Sampling::UniformDistSampler;
     static constexpr int kNumberOfDiameterTrials = 1000;
     static constexpr Scalar kLargeNumber = 1e9;
@@ -90,7 +87,11 @@ public:
 
 
     Match4PCSBase(const Match4PCSOptions& options
-            , const Utils::Logger &logger);
+            , const Utils::Logger &logger
+#ifdef SUPER4PCS_USE_OPENMP
+                 , const int omp_nthread_congruent = omp_get_max_threads()
+#endif
+    );
 
     virtual ~Match4PCSBase();
 
@@ -174,8 +175,8 @@ protected:
     /// KdTree used to compute the LCP
     KdTree<Scalar> kd_tree_;
     /// Parameters.
-    //const Match4PCSOptions options_;
-     const MatchOptions options_;
+    const Match4PCSOptions options_;
+    //const MatchOptions options_;
     std::mt19937 randomGenerator_;
     const Utils::Logger &logger_;
     Functor fun_;

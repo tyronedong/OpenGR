@@ -26,12 +26,12 @@ static inline void printS4PCSParameterList(){
     fprintf(stderr, "\t[ --sampled1 (output sampled cloud 1 -- debug+super4pcs only) ]\n");
     fprintf(stderr, "\t[ --sampled2 (output sampled cloud 2 -- debug+super4pcs only) ]\n");
 }
-
 struct TransformVisitor {
+    template <typename Derived>
     inline void operator()(
             float fraction,
             float best_LCP,
-            Eigen::Ref<typename  Match4PCSBase<DefaultFunctor>::MatrixType> /*transformation*/) const {
+            const Eigen::MatrixBase<Derived>& /*transformation*/) const {
       if (fraction >= 0)
         {
           printf("done: %d%c best: %f                  \r",
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
   using SamplerType   = GlobalRegistration::Sampling::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
-                            typename Match4PCSBase<DefaultFunctor>::DummyTransformVisitor,
+                            DummyTransformVisitor,
                             TransformVisitor>::type;
   SamplerType sampler;
   TrVisitorType visitor;
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 
   // prepare matcher ressources
   Match4PCSOptions options;
-  using MatrixType = typename Match4PCSBase<DefaultFunctor>::MatrixType;
+  using MatrixType = Eigen::Matrix<typename Point3D::Scalar, 4, 4>;
   MatrixType mat (MatrixType::Identity());
 
   if(! Demo::setOptionsFromArgs(options, logger))

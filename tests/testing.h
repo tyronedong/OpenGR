@@ -75,7 +75,6 @@ public:
     using MatrixType            = typename BaseMatcher::MatrixType;
     using PairsVector           = typename BaseMatcher::PairsVector;
     using DefaultSampler        = typename BaseMatcher::DefaultSampler;
-    using DummyTransformVisitor = typename BaseMatcher::DummyTransformVisitor;
 
     using BaseMatcher::BaseMatcher;
 

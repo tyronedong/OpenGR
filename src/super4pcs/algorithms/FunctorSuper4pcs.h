@@ -1,5 +1,5 @@
 //
-// Created by shiro on 24/04/18.
+// Created by Sandra Alfaro on 24/04/18.
 //
 
 #ifndef SUPER4PCS_FUNCTORSUPER4PCS_H
@@ -48,7 +48,7 @@ namespace GlobalRegistration {
 
 
     public :
-        MatchSuper4PCS () : pcfunctor_ (myOptions_,mySampled_Q_3D_) { } //TODO
+        inline MatchSuper4PCS () : pcfunctor_ (myOptions_,mySampled_Q_3D_) { }
 
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,

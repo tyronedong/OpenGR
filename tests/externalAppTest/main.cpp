@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
   typename Point3D::Scalar score = 0;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using TrVisitorType = typename Matcher::DummyTransformVisitor;
+  using TrVisitorType = DummyTransformVisitor;
   using SamplerType   = typename Matcher::DefaultSampler;
   Utils::Logger logger(loglvl);
 

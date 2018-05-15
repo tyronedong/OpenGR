@@ -105,7 +105,7 @@ public:
     template <typename Point>
     inline
     void operator() (const std::vector<Point>& inputset,
-                     const MatchOptions& options,
+                     const Match4PCSOptions& options,
                      std::vector<Point>& output) const {
       int num_input = inputset.size();
       output.clear();

@@ -141,7 +141,7 @@ inline std::ofstream& operator<<(std::ofstream& ofs, const Quadrilateral& q){
     ofs << "[" << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << "]";
     return ofs;
 }
-/*
+
 // ----- 4PCS Options -----
 /// delta and overlap_estimation are the application parameters. All other
 /// parameters are more likely to keep fixed and they can be set via the setters.
@@ -188,8 +188,8 @@ private:
   /// of RANSAC iterations needed to guarantee small failure probability.
   Scalar overlap_estimation = 0.2;
 };
-*/
 
+/*
 // ----- Match4pcsBase Options -----
 /// delta and overlap_estimation are the application parameters. All other
 /// parameters are more likely to keep fixed and they can be set via the setters.
@@ -241,7 +241,7 @@ private:
         Scalar max_translation_distance = -1;
         /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
         Scalar max_color_distance = -1;
-    };
+    };*/
 
 } /// namespace Super4PCS
 
