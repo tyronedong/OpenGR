@@ -175,8 +175,7 @@ protected:
     /// KdTree used to compute the LCP
     KdTree<Scalar> kd_tree_;
     /// Parameters.
-    const Match4PCSOptions options_;
-    //const MatchOptions options_;
+    const MatchOptions options_;
     std::mt19937 randomGenerator_;
     const Utils::Logger &logger_;
     Functor fun_;

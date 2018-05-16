@@ -231,7 +231,7 @@ void Match4PCSBase<Functor>::init(const std::vector<Point3D>& P,
     transform_ = Eigen::Matrix<Scalar, 4, 4>::Identity();
 
     // call Virtual handler
-    fun_.setBase_3D(base_3D_); //TODO
+    fun_.setBase_3D(base_3D_);
     fun_.setSampled_Q_3D(sampled_Q_3D_);
     fun_.Initialize(P,Q);
 
@@ -362,7 +362,7 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
   const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
   const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
 
-  fun_.setBase_3D(base_3D_); //TODO
+  fun_.setBase_3D(base_3D_);
   fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
   fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
 
