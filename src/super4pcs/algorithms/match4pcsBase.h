@@ -88,9 +88,6 @@ public:
 
     Match4PCSBase(const Match4PCSOptions& options
             , const Utils::Logger &logger
-#ifdef SUPER4PCS_USE_OPENMP
-                 , const int omp_nthread_congruent = omp_get_max_threads()
-#endif
     );
 
     virtual ~Match4PCSBase();

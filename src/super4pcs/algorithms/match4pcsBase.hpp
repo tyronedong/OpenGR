@@ -69,9 +69,6 @@ namespace GlobalRegistration{
     template <typename Functor>
     Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
             , const Utils::Logger& logger
-#ifdef SUPER4PCS_USE_OPENMP
-            , const int omp_nthread_congruent_
-#endif
 )
             :number_of_trials_(0)
             , max_base_diameter_(-1)
@@ -81,7 +78,7 @@ namespace GlobalRegistration{
             , randomGenerator_(options.randomSeed)
             , logger_(logger)
 #ifdef SUPER4PCS_USE_OPENMP
-    , omp_nthread_congruent_(omp_nthread_congruent_)
+    , omp_nthread_congruent_(1)
 #endif
     {
         fun_.setOptions(options);
