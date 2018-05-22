@@ -120,8 +120,8 @@ namespace GlobalRegistration {
                 Scalar invariant2,
                 Scalar /*distance_threshold1*/,
                 Scalar distance_threshold2,
-                const std::vector<std::pair<int, int>>& P_pairs,
-                const std::vector<std::pair<int, int>>& Q_pairs,
+                const std::vector<std::pair<int, int>>& First_pairs,
+                const std::vector<std::pair<int, int>>& Second_pairs,
                 std::vector<Quadrilateral>* quadrilaterals) const {
 
             typedef PairCreationFunctor<Scalar>::Point Point;
@@ -152,9 +152,9 @@ namespace GlobalRegistration {
 
             IndexedNormalSet3D nset (eps);
 
-            for (size_t i = 0; i <  P_pairs.size(); ++i) {
-                const Point& p1 = pcfunctor_.points[P_pairs[i].first];
-                const Point& p2 = pcfunctor_.points[P_pairs[i].second];
+            for (size_t i = 0; i <  First_pairs.size(); ++i) {
+                const Point& p1 = pcfunctor_.points[First_pairs[i].first];
+                const Point& p2 = pcfunctor_.points[First_pairs[i].second];
                 const Point  n  = (p2 - p1).normalized();
 
                 nset.addElement((p1+ Point::Scalar(invariant1) * (p2 - p1)).eval(), n, i);
@@ -166,12 +166,12 @@ namespace GlobalRegistration {
             unsigned int j = 0;
             std::vector<unsigned int> nei;
             // 2. Query time
-            for (unsigned int i = 0; i < Q_pairs.size(); ++i) {
-                const Point& p1 = pcfunctor_.points[Q_pairs[i].first];
-                const Point& p2 = pcfunctor_.points[Q_pairs[i].second];
+            for (unsigned int i = 0; i < Second_pairs.size(); ++i) {
+                const Point& p1 = pcfunctor_.points[Second_pairs[i].first];
+                const Point& p2 = pcfunctor_.points[Second_pairs[i].second];
 
-                const VectorType& pq1 = mySampled_Q_3D_[Q_pairs[i].first].pos();
-                const VectorType& pq2 = mySampled_Q_3D_[Q_pairs[i].second].pos();
+                const VectorType& pq1 = mySampled_Q_3D_[Second_pairs[i].first].pos();
+                const VectorType& pq2 = mySampled_Q_3D_[Second_pairs[i].second].pos();
 
                 nei.clear();
 
@@ -188,8 +188,8 @@ namespace GlobalRegistration {
                 for (unsigned int k = 0; k != nei.size(); k++){
                     const int id = nei[k];
 
-                    const VectorType& pp1 = mySampled_Q_3D_[P_pairs[id].first].pos();
-                    const VectorType& pp2 = mySampled_Q_3D_[P_pairs[id].second].pos();
+                    const VectorType& pp1 = mySampled_Q_3D_[First_pairs[id].first].pos();
+                    const VectorType& pp2 = mySampled_Q_3D_[First_pairs[id].second].pos();
 
                     invPoint = pp1 + (pp2 - pp1) * invariant1;
 
@@ -205,8 +205,8 @@ namespace GlobalRegistration {
                 const unsigned int & id = (*it).first;
                 const unsigned int & i  = (*it).second;
 
-                quadrilaterals->emplace_back(P_pairs[id].first, P_pairs[id].second,
-                                             Q_pairs[i].first,  Q_pairs[i].second);
+                quadrilaterals->emplace_back(First_pairs[id].first, First_pairs[id].second,
+                                             Second_pairs[i].first,  Second_pairs[i].second);
             }
 
             return quadrilaterals->size() != 0;
