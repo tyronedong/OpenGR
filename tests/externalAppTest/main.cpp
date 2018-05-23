@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   using namespace GlobalRegistration;
   using namespace std;
 
-  using Matcher = Match4PCSBase<MatchSuper4PCS>;
+  using Matcher = Match4PCSBase<MatchSuper4PCS<>>;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;
