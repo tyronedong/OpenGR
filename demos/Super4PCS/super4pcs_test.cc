@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   try {
 
       if (use_super4pcs) {
-          Match4PCSBase<MatchSuper4PCS> matcher(options, logger);
+          Match4PCSBase<MatchSuper4PCS<>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use Super4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
 

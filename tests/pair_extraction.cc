@@ -383,7 +383,7 @@ int main(int argc, const char **argv) {
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4PCSBase<MatchSuper4PCS>>();
+    callMatchSubTests<Match4PCSBase<MatchSuper4PCS<> >>();
     cout << "Ok..." << endl;
 
     return EXIT_SUCCESS;

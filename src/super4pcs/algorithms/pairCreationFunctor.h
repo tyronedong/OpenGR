@@ -14,7 +14,7 @@
 
 namespace GlobalRegistration {
 
-template <typename _Scalar>
+template <typename _Scalar, typename FilterFunctor>
 struct PairCreationFunctor{
 
 public:
@@ -163,7 +163,7 @@ public:
 #ifndef MULTISCALE
       if (std::abs(distance - pair_distance) > pair_distance_epsilon) return;
 #endif
-        FilterTests fun(options_,base_3D_);
+        FilterFunctor fun(options_,base_3D_);
         std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_point1_,base_point2_);
         if (res.first)
             pairs->emplace_back(i, j);

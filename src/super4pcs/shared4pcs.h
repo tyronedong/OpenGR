@@ -141,54 +141,6 @@ inline std::ofstream& operator<<(std::ofstream& ofs, const Quadrilateral& q){
     ofs << "[" << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << "]";
     return ofs;
 }
-/*
-// ----- 4PCS Options -----
-/// delta and overlap_estimation are the application parameters. All other
-/// parameters are more likely to keep fixed and they can be set via the setters.
-struct Match4PCSOptions {
-  using Scalar = typename Point3D::Scalar;
-  Match4PCSOptions() {}
-
-  /// The delta for the LCP (see the paper).
-  Scalar delta = 5.0;
-
-  /// Maximum normal difference.
-  Scalar max_normal_difference = -1;
-  /// Maximum translation distance. Set negative to ignore
-  Scalar max_translation_distance = -1;
-  /// Maximum rotation angle. Set negative to ignore
-  Scalar max_angle = -1;
-  /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
-  Scalar max_color_distance = -1;
-  /// The number of points in the sample. We sample this number of points
-  /// uniformly from P and Q.
-  size_t sample_size = 200;
-  /// Maximum time we allow the computation to take. This makes the algorithm
-  /// an ANY TIME algorithm that can be stopped at any time, producing the best
-  /// solution so far.
-  int max_time_seconds = 60;
-  /// use a constant default seed by default
-  unsigned int randomSeed = std::mt19937::default_seed;
-
-  inline bool configureOverlap(Scalar overlap_, Scalar terminate_threshold_ = Scalar(1)) {
-      if(terminate_threshold_ < overlap_) return false;
-      overlap_estimation = overlap_;
-      terminate_threshold = terminate_threshold_;
-      return true;
-  }
-  inline Scalar getTerminateThreshold() const { return terminate_threshold; }
-  inline Scalar getOverlapEstimation()  const { return overlap_estimation; }
-
-private:
-  /// Threshold on the value of the target function (LCP, see the paper).
-  /// It is used to terminate the process once we reached this value.
-  Scalar terminate_threshold = 1.0;
-  /// Estimated overlap between P and Q. This is the fraction of points in P that
-  /// may have corresponding point in Q. It's being used to estimate the number
-  /// of RANSAC iterations needed to guarantee small failure probability.
-  Scalar overlap_estimation = 0.2;
-};
-*/
 
 // ----- Match4pcsBase Options -----
 /// delta and overlap_estimation are the application parameters. All other

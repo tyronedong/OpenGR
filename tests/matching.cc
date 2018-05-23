@@ -269,7 +269,7 @@ void test_model(const vector<Transform> &transforms,
     Scalar score = 0.;
 
     if(use_super4pcs){
-        Match4PCSBase<MatchSuper4PCS> matcher(options, logger);
+        Match4PCSBase<MatchSuper4PCS<>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()

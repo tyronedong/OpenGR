@@ -28,12 +28,15 @@ namespace GlobalRegistration {
 
     private :
         OptionType myOptions_;
-        std::vector<Point3D> mySampled_Q_3D_;
-        TypeBase myBase_3D_;
+        std::vector<Point3D>& mySampled_Q_3D_;
+        TypeBase &myBase_3D_;
 
 
     public :
-        inline Match4PCS() {};
+        inline Match4PCS(std::vector<Point3D> &sampled_Q_3D_,
+                         TypeBase& base_3D_)
+                        :mySampled_Q_3D_(sampled_Q_3D_)
+                        ,myBase_3D_(base_3D_) {};
 
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
@@ -41,14 +44,6 @@ namespace GlobalRegistration {
 
         inline void setOptions (OptionType options) {
             myOptions_ = options;
-        }
-
-        inline void setSampled_Q_3D (std::vector<Point3D> sampled_Q_3D_) {
-            mySampled_Q_3D_ = sampled_Q_3D_;
-        }
-
-        inline void setBase_3D (TypeBase base_3D_) {
-            myBase_3D_ = base_3D_;
         }
 
         // Finds congruent candidates in the set Q, given the invariants and threshold distances.

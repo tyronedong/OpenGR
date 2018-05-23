@@ -24,6 +24,7 @@
 #include <time.h>
 
 namespace GlobalRegistration {
+    template <typename PointFilterFunctor = FilterTests>
     struct MatchSuper4PCS {
     public :
         using TypeBase = std::vector<Point3D>;
@@ -35,8 +36,8 @@ namespace GlobalRegistration {
 
     private :
         OptionType myOptions_;
-        std::vector<Point3D> mySampled_Q_3D_;
-        TypeBase myBase_3D_;
+        std::vector<Point3D> &mySampled_Q_3D_;
+        TypeBase &myBase_3D_;
 
         /// Private data contains parameters and internal variables that are computed
         /// and change during the match computation. All parameters have default
@@ -44,11 +45,15 @@ namespace GlobalRegistration {
 
         /// Internal data members.
 
-        mutable PairCreationFunctor<Scalar> pcfunctor_;
+        mutable PairCreationFunctor<Scalar, PointFilterFunctor> pcfunctor_;
 
 
     public :
-        inline MatchSuper4PCS () : pcfunctor_ (myOptions_,mySampled_Q_3D_) { }
+        inline MatchSuper4PCS (std::vector<Point3D> &sampled_Q_3D_,
+                               TypeBase& base_3D_)
+                                : pcfunctor_ (myOptions_,mySampled_Q_3D_)
+                                ,mySampled_Q_3D_(sampled_Q_3D_)
+                                ,myBase_3D_(base_3D_) {}
 
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
@@ -60,13 +65,6 @@ namespace GlobalRegistration {
             myOptions_ = options;
         }
 
-        inline void setSampled_Q_3D (std::vector<Point3D> sampled_Q_3D_) {
-            mySampled_Q_3D_ = sampled_Q_3D_;
-        }
-
-        inline void setBase_3D (TypeBase base_3D_) {
-            myBase_3D_ = base_3D_;
-        }
 
         // Constructs two sets of pairs in Q, each corresponds to one pair in the base
         // in P, by having the same distance (up to some tolerantz) and optionally the
@@ -100,8 +98,8 @@ namespace GlobalRegistration {
   <PairCreationFunctor<Scalar>::Primitive, PairCreationFunctor<Scalar>::Point, 3, Scalar> interFunctor;
 #else
             IntersectionFunctor
-                    <PairCreationFunctor<Scalar>::Primitive,
-                            PairCreationFunctor<Scalar>::Point, 3, Scalar> interFunctor;
+                    <typename PairCreationFunctor<Scalar,PointFilterFunctor>::Primitive,
+                            typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point, 3, Scalar> interFunctor;
 #endif
 
             Scalar eps = pcfunctor_.getNormalizedEpsilon(pair_distance_epsilon);
@@ -124,7 +122,7 @@ namespace GlobalRegistration {
                 const std::vector<std::pair<int, int>>& Second_pairs,
                 std::vector<Quadrilateral>* quadrilaterals) const {
 
-            typedef PairCreationFunctor<Scalar>::Point Point;
+            typedef typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point Point;
 
 #ifdef SUPER4PCS_USE_CHEALPIX
             typedef GlobalRegistration::IndexedNormalHealSet IndexedNormalSet3D;
@@ -157,7 +155,7 @@ namespace GlobalRegistration {
                 const Point& p2 = pcfunctor_.points[First_pairs[i].second];
                 const Point  n  = (p2 - p1).normalized();
 
-                nset.addElement((p1+ Point::Scalar(invariant1) * (p2 - p1)).eval(), n, i);
+                nset.addElement((p1+ typename Point::Scalar(invariant1) * (p2 - p1)).eval(), n, i);
             }
 
 
