@@ -15,8 +15,8 @@
 #define sqr(x) ((x) * (x))
 
 using namespace std;
-using namespace GlobalRegistration;
-using namespace GlobalRegistration::Demo;
+using namespace gr;
+using namespace gr::Demo;
 
 
 static inline void printS4PCSParameterList(){
@@ -43,7 +43,7 @@ struct TransformVisitor {
 };
 
 int main(int argc, char **argv) {
-  using namespace GlobalRegistration;
+  using namespace gr;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   typename Point3D::Scalar score = 0;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using SamplerType   = GlobalRegistration::Sampling::UniformDistSampler;
+  using SamplerType   = gr::Sampling::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
                             DummyTransformVisitor,
                             TransformVisitor>::type;

@@ -12,7 +12,7 @@
 #include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
 #include "FunctorFeaturePointTest.h"
 
-namespace GlobalRegistration {
+namespace gr {
 
 template <typename _Scalar, typename FilterFunctor>
 struct PairCreationFunctor{
@@ -92,7 +92,7 @@ public:
     points.clear();
     primitives.clear();
 
-    GlobalRegistration::AABB3D<Scalar> bbox;
+    gr::AABB3D<Scalar> bbox;
 
     unsigned int nSamples = Q_.size();
 

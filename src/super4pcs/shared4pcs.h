@@ -54,7 +54,7 @@
 #include <array>
 #include <random>
 
-namespace GlobalRegistration {
+namespace gr {
 
 /// The basic 3D point structure. A point potentially contains also directional
 /// information and color.

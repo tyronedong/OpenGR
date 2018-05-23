@@ -64,7 +64,7 @@
 
 
 
-namespace GlobalRegistration{
+namespace gr{
 
     template <typename Functor>
     Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
@@ -602,7 +602,7 @@ template <typename Functor>
 typename Match4PCSBase<Functor>::Scalar
     Match4PCSBase<Functor>::MeanDistance() {
         const Scalar kDiameterFraction = 0.2;
-        using RangeQuery = GlobalRegistration::KdTree<Scalar>::RangeQuery<>;
+        using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
         int number_of_samples = 0;
         Scalar distance = 0.0;
@@ -615,7 +615,7 @@ typename Match4PCSBase<Functor>::Scalar
 
             auto resId = kd_tree_.doQueryRestrictedClosestIndex(query , i).first;
 
-            if (resId != GlobalRegistration::KdTree<Scalar>::invalidIndex()) {
+            if (resId != gr::KdTree<Scalar>::invalidIndex()) {
                 distance += (sampled_P_3D_[i].pos() - sampled_P_3D_[resId].pos()).norm();
                 number_of_samples++;
             }
@@ -799,7 +799,7 @@ template <typename Functor>
         size_t number_of_points = sampled_P_3D_.size();
 
         // Build the kdtree.
-        kd_tree_ = GlobalRegistration::KdTree<Scalar>(number_of_points);
+        kd_tree_ = gr::KdTree<Scalar>(number_of_points);
 
         for (size_t i = 0; i < number_of_points; ++i) {
             kd_tree_.add(sampled_P_3D_[i].pos());
@@ -949,7 +949,7 @@ bool Match4PCSBase<Functor>::ComputeRigidTransformation(
 template <typename Functor>
     typename  Match4PCSBase<Functor>::Scalar
     Match4PCSBase<Functor>::Verify(const Eigen::Ref<const MatrixType> &mat) const {
-        using RangeQuery = GlobalRegistration::KdTree<Scalar>::RangeQuery<>;
+        using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
 #ifdef TEST_GLOBAL_TIMINGS
         Timer t_verify (true);
@@ -995,7 +995,7 @@ template <typename Functor>
             kdTreeTime += Scalar(t.elapsed().count()) / Scalar(CLOCKS_PER_SEC);
 #endif
 
-            if ( result.first != GlobalRegistration::KdTree<Scalar>::invalidIndex() ) {
+            if ( result.first != gr::KdTree<Scalar>::invalidIndex() ) {
 //      Point3D& q = sampled_P_3D_[near_neighbor_index[0]];
 //      bool rgb_good =
 //          (p.rgb()[0] >= 0 && q.rgb()[0] >= 0)

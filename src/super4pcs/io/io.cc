@@ -14,7 +14,7 @@
 #define LINE_BUF_SIZE 100
 
 using namespace std;
-using namespace GlobalRegistration;
+using namespace gr;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Read

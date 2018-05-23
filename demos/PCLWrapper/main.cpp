@@ -19,7 +19,7 @@ typedef pcl::PointNormal PointNT;
 typedef pcl::PointCloud<PointNT> PointCloudT;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointNT> ColorHandlerT;
 
-using namespace GlobalRegistration;
+using namespace gr;
 
 // Align a rigid object to a scene with clutter and occlusions
 int

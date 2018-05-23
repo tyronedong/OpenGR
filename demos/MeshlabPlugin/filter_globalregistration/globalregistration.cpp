@@ -102,7 +102,7 @@ void GlobalRegistrationPlugin::initParameterSet(QAction *action,MeshDocument &md
 }
 
 struct RealTimeTransformVisitor {
-    using MatrixType = typename GlobalRegistration::Match4PCSBase::MatrixType;
+    using MatrixType = typename gr::Match4PCSBase::MatrixType;
     CMeshO* mesh = nullptr;
     GlobalRegistrationPlugin* plugin;
     inline void operator() (
@@ -117,7 +117,7 @@ struct RealTimeTransformVisitor {
 };
 
 struct TransformVisitor {
-    using MatrixType = typename GlobalRegistration::Match4PCSBase::MatrixType;
+    using MatrixType = typename gr::Match4PCSBase::MatrixType;
     CMeshO* mesh = nullptr;
     GlobalRegistrationPlugin* plugin;
     inline void operator() (
@@ -142,11 +142,11 @@ bool GlobalRegistrationPlugin::applyFilter(QAction */*filter*/,
     CMeshO *refMesh=&mmref->cm;
     CMeshO *trgMesh=&mmtrg->cm;
 
-    using Sampler = GlobalRegistration::Sampling::UniformDistSampler;
+    using Sampler = gr::Sampling::UniformDistSampler;
 
 //    Log("Initializing Super4PCS. Delta=%f, overlap=%f", delta, overlap);
 
-    GlobalRegistration::Match4PCSOptions opt;
+    gr::Match4PCSOptions opt;
     opt.configureOverlap(par.getAbsPerc("overlap")/100.f);
     opt.delta                 = par.getFloat("delta");
     opt.sample_size           = par.getInt("nbSamples");
@@ -157,21 +157,21 @@ bool GlobalRegistrationPlugin::applyFilter(QAction */*filter*/,
     bool useSuper4PCS         = par.getBool("useSuper4PCS");
 
 
-    GlobalRegistration::Utils::Logger logger (GlobalRegistration::Utils::LogLevel::NoLog);
-    GlobalRegistration::Match4PCSBase* matcher = nullptr;
+    gr::Utils::Logger logger (gr::Utils::LogLevel::NoLog);
+    gr::Match4PCSBase* matcher = nullptr;
     Sampler sampler;
 
     if (useSuper4PCS)
-        matcher = new GlobalRegistration::MatchSuper4PCS (opt, logger);
+        matcher = new gr::MatchSuper4PCS (opt, logger);
     else
-        matcher = new GlobalRegistration::Match4PCS (opt, logger);
+        matcher = new gr::Match4PCS (opt, logger);
 
-    GlobalRegistration::Match4PCSBase::MatrixType mat;
-    std::vector<GlobalRegistration::Point3D> set1, set2;
+    gr::Match4PCSBase::MatrixType mat;
+    std::vector<gr::Point3D> set1, set2;
 
     // init Super4PCS point cloud internal structure
-    auto fillPointSet = [] (const CMeshO& m, std::vector<GlobalRegistration::Point3D>& out) {
-        using GlobalRegistration::Point3D;
+    auto fillPointSet = [] (const CMeshO& m, std::vector<gr::Point3D>& out) {
+        using gr::Point3D;
         Point3D p;
         out.clear();
         out.reserve(m.vert.size());

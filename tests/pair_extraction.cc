@@ -70,7 +70,7 @@
 
 #define TRACE
 
-using namespace GlobalRegistration;
+using namespace gr;
 
 struct MyPairCreationFunctor{
   typedef std::pair<unsigned int, unsigned int>ResPair;
@@ -131,7 +131,7 @@ void testFunction( Scalar r, Scalar epsilon,
                    unsigned int minNodeSize){
 
   // Init required structures
-  GlobalRegistration::Utils::Timer t;
+  gr::Utils::Timer t;
   std::vector< std::pair<unsigned int, unsigned int> > p2;
   p2.reserve(nbPoints*nbPoints);
 
@@ -230,7 +230,7 @@ template<typename Scalar,
          template <typename,typename,int,typename> class _Functor>
 void callSubTests()
 {
-    using namespace GlobalRegistration::Accelerators::PairExtraction;
+    using namespace gr::Accelerators::PairExtraction;
 
     typedef  Eigen::Matrix<Scalar, Dim, 1> EigenPoint;
     typedef  HyperSphere< EigenPoint, Dim, Scalar > Sphere;
@@ -339,7 +339,7 @@ int main(int argc, const char **argv) {
 
     using std::cout;
     using std::endl;
-    using namespace GlobalRegistration::Accelerators::PairExtraction;
+    using namespace gr::Accelerators::PairExtraction;
 
 
     cout << "Extract pairs in 2 dimensions (BRUTE FORCE)..." << endl;

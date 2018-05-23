@@ -49,7 +49,7 @@
 
 #include "super4pcs/utils/disablewarnings.h"
 
-namespace GlobalRegistration{
+namespace gr{
 namespace Utils{
 
 

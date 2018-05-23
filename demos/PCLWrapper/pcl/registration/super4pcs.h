@@ -85,7 +85,7 @@ namespace pcl
       typedef PointIndices::ConstPtr PointIndicesConstPtr;
 
 
-      GlobalRegistration::Match4PCSOptions options_;
+      gr::Match4PCSOptions options_;
 
       /** \brief Constructor */
       Super4PCS ()

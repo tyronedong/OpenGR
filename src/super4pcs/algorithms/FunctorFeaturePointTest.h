@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace GlobalRegistration {
+namespace gr {
     struct FilterTests {
     public :
         using TypeBase = std::vector<Point3D>;

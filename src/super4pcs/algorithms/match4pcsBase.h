@@ -59,7 +59,7 @@
 #   include "super4pcs/utils/timer.h"
 #endif
 
-namespace GlobalRegistration{
+namespace gr{
 
 struct DummyTransformVisitor {
     template <typename Derived>
@@ -188,7 +188,7 @@ protected:
     mutable Scalar kdTreeTime;
     mutable Scalar verifyTime;
 
-    using Timer = GlobalRegistration::Utils::Timer;
+    using Timer = gr::Utils::Timer;
 
 #endif
 

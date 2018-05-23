@@ -7,7 +7,7 @@
 
 
 int main(int argc, char **argv) {
-  using namespace GlobalRegistration;
+  using namespace gr;
   using namespace std;
 
   using Matcher = Match4PCSBase<MatchSuper4PCS<>>;

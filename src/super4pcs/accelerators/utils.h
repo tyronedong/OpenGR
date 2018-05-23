@@ -54,7 +54,7 @@
 #endif
 
 
-namespace GlobalRegistration{
+namespace gr{
 namespace Utils{
 
 //! \brief Compile time pow
@@ -119,7 +119,7 @@ IndexValidator<false>::validate(const IndexT& n,
 {
     return n;
 }
-} // namespace GlobalRegistration::Utils::internal
+} // namespace gr::Utils::internal
 
 /*!
  * \brief Convert a normalized n-d vector to a linear index in a uniform regular grid
@@ -172,7 +172,7 @@ UnrollIndexLoop(const ndIndexT& coord,
     : internal::IndexValidator<validate>::validate(IndexT(offset[cdim]+std::floor(coord[cdim])), gsize);
 }
 
-} //namespace GlobalRegistration::Utils
+} //namespace gr::Utils
 } //namespace Super4PCS
 
 

@@ -23,7 +23,7 @@
 #include <array>
 #include <time.h>
 
-namespace GlobalRegistration {
+namespace gr {
     template <typename PointFilterFunctor = FilterTests>
     struct MatchSuper4PCS {
     public :
@@ -76,7 +76,7 @@ namespace GlobalRegistration {
                           int base_point2,
                           PairsVector* pairs) const {
 
-            using namespace GlobalRegistration::Accelerators::PairExtraction;
+            using namespace gr::Accelerators::PairExtraction;
 
             pcfunctor_.pairs = pairs;
 
@@ -125,9 +125,9 @@ namespace GlobalRegistration {
             typedef typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point Point;
 
 #ifdef SUPER4PCS_USE_CHEALPIX
-            typedef GlobalRegistration::IndexedNormalHealSet IndexedNormalSet3D;
+            typedef gr::IndexedNormalHealSet IndexedNormalSet3D;
 #else
-            typedef  GlobalRegistration::IndexedNormalSet
+            typedef  gr::IndexedNormalSet
                     < Point,   //! \brief Point type used internally
                             3,       //! \brief Nb dimension
                             7,       //! \brief Nb cells/dim normal

@@ -52,7 +52,7 @@
 #include <super4pcs/shared4pcs.h>
 #include <super4pcs/utils/logger.h>
 
-namespace GlobalRegistration {
+namespace gr {
 namespace Demo {
 // First input.
 static std::string input1 = "input1.obj";
@@ -179,5 +179,5 @@ static inline bool setOptionsFromArgs( Match4PCSOptions &options,
 }
 
 } // namespace Demo
-} // namespace GlobalRegistration
+} // namespace gr
 #endif

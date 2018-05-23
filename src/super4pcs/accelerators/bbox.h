@@ -51,7 +51,7 @@
 #include <Eigen/Geometry>
 #include <limits>
 
-namespace GlobalRegistration{
+namespace gr{
 
 template <typename _Scalar, int _Dim>
 class AABB : public Eigen::AlignedBox<_Scalar, _Dim>

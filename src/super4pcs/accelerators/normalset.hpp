@@ -52,7 +52,7 @@
 #include <set>
 #include <Eigen/Geometry>
 
-namespace GlobalRegistration{
+namespace gr{
 
 template <class Point, int dim, int _ngSize, typename Scalar>
 IndexedNormalSet<Point, dim, _ngSize, Scalar>::~IndexedNormalSet(){

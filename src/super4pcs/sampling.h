@@ -52,7 +52,7 @@
 #include "super4pcs/shared4pcs.h"
 
 
-namespace GlobalRegistration {
+namespace gr {
 namespace Sampling {
 
 

@@ -64,7 +64,7 @@
 #define SUPER4PCS_PP_MAKE_STRING2(S) #S
 #define SUPER4PCS_PP_MAKE_STRING(S) SUPER4PCS_PP_MAKE_STRING2(S)
 
-namespace GlobalRegistration {
+namespace gr {
 namespace Testing {
 
 //! Matcher class providing public visilibility of internal routines
@@ -179,8 +179,8 @@ void verify_impl(bool condition, const char *testname, const char *file, int lin
   }
 }
 
-#define VERIFY(a) GlobalRegistration::Testing::verify_impl(a, \
-                  GlobalRegistration::Testing::g_test_stack.back().c_str(), __FILE__, \
+#define VERIFY(a) gr::Testing::verify_impl(a, \
+                  gr::Testing::g_test_stack.back().c_str(), __FILE__, \
                   __LINE__, SUPER4PCS_PP_MAKE_STRING(a))
 
 #if defined (_MSC_VER) && ! defined (__INTEL_COMPILER)
@@ -191,10 +191,10 @@ void verify_impl(bool condition, const char *testname, const char *file, int lin
 
 #define CALL_SUBTEST(FUNC) do { \
     MYPRAGMA("omp critical") \
-    { GlobalRegistration::Testing::g_test_stack.push_back(SUPER4PCS_PP_MAKE_STRING(FUNC)); }\
+    { gr::Testing::g_test_stack.push_back(SUPER4PCS_PP_MAKE_STRING(FUNC)); }\
     FUNC; \
     MYPRAGMA("omp critical") \
-    { GlobalRegistration::Testing::g_test_stack.pop_back(); } \
+    { gr::Testing::g_test_stack.pop_back(); } \
   } while (0)
 
 inline void set_repeat_from_string(const char *str)

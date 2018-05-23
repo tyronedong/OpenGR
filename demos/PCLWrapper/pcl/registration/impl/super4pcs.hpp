@@ -50,7 +50,7 @@ struct TransformVisitor {
     inline void operator()(
             float fraction,
             float best_LCP,
-            Eigen::Ref<GlobalRegistration::Match4PCSBase::MatrixType> /*transformation*/) const {
+            Eigen::Ref<gr::Match4PCSBase::MatrixType> /*transformation*/) const {
       if(fraction >= 0)
         {
           printf("done: %d%c best: %f                  \r",
@@ -66,13 +66,13 @@ struct TransformVisitor {
 template <typename PointSource, typename PointTarget> void
 pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSource &output, const Eigen::Matrix4f& guess)
 {
-  using namespace GlobalRegistration;
+  using namespace gr;
 
   // Initialize results
   final_transformation_ = guess;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using SamplerType   = GlobalRegistration::Sampling::UniformDistSampler;
+  using SamplerType   = gr::Sampling::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
                             Match4PCSBase::DummyTransformVisitor,
                             TransformVisitor>::type;
@@ -83,10 +83,10 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
   SamplerType sampler;
   TrVisitorType visitor;
 
-  std::vector<GlobalRegistration::Point3D> set1, set2;
+  std::vector<gr::Point3D> set1, set2;
 
   // init Super4PCS point cloud internal structure
-  auto fillPointSet = [] (const PointCloudSource& m, std::vector<GlobalRegistration::Point3D>& out) {
+  auto fillPointSet = [] (const PointCloudSource& m, std::vector<gr::Point3D>& out) {
       out.clear();
       out.reserve(m.size());
 

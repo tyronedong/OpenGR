@@ -51,7 +51,7 @@
 #include "super4pcs/utils/disablewarnings.h"
 #include "super4pcs/accelerators/utils.h"
 
-namespace GlobalRegistration{
+namespace gr{
 
 /*!
   Normal set indexed by a position in euclidean space.

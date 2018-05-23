@@ -52,7 +52,7 @@
 #include <list>
 #include <iostream>
 
-namespace GlobalRegistration{
+namespace gr{
 namespace Accelerators{
 namespace PairExtraction{
 

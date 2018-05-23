@@ -162,12 +162,12 @@ readBinary1Body (const std::string & filename,
                  unsigned int numOfVertexProperties,
                  bool         haveColor,
                  bool bigEndian,
-                 std::vector<GlobalRegistration::Point3D>& vertex,
-                 std::vector<typename GlobalRegistration::Point3D::VectorType>& normal,
+                 std::vector<gr::Point3D>& vertex,
+                 std::vector<typename gr::Point3D::VectorType>& normal,
                  std::vector<tripple>& face )
 {
     using namespace std;
-    using namespace GlobalRegistration;
+    using namespace gr;
 
     FILE * in = fopen (filename.c_str (), "r");
     if (!in){
@@ -261,12 +261,12 @@ readASCII1Body (const std::string & filename,
                 unsigned int numOfFaces,
                 unsigned int numOfVertexProperties,
                 bool         haveColor,
-                std::vector<GlobalRegistration::Point3D>& vertex,
-                std::vector<typename GlobalRegistration::Point3D::VectorType>& normal,
+                std::vector<gr::Point3D>& vertex,
+                std::vector<typename gr::Point3D::VectorType>& normal,
                 std::vector<tripple>& face )
 {
     using namespace std;
-    using namespace GlobalRegistration;
+    using namespace gr;
 
     FILE * in = fopen (filename.c_str (), "r");
     if (!in){

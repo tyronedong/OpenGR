@@ -54,7 +54,7 @@
 
 #include <Eigen/Core>
 
-namespace GlobalRegistration{
+namespace gr{
 namespace Accelerators{
 namespace PairExtraction{
 

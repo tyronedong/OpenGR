@@ -49,7 +49,7 @@
 
 #include <iostream>
 
-namespace GlobalRegistration{
+namespace gr{
 namespace Utils{
 
 enum LogLevel {

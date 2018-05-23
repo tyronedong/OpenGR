@@ -15,7 +15,7 @@
 #include <time.h>  //clock
 
 
-namespace GlobalRegistration {
+namespace gr {
     template <typename PointFilterFunctor = FilterTests>
     struct Match4PCS {
     public :
@@ -55,8 +55,8 @@ namespace GlobalRegistration {
                                          Scalar distance_threshold2,
                                          const std::vector <std::pair<int, int>> &First_pairs,
                                          const std::vector <std::pair<int, int>> &Second_pairs,
-                                         std::vector<GlobalRegistration::Quadrilateral> * quadrilaterals) const {
-            using RangeQuery = typename GlobalRegistration::KdTree<Scalar>::template RangeQuery<>;
+                                         std::vector<gr::Quadrilateral> * quadrilaterals) const {
+            using RangeQuery = typename gr::KdTree<Scalar>::template RangeQuery<>;
 
             if (quadrilaterals == nullptr) return false;
 
@@ -67,7 +67,7 @@ namespace GlobalRegistration {
             // the new points corresponding to the invariants in Second_pairs.
             quadrilaterals->clear();
 
-            GlobalRegistration::KdTree<Scalar> kdtree(number_of_points);
+            gr::KdTree<Scalar> kdtree(number_of_points);
 
             // Build the kdtree tree using the invariants on First_pairs.
             for (size_t i = 0; i < First_pairs.size(); ++i) {
