@@ -142,7 +142,7 @@ inline std::ofstream& operator<<(std::ofstream& ofs, const Quadrilateral& q){
     return ofs;
 }
 
-// ----- Match4pcsBase Options -----
+// ----- MatchBase Options -----
 /// delta and overlap_estimation are the application parameters. All other
 /// parameters are more likely to keep fixed and they can be set via the setters.
     struct MatchOptions {

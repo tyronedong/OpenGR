@@ -50,7 +50,7 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#include "super4pcs/algorithms/match4pcsBase.h"
+#include "super4pcs/algorithms/matchBase.h"
 #include "super4pcs/algorithms/Functor4pcs.h"
 #include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/io/io.h"
@@ -269,7 +269,7 @@ void test_model(const vector<Transform> &transforms,
     Scalar score = 0.;
 
     if(use_super4pcs){
-        Match4PCSBase<MatchSuper4PCS<>> matcher(options, logger);
+        MatchBase<MatchSuper4PCS<>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -282,7 +282,7 @@ void test_model(const vector<Transform> &transforms,
              << endl;
         score = matcher.ComputeTransformation(mergedset, &set2, mat);
     }else{
-        Match4PCSBase<Match4PCS<>> matcher(options, logger);
+        MatchBase<Match4PCS<>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()

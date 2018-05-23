@@ -67,7 +67,7 @@
 namespace gr{
 
     template <typename Functor>
-    Match4PCSBase<Functor>::Match4PCSBase(  const Match4PCSOptions& options
+    MatchBase<Functor>::MatchBase(  const Match4PCSOptions& options
             , const Utils::Logger& logger
 )
             :number_of_trials_(0)
@@ -91,8 +91,8 @@ namespace gr{
 // Q toward P by this transformation
 template <typename Functor>
 template <typename Sampler, typename Visitor>
-typename Match4PCSBase<Functor>::Scalar
-Match4PCSBase<Functor>::ComputeTransformation(const std::vector<Point3D>& P,
+typename MatchBase<Functor>::Scalar
+MatchBase<Functor>::ComputeTransformation(const std::vector<Point3D>& P,
                                      std::vector<Point3D>* Q,
                                      Eigen::Ref<MatrixType> transformation,
                                      const Sampler& sampler,
@@ -120,7 +120,7 @@ Match4PCSBase<Functor>::ComputeTransformation(const std::vector<Point3D>& P,
 
 template <typename Functor>
 template <typename Sampler>
-void Match4PCSBase<Functor>::init(const std::vector<Point3D>& P,
+void MatchBase<Functor>::init(const std::vector<Point3D>& P,
                          const std::vector<Point3D>& Q,
                          const Sampler& sampler){
 
@@ -242,7 +242,7 @@ void Match4PCSBase<Functor>::init(const std::vector<Point3D>& P,
 template <typename Functor>
 template <typename Visitor>
 bool
-Match4PCSBase<Functor>::Perform_N_steps(int n,
+MatchBase<Functor>::Perform_N_steps(int n,
                                Eigen::Ref<MatrixType> transformation,
                                std::vector<Point3D>* Q,
                                const Visitor &v) {
@@ -314,7 +314,7 @@ Match4PCSBase<Functor>::Perform_N_steps(int n,
 // a complete RANSAC iteration.
 template <typename Functor>
 template<typename Visitor>
-bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
+bool MatchBase<Functor>::TryOneBase(const Visitor &v) {
   Scalar invariant1, invariant2;
   int base_id1, base_id2, base_id3, base_id4;
 
@@ -393,7 +393,7 @@ bool Match4PCSBase<Functor>::TryOneBase(const Visitor &v) {
 
 template <typename Functor>
 template <typename Visitor>
-bool Match4PCSBase<Functor>::TryCongruentSet(
+bool MatchBase<Functor>::TryCongruentSet(
         int base_id1,
         int base_id2,
         int base_id3,
@@ -599,8 +599,8 @@ template <typename VectorType, typename Scalar>
 
 
 template <typename Functor>
-typename Match4PCSBase<Functor>::Scalar
-    Match4PCSBase<Functor>::MeanDistance() {
+typename MatchBase<Functor>::Scalar
+MatchBase<Functor>::MeanDistance() {
         const Scalar kDiameterFraction = 0.2;
         using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
@@ -626,7 +626,7 @@ typename Match4PCSBase<Functor>::Scalar
 
 
 template <typename Functor>
-    bool Match4PCSBase<Functor>::SelectRandomTriangle(int &base1, int &base2, int &base3) {
+    bool MatchBase<Functor>::SelectRandomTriangle(int &base1, int &base2, int &base3) {
         int number_of_points = sampled_P_3D_.size();
         base1 = base2 = base3 = -1;
 
@@ -666,7 +666,7 @@ template <typename Functor>
 // gives the smaller distance between the two closest points. The invariants
 // corresponding the the base pairing are computed.
 template <typename Functor>
-    bool Match4PCSBase<Functor>::TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
+    bool MatchBase<Functor>::TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
                                          int& id1, int& id2, int& id3, int& id4) {
 
         Scalar min_distance = std::numeric_limits<Scalar>::max();
@@ -720,7 +720,7 @@ template <typename Functor>
 // Selects a good base from P and computes its invariants. Returns false if
 // a good planar base cannot can be found.
 template <typename Functor>
-    bool Match4PCSBase<Functor>::SelectQuadrilateral(Scalar& invariant1, Scalar& invariant2,
+    bool MatchBase<Functor>::SelectQuadrilateral(Scalar& invariant1, Scalar& invariant2,
                                             int& base1, int& base2, int& base3,
                                             int& base4) {
 
@@ -795,7 +795,7 @@ template <typename Functor>
     }
 
 template <typename Functor>
-    void Match4PCSBase<Functor>::initKdTree(){
+    void MatchBase<Functor>::initKdTree(){
         size_t number_of_points = sampled_P_3D_.size();
 
         // Build the kdtree.
@@ -808,7 +808,7 @@ template <typename Functor>
     }
 
 template  <typename Functor>
-bool Match4PCSBase<Functor>::ComputeRigidTransformation(
+bool MatchBase<Functor>::ComputeRigidTransformation(
         const std::array<Point3D, 4>& ref,
         const std::array<Point3D, 4>& candidate,
         const Eigen::Matrix<Scalar, 3, 1>& centroid1,
@@ -947,8 +947,8 @@ bool Match4PCSBase<Functor>::ComputeRigidTransformation(
 // we describe randomized verification. We apply deterministic one here with
 // early termination. It was found to be fast in practice.
 template <typename Functor>
-    typename  Match4PCSBase<Functor>::Scalar
-    Match4PCSBase<Functor>::Verify(const Eigen::Ref<const MatrixType> &mat) const {
+    typename  MatchBase<Functor>::Scalar
+    MatchBase<Functor>::Verify(const Eigen::Ref<const MatrixType> &mat) const {
         using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
 #ifdef TEST_GLOBAL_TIMINGS
@@ -1028,7 +1028,7 @@ template <typename Functor>
     }
 
 template <typename Functor>
-Match4PCSBase<Functor>::~Match4PCSBase(){}
+MatchBase<Functor>::~MatchBase(){}
 
 } // namespace Super4PCS
 

@@ -68,7 +68,7 @@ struct DummyTransformVisitor {
 };
 
 template <typename Functor>
-class Match4PCSBase {
+class MatchBase {
 
 public:
     using FunOptionsType = typename Functor::OptionType;
@@ -86,11 +86,11 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 
-    Match4PCSBase(const Match4PCSOptions& options
+    MatchBase(const Match4PCSOptions& options
             , const Utils::Logger &logger
     );
 
-    virtual ~Match4PCSBase();
+    virtual ~MatchBase();
 
     /// Read access to the sampled clouds used for the registration
     inline const std::vector<Point3D>& getFirstSampled() const {
@@ -290,9 +290,9 @@ protected :
 private:
     void initKdTree();
 
-}; /// class Match4PCSBase
+}; /// class MatchBase
 } /// namespace Super4PCS
 
-#include "super4pcs/algorithms/match4pcsBase.hpp"
+#include "matchBase.hpp"
 
 #endif
