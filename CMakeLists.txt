@@ -137,6 +137,12 @@ add_subdirectory(${SRC_DIR}/super4pcs/utils)
 add_subdirectory(${SRC_DIR}/super4pcs/accelerators)
 add_subdirectory(${SRC_DIR}/super4pcs/algorithms)
 
+# Add main target
+add_custom_target(opengr DEPENDS opengr_utils opengr_io opengr_accel opengr_algo )
+if(OpenGR_USE_CHEALPIX)
+    add_dependencies(opengr chealpix)
+endif(OpenGR_USE_CHEALPIX)
+
 ################################################################################
 ## Demos, tests, assets and scripts
 ################################################################################
@@ -262,6 +268,7 @@ configure_package_config_file(
 install(EXPORT OpenGR-IOLibTargets    DESTINATION ${config_install_dir})
 install(EXPORT OpenGR-AlgoLibTargets  DESTINATION ${config_install_dir})
 install(EXPORT OpenGR-AccelLibTargets DESTINATION ${config_install_dir})
+install(EXPORT OpenGR-UtilsLibTargets DESTINATION ${config_install_dir})
 
 if(OpenGR_USE_CHEALPIX)
     install(EXPORT chealpixTargets DESTINATION ${config_install_dir})

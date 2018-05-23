@@ -1,27 +1,36 @@
-project (OpenGR-utilsLib)
+project (OpenGR-UtilsLib)
 
 set(utils_ROOT "${SRC_DIR}/super4pcs/utils")
 
+file(GLOB_RECURSE utils_relative_INCLUDE ${utils_ROOT}/*.h ${utils_ROOT}/*.hpp)
+
+# compute accel_INCLUDE to get absolute filenames
+set(utils_INCLUDE "")
+set(utils_installed_INCLUDE "")
+foreach(f ${utils_relative_INCLUDE})
+    list(APPEND utils_INCLUDE "${f}")
+    file(RELATIVE_PATH f_relative "${SRC_DIR}" "${f}")
+    list(APPEND utils_installed_INCLUDE "include/${f_relative}")
+endforeach(f)
+
+add_library(opengr_utils INTERFACE)
+target_sources(opengr_utils INTERFACE
+    $<BUILD_INTERFACE:${utils_INCLUDE}>
+    $<INSTALL_INTERFACE:${utils_installed_INCLUDE}>
+    )
 #############################################
 
-set(utils_INCLUDE
-    ${utils_ROOT}/timer.h
-    ${utils_ROOT}/geometry.h
-    ${utils_ROOT}/disablewarnings.h
-    ${utils_ROOT}/logger.h)
+set(targets_export_name "${PROJECT_NAME}Targets")
+install( TARGETS opengr_utils
+    EXPORT "${targets_export_name}"
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include  )
 
-
-if(CMAKE_VERSION VERSION_GREATER 3.1)
-    # use library target, to make accessible to test routines
-    add_library(opengr_utils INTERFACE)
-    target_sources(opengr_utils INTERFACE ${utils_INCLUDE})
-    #
-    # HACK: have the files showing in the IDE, under the name 'opengr_utils_IDE'
-    # Source: https://stackoverflow.com/questions/27039019/how-to-have-cmake-show-headers-that-are-not-part-of-any-binary-target-in-the-ide/29214327#29214327
-    #
-    add_custom_target(opengr_utils_IDE SOURCES ${utils_INCLUDE})
-else ()
-    add_library(opengr_utils STATIC ${utils_INCLUDE})
-    set_target_properties(opengr_utils PROPERTIES LINKER_LANGUAGE CXX)
-endif(CMAKE_VERSION VERSION_GREATER 3.1)
-
+#############################################
+#
+# HACK: have the files showing in the IDE, under the name 'opengr_utils_IDE'
+# Source: https://stackoverflow.com/questions/27039019/how-to-have-cmake-show-headers-that-are-not-part-of-any-binary-target-in-the-ide/29214327#29214327
+#
+add_custom_target(opengr_utils_IDE SOURCES ${utils_INCLUDE})

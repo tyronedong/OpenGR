@@ -47,3 +47,11 @@ install( TARGETS opengr_accel
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include  )
+
+
+#############################################
+#
+# HACK: have the files showing in the IDE, under the name 'opengr_accel_IDE'
+# Source: https://stackoverflow.com/questions/27039019/how-to-have-cmake-show-headers-that-are-not-part-of-any-binary-target-in-the-ide/29214327#29214327
+#
+add_custom_target(opengr_accel_IDE SOURCES ${accel_INCLUDE})
