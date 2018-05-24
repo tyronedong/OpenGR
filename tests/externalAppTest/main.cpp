@@ -1,4 +1,4 @@
-#include "super4pcs/algorithms/matchBase.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
 #include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/io/io.h"
 #include "super4pcs/utils/geometry.h"
@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   using namespace gr;
   using namespace std;
 
-  using Matcher = MatchBase<MatchSuper4PCS<>>;
+  using Matcher = Match4pcsBase<MatchSuper4PCS<>>;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;

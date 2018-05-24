@@ -49,6 +49,7 @@
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
 #include "super4pcs/algorithms/matchBase.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
 #include "super4pcs/algorithms/Functor4pcs.h"
 #include "super4pcs/algorithms/FunctorSuper4pcs.h"
 #include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
@@ -379,11 +380,11 @@ int main(int argc, const char **argv) {
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<MatchBase<Match4PCS<> >>();
+    callMatchSubTests<Match4pcsBase<Match4PCS<> >>();
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<MatchBase<MatchSuper4PCS<> >>();
+    callMatchSubTests<Match4pcsBase<MatchSuper4PCS<> >>();
     cout << "Ok..." << endl;
 
     return EXIT_SUCCESS;

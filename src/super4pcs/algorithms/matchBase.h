@@ -67,12 +67,9 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
-template <typename Functor> //TODO : remove functor and inlines
 class MatchBase {
 
 public:
-    using FunOptionsType = typename Functor::OptionType;
-    using TypeBase = typename Functor::TypeBase;
     using PairsVector =  std::vector< std::pair<int, int> >;
     using Scalar = typename Point3D::Scalar;
     using VectorType = typename Point3D::VectorType;
@@ -93,15 +90,16 @@ public:
     virtual ~MatchBase();
 
     /// Read access to the sampled clouds used for the registration
-    inline const std::vector<Point3D>& getFirstSampled() const {
+    const std::vector<Point3D>& getFirstSampled() const {
         return sampled_P_3D_;
     }
 
     /// Read access to the sampled clouds used for the registration
-    inline const std::vector<Point3D>& getSecondSampled() const {
+    const std::vector<Point3D>& getSecondSampled() const {
         return sampled_Q_3D_;
     }
 
+    /*
     /// Computes an approximation of the best LCP (directional) from Q to P
     /// and the rigid transformation that realizes it. The input sets may or may
     /// not contain normal information for any point.
@@ -115,14 +113,12 @@ public:
     /// the found transformation.
     template <typename Sampler = DefaultSampler,
               typename Visitor = DummyTransformVisitor>
-    Scalar
-    ComputeTransformation(const std::vector<Point3D>& P,
+    Scalar ComputeTransformation(const std::vector<Point3D>& P,
                           std::vector<Point3D>* Q,
                           Eigen::Ref<MatrixType> transformation,
                           const Sampler& sampler = Sampler(),
                           const Visitor& v = Visitor());
-
-    inline const Functor& getFunctor() const { return fun_; }
+*/
 
 
 protected:
@@ -157,7 +153,7 @@ protected:
     /// Sampled Q (3D coordinates).
     std::vector<Point3D> sampled_Q_3D_;
     /// The 3D points of the base.
-    TypeBase base_3D_;
+    std::vector<Point3D> base_3D_;
     /// The copy of the input Q. We transform Q to match P and returned the
     /// transformed version.
     std::vector<Point3D> Q_copy_;
@@ -175,7 +171,6 @@ protected:
     const MatchOptions options_;
     std::mt19937 randomGenerator_;
     const Utils::Logger &logger_;
-    Functor fun_;
 
 #ifdef SUPER4PCS_USE_OPENMP
     /// number of threads used to verify the congruent set
@@ -212,14 +207,6 @@ protected :
     /// probability of having all points in the inliers small so we try to trade-off.
     bool SelectRandomTriangle(int& base1, int& base2, int& base3);
 
-    /// Takes quadrilateral as a base, computes robust intersection point
-    /// (approximate as the lines might not intersect) and returns the invariants
-    /// corresponding to the two selected lines. The method also updates the order
-    /// of the base base_3D_.
-    bool TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                          int &base1, int &base2, int &base3, int &base4);
-
-
     /// Computes the best rigid transformation between three corresponding pairs.
     /// The transformation is characterized by rotation matrix, translation vector
     /// and a center about which we rotate. The set of pairs is potentially being
@@ -245,6 +232,7 @@ protected :
     /// the translation vector and (cx,cy,cz) is the center of transformation.template <class MatrixDerived>
     Scalar Verify(const Eigen::Ref<const MatrixType> & mat) const;
 
+    /*
     /// Performs n RANSAC iterations, each one of them containing base selection,
     /// finding congruent sets and verification. Returns true if the process can be
     /// terminated (the target LCP was obtained or the maximum number of trials has
@@ -254,44 +242,23 @@ protected :
                          Eigen::Ref<MatrixType> transformation,
                          std::vector<Point3D>* Q,
                          const Visitor& v);
-
-    /// Tries one base and finds the best transformation for this base.
-    /// Returns true if the achieved LCP is greater than terminate_threshold_,
-    /// else otherwise.
-    template <typename Visitor>
-    bool TryOneBase(const Visitor &v);
-
+*/
     template <typename Sampler>
     void init(const std::vector<Point3D>& P,
               const std::vector<Point3D>& Q,
               const Sampler& sampler);
 
-    /// Selects a quadrilateral from P and returns the corresponding invariants
-    /// and point indices. Returns true if a quadrilateral has been found, false
-    /// otherwise.
-    bool SelectQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                             int& base1, int& base2, int& base3, int& base4);
-
-    const TypeBase base3D() const { return base_3D_; }
+    const std::vector<Point3D> base3D() const { return base_3D_; }
 
 
-    /// Loop over the set of congruent 4-points and test the compatibility with the
-    /// input base.
-    /// \param [out] Nb Number of quads corresponding to valid configurations
-    template <typename Visitor>
-    bool TryCongruentSet(int base_id1,
-                         int base_id2,
-                         int base_id3,
-                         int base_id4,
-                         const std::vector<Quadrilateral> &congruent_quads,
-                         const Visitor &v,
-                         size_t &nbCongruent);
+    // Initialize all internal data structures and data members.
+    virtual void Initialize(const std::vector<Point3D>& /*P*/,
+                               const std::vector<Point3D>& /*Q*/) =0;
 private:
     void initKdTree();
 
 }; /// class MatchBase
 } /// namespace Super4PCS
-
 #include "matchBase.hpp"
 
 #endif

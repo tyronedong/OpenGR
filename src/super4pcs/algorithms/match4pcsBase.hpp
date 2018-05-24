@@ -1,8 +1,14 @@
 //
-// Created by Sandra alfaro on 24/05/18.
+// Created by Sandra Alfaro on 24/05/18.
 //
 
 #include <vector>
+#include <chrono>
+#include <atomic>
+#include <Eigen/Geometry>                 // MatrixBase.homogeneous()
+#include <Eigen/SVD>
+#include <Eigen/Core>                     // Transform.computeRotationScaling()
+
 
 #ifdef SUPER4PCS_USE_OPENMP
 #include <omp.h>
@@ -12,13 +18,11 @@
 #include "../sampling.h"
 #include "../accelerators/kdtree.h"
 #include "../utils/logger.h"
-#include "matchBase.h"
+#include "match4pcsBase.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
 #   include "super4pcs/utils/timer.h"
 #endif
-
-#include "match4pcsBase.h"
 
 template <typename VectorType, typename Scalar>
 static Scalar distSegmentToSegment(const VectorType& p1, const VectorType& p2,
@@ -93,11 +97,21 @@ namespace gr {
     Match4pcsBase<Functor>::Match4pcsBase (const Match4PCSOptions& options
             , const Utils::Logger& logger)
             : Base(options,logger)
-            , fun_(sampled_Q_3D_,base_3D_,options_) {}
+            , fun_(sampled_Q_3D_,base_3D_,options) {}
+
+    template <typename Functor>
+    Match4pcsBase<Functor>::~Match4pcsBase() {}
+
+    template <typename Functor>
+    // Initialize all internal data structures and data members.
+    void Match4pcsBase<Functor>::Initialize(const std::vector<Point3D>& P,
+                           const std::vector<Point3D>& Q) {
+        fun_.Initialize(P,Q);
+    }
 
     template <typename Functor>
     bool Match4pcsBase<Functor>::TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                                                  int &base1, int &base2, int &base3, int &base4) {
+                                                  int &id1, int &id2, int &id3, int &id4) {
 
         Scalar min_distance = std::numeric_limits<Scalar>::max();
         int best1, best2, best3, best4;
@@ -146,6 +160,109 @@ namespace gr {
 
         return true;
     }
+
+
+    // The main 4PCS function. Computes the best rigid transformation and transfoms
+    // Q toward P by this transformation
+    template <typename Functor>
+    template <typename Sampler, typename Visitor>
+    typename Match4pcsBase<Functor>::Scalar
+    Match4pcsBase<Functor>::ComputeTransformation(const std::vector<Point3D>& P,
+                                     std::vector<Point3D>* Q,
+                                     Eigen::Ref<MatrixType> transformation,
+                                     const Sampler& sampler,
+                                     const Visitor& v) {
+
+        if (Q == nullptr) return kLargeNumber;
+        if (P.empty() || Q->empty()) return kLargeNumber;
+
+        init(P, *Q, sampler);
+
+        if (best_LCP_ != Scalar(1.))
+            Perform_N_steps(number_of_trials_, transformation, Q, v);
+
+#ifdef TEST_GLOBAL_TIMINGS
+        Log<LogLevel::Verbose>( "----------- Timings (msec) -------------" );
+  Log<LogLevel::Verbose>( " Total computation time  : ", totalTime   );
+  Log<LogLevel::Verbose>( " Total verify time       : ", verifyTime  );
+  Log<LogLevel::Verbose>( "    Kdtree query         : ", kdTreeTime  );
+  Log<LogLevel::Verbose>( "----------------------------------------" );
+#endif
+
+        return best_LCP_;
+    }
+
+
+    // Performs N RANSAC iterations and compute the best transformation. Also,
+    // transforms the set Q by this optimal transformation.
+    template <typename Functor>
+    template <typename Visitor>
+    bool Match4pcsBase<Functor>::Perform_N_steps(int n,
+                                    Eigen::Ref<MatrixType> transformation,
+                                    std::vector<Point3D>* Q,
+                                    const Visitor &v) {
+        using std::chrono::system_clock;
+        if (Q == nullptr) return false;
+
+#ifdef TEST_GLOBAL_TIMINGS
+        Timer t (true);
+#endif
+
+
+        // The transformation has been computed between the two point clouds centered
+        // at the origin, we need to recompute the translation to apply it to the original clouds
+        auto getGlobalTransform = [this](Eigen::Ref<MatrixType> transformation){
+            Eigen::Matrix<Scalar, 3, 3> rot, scale;
+            Eigen::Transform<Scalar, 3, Eigen::Affine> (transform_).computeRotationScaling(&rot, &scale);
+            transformation = transform_;
+            transformation.col(3) = (qcentroid1_ + centroid_P_ - ( rot * scale * (qcentroid2_ + centroid_Q_))).homogeneous();
+        };
+
+        Scalar last_best_LCP = best_LCP_;
+        v(0, best_LCP_, transformation);
+
+        bool ok = false;
+        std::chrono::time_point<system_clock> t0 = system_clock::now(), end;
+        for (int i = current_trial_; i < current_trial_ + n; ++i) {
+            ok = TryOneBase(v);
+
+            Scalar fraction_try  = Scalar(i) / Scalar(number_of_trials_);
+            Scalar fraction_time =
+                    std::chrono::duration_cast<std::chrono::seconds>
+                            (system_clock::now() - t0).count() /
+                    options_.max_time_seconds;
+            Scalar fraction = std::max(fraction_time, fraction_try);
+
+            if (v.needsGlobalTransformation()) {
+                getGlobalTransform(transformation);
+            } else {
+                transformation = transform_;
+            }
+
+            v(fraction, best_LCP_, transformation);
+
+            // ok means that we already have the desired LCP.
+            if (ok || i > number_of_trials_ || fraction >= 0.99 || best_LCP_ == 1.0) break;
+        }
+
+        current_trial_ += n;
+        if (best_LCP_ > last_best_LCP) {
+            *Q = Q_copy_;
+
+            getGlobalTransform(transformation);
+
+            // Transforms Q by the new transformation.
+            for (size_t i = 0; i < Q->size(); ++i) {
+                (*Q)[i].pos() = (transformation * (*Q)[i].pos().homogeneous()).head<3>();
+            }
+        }
+#ifdef TEST_GLOBAL_TIMINGS
+        totalTime += Scalar(t.elapsed().count()) / Scalar(CLOCKS_PER_SEC);
+#endif
+
+        return ok || current_trial_ >= number_of_trials_;
+    }
+
 
     template <typename Functor>
     template <typename Visitor>

@@ -1,6 +1,6 @@
 #include "super4pcs/io/io.h"
 #include "super4pcs/utils/geometry.h"
-#include "super4pcs/algorithms/matchBase.h"
+#include "super4pcs/algorithms/match4pcsBase.h"
 #include "super4pcs/algorithms/Functor4pcs.h"
 #include "super4pcs/algorithms/FunctorSuper4pcs.h"
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   try {
 
       if (use_super4pcs) {
-          MatchBase<MatchSuper4PCS<>> matcher(options, logger);
+          Match4pcsBase<MatchSuper4PCS<>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use Super4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
           }
       }
       else {
-          MatchBase<Match4PCS<>> matcher(options, logger);
+          Match4pcsBase<Match4PCS<>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use old 4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
       }
