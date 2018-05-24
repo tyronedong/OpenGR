@@ -50,19 +50,17 @@ namespace gr {
 
     public :
         inline MatchSuper4PCS (std::vector<Point3D> &sampled_Q_3D_,
-                               TypeBase& base_3D_)
+                               TypeBase& base_3D_,
+                               OptionType options)
                                 : pcfunctor_ (myOptions_,mySampled_Q_3D_)
                                 ,mySampled_Q_3D_(sampled_Q_3D_)
-                                ,myBase_3D_(base_3D_) {}
+                                ,myBase_3D_(base_3D_)
+                                ,myOptions_ (options) {}
 
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {
             pcfunctor_.synch3DContent();
-        }
-
-        inline void setOptions (OptionType options) {
-            myOptions_ = options;
         }
 
 

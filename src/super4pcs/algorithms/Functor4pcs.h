@@ -34,17 +34,15 @@ namespace gr {
 
     public :
         inline Match4PCS(std::vector<Point3D> &sampled_Q_3D_,
-                         TypeBase& base_3D_)
+                         TypeBase& base_3D_,
+                         OptionType options)
                         :mySampled_Q_3D_(sampled_Q_3D_)
-                        ,myBase_3D_(base_3D_) {};
+                        ,myBase_3D_(base_3D_)
+                        ,myOptions_ (options) {}
 
         // Initialize all internal data structures and data members.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {}
-
-        inline void setOptions (OptionType options) {
-            myOptions_ = options;
-        }
 
         // Finds congruent candidates in the set Q, given the invariants and threshold distances.
         template <typename Scalar>

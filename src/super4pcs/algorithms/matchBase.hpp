@@ -63,7 +63,7 @@
 
 
 
-
+//TODO : remove functor and inlines
 namespace gr{
 
     template <typename Functor>
@@ -77,12 +77,11 @@ namespace gr{
             , options_(options)
             , randomGenerator_(options.randomSeed)
             , logger_(logger)
-            , fun_(sampled_Q_3D_,base_3D_)
+            , fun_(sampled_Q_3D_,base_3D_,options)
 #ifdef SUPER4PCS_USE_OPENMP
     , omp_nthread_congruent_(1)
 #endif
     {
-        fun_.setOptions(options);
         base_3D_.resize(4);
     }
 

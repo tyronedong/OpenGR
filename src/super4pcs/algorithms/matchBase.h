@@ -67,7 +67,7 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
-template <typename Functor>
+template <typename Functor> //TODO : remove functor and inlines
 class MatchBase {
 
 public:
@@ -273,7 +273,6 @@ protected :
                              int& base1, int& base2, int& base3, int& base4);
 
     const TypeBase base3D() const { return base_3D_; }
-    //const std::vector<Point3D>& base3D() const { return base_3D_; }
 
 
     /// Loop over the set of congruent 4-points and test the compatibility with the
