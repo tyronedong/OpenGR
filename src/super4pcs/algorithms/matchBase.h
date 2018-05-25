@@ -67,9 +67,11 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
+template <typename Traits>
 class MatchBase {
 
 public:
+    using Base = typename Traits::Base;
     using PairsVector =  std::vector< std::pair<int, int> >;
     using Scalar = typename Point3D::Scalar;
     using VectorType = typename Point3D::VectorType;

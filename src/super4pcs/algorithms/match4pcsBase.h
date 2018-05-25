@@ -23,8 +23,14 @@
 
 namespace gr {
 
+    struct Traits4pcs {
+    using Base = std::array<int,4>;
+    using Set = std::vector<Quadrilateral>;
+    /* .... */
+    };
+
     template <typename Functor>
-    class Match4pcsBase : public MatchBase {
+    class Match4pcsBase : public MatchBase<Traits4pcs> {
         using Base = MatchBase;
 
     protected:

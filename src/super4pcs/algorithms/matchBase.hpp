@@ -20,8 +20,8 @@
 
 
 namespace gr {
-
-    MatchBase::MatchBase(  const Match4PCSOptions& options
+    template <typename Traits>
+    MatchBase<Traits>::MatchBase(  const Match4PCSOptions& options
             , const Utils::Logger& logger
     )
             :number_of_trials_(0)
@@ -38,16 +38,18 @@ namespace gr {
         base_3D_.resize(4);
     }
 
-    MatchBase::~MatchBase(){}
+    template <typename Traits>
+    MatchBase<Traits>::~MatchBase(){}
 
 
 //TODO : fonctions computeTransformation et perform_n_steps
 /*
 // The main 4PCS function. Computes the best rigid transformation and transfoms
 // Q toward P by this transformation
+ template <typename Traits>
 template <typename Sampler, typename Visitor>
 typename MatchBase::Scalar
-MatchBase::ComputeTransformation(const std::vector<Point3D>& P,
+MatchBase<Traits>::ComputeTransformation(const std::vector<Point3D>& P,
                                      std::vector<Point3D>* Q,
                                      Eigen::Ref<MatrixType> transformation,
                                      const Sampler& sampler,
@@ -74,9 +76,10 @@ MatchBase::ComputeTransformation(const std::vector<Point3D>& P,
 
 // Performs N RANSAC iterations and compute the best transformation. Also,
 // transforms the set Q by this optimal transformation.
+ template <typename Traits>
 template <typename Visitor>
 bool
-MatchBase::Perform_N_steps(int n,
+MatchBase<Traits>::Perform_N_steps(int n,
                                Eigen::Ref<MatrixType> transformation,
                                std::vector<Point3D>* Q,
                                const Visitor &v) {
@@ -143,9 +146,9 @@ MatchBase::Perform_N_steps(int n,
 }
 */
 
-
-    typename MatchBase::Scalar
-    MatchBase::MeanDistance() {
+    template <typename Traits>
+    typename MatchBase<Traits>::Scalar
+    MatchBase<Traits>::MeanDistance() {
         const Scalar kDiameterFraction = 0.2;
         using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
@@ -169,8 +172,8 @@ MatchBase::Perform_N_steps(int n,
         return distance / number_of_samples;
     }
 
-
-    bool MatchBase::SelectRandomTriangle(int &base1, int &base2, int &base3) {
+    template <typename Traits>
+    bool MatchBase<Traits>::SelectRandomTriangle(int &base1, int &base2, int &base3) {
         int number_of_points = sampled_P_3D_.size();
         base1 = base2 = base3 = -1;
 
@@ -205,8 +208,8 @@ MatchBase::Perform_N_steps(int n,
         return base1 != -1 && base2 != -1 && base3 != -1;
     }
 
-
-    void MatchBase::initKdTree(){
+    template <typename Traits>
+    void MatchBase<Traits>::initKdTree(){
         size_t number_of_points = sampled_P_3D_.size();
 
         // Build the kdtree.
@@ -218,8 +221,8 @@ MatchBase::Perform_N_steps(int n,
         kd_tree_.finalize();
     }
 
-
-    bool MatchBase::ComputeRigidTransformation(
+    template <typename Traits>
+    bool MatchBase<Traits>::ComputeRigidTransformation(
             const std::array<Point3D, 4>& ref,
             const std::array<Point3D, 4>& candidate,
             const Eigen::Matrix<Scalar, 3, 1>& centroid1,
@@ -357,8 +360,9 @@ MatchBase::Perform_N_steps(int n,
 // distance at most (normalized) delta from some point in Q. In the paper
 // we describe randomized verification. We apply deterministic one here with
 // early termination. It was found to be fast in practice.
-    typename  MatchBase::Scalar
-    MatchBase::Verify(const Eigen::Ref<const MatrixType> &mat) const {
+    template <typename Traits>
+    typename  MatchBase<Traits>::Scalar
+    MatchBase<Traits>::Verify(const Eigen::Ref<const MatrixType> &mat) const {
         using RangeQuery = gr::KdTree<Scalar>::RangeQuery<>;
 
 #ifdef TEST_GLOBAL_TIMINGS
@@ -437,8 +441,9 @@ MatchBase::Perform_N_steps(int n,
         return Scalar(good_points) / Scalar(number_of_points);
     }
 
+    template <typename Traits>
     template <typename Sampler>
-    void MatchBase::init(const std::vector<Point3D>& P,
+    void MatchBase<Traits>::init(const std::vector<Point3D>& P,
                          const std::vector<Point3D>& Q,
                          const Sampler& sampler){
 
