@@ -20,7 +20,7 @@ Here's a BibTeX entry for OpenGR that you can use in your academic publications:
 ```
  @MISC{openGR,
   author = {Nicolas Mellado and others},
-  title = {OpenGR},
+  title = {OpenGR: A C++ library for 3D Global Registration},
   howpublished = {https://storm-irit.github.io/OpenGR/},
   year = {2017}
  }
