@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <atomic>
+#include <chrono>
 
 #ifdef SUPER4PCS_USE_OPENMP
 #include <omp.h>
@@ -43,12 +44,12 @@ namespace gr {
 
 
 //TODO : fonctions computeTransformation et perform_n_steps
-/*
+
 // The main 4PCS function. Computes the best rigid transformation and transfoms
 // Q toward P by this transformation
  template <typename Traits>
 template <typename Sampler, typename Visitor>
-typename MatchBase::Scalar
+typename MatchBase<Traits>::Scalar
 MatchBase<Traits>::ComputeTransformation(const std::vector<Point3D>& P,
                                      std::vector<Point3D>* Q,
                                      Eigen::Ref<MatrixType> transformation,
@@ -144,7 +145,7 @@ MatchBase<Traits>::Perform_N_steps(int n,
 
   return ok || current_trial_ >= number_of_trials_;
 }
-*/
+
 
     template <typename Traits>
     typename MatchBase<Traits>::Scalar
@@ -558,4 +559,147 @@ MatchBase<Traits>::Perform_N_steps(int n,
         best_LCP_ = Verify(transform_);
         Log<LogLevel::Verbose>( "Initial LCP: ", best_LCP_ );
     }
+
+
+    //TODO new fonctions
+    template <typename Traits>
+    template <typename Visitor>
+    bool MatchBase<Traits>::TryOneBase(const Visitor &v) {
+            Base base;
+            Set congruent_quads;
+            if (!generateCongruents(base,congruent_quads))
+                return false;
+
+            size_t nb = 0;
+
+            bool match = TryCongruentSet(base,congruent_quads,v,nb);
+
+            //if (nb != 0)
+            //  Log<LogLevel::Verbose>( "Congruent quads: (", nb, ")    " );
+
+            return match;
+    }
+
+    template <typename Traits>
+    template <typename Visitor>
+    bool MatchBase<Traits>::TryCongruentSet(Base& base, Set& set, Visitor &v,size_t &nbCongruent) {
+        static const double pi = std::acos(-1);
+
+        // get references to the basis coordinate
+         Coordinates references;
+        for (int i = 0; i!= Traits::size(); ++i)
+            references[i] = sampled_P_3D_[base[i]];
+        const Coordinates& ref = references;
+
+        // Centroid of the basis, computed once and using only the three first points
+        Eigen::Matrix<Scalar, 3, 1> centroid1 = (ref[0].pos() + ref[1].pos() + ref[2].pos()) / Scalar(3);
+
+
+        std::atomic<size_t> nbCongruentAto(0);
+
+#ifdef SUPER4PCS_USE_OPENMP
+#pragma omp parallel for num_threads(omp_nthread_congruent_)
+#endif
+        Coordinates congruent_candidate;
+        for (int i = 0; i < int(set.size()); ++i) {
+            const Base& congruent_ids = set[i];
+            for (int j = 0; j!= Traits::size(); ++j)
+                congruent_candidate[j] = sampled_Q_3D_[congruent_ids[j]];
+
+            Eigen::Matrix<Scalar, 4, 4> transform;
+
+            // Centroid of the sets, computed in the loop using only the three first points
+            Eigen::Matrix<Scalar, 3, 1> centroid2;
+
+
+#ifdef STATIC_BASE
+            Log<LogLevel::Verbose>( "Ids: ");
+            for (int j = 0; j!= Traits::size(); ++j)
+               Log<LogLevel::Verbose>( base[j], "\t");
+            Log<LogLevel::Verbose>( "     ");
+            for (int j = 0; j!= Traits::size(); ++j)
+                Log<LogLevel::Verbose>( congruent_ids[j], "\t");
+#endif
+
+            centroid2 = (congruent_candidate[0].pos() +
+                         congruent_candidate[1].pos() +
+                         congruent_candidate[2].pos()) / Scalar(3.);
+
+            Scalar rms = -1;
+
+            const bool ok =
+                    ComputeRigidTransformation(ref,     // input congruent quad
+                                               congruent_candidate,// tested congruent quad
+                                               centroid1,          // input: basis centroid
+                                               centroid2,          // input: candidate quad centroid
+                                               options_.max_angle * pi / 180.0, // maximum per-dimension angle, check return value to detect invalid cases
+                                               transform,          // output: transformation
+                                               rms,                // output: rms error of the transformation between the basis and the congruent quad
+#ifdef MULTISCALE
+                            true
+#else
+                                               false
+#endif
+                    );             // state: compute scale ratio ?
+
+            if (ok && rms >= Scalar(0.)) {
+
+                // We give more tolerant in computing the best rigid transformation.
+                if (rms < distance_factor * options_.delta) {
+
+                    nbCongruentAto++;
+                    // The transformation is computed from the point-clouds centered inn [0,0,0]
+
+                    // Verify the rest of the points in Q against P.
+                    Scalar lcp = Verify(transform);
+
+                    // transformation has been computed between the two point clouds centered
+                    // at the origin, we need to recompute the translation to apply it to the original clouds
+                    auto getGlobalTransform =
+                            [this, transform, centroid1, centroid2]
+                                    (Eigen::Ref<MatrixType> transformation){
+                                Eigen::Matrix<Scalar, 3, 3> rot, scale;
+                                Eigen::Transform<Scalar, 3, Eigen::Affine> (transform).computeRotationScaling(&rot, &scale);
+                                transformation = transform;
+                                transformation.col(3) = (centroid1 + centroid_P_ - ( rot * scale * (centroid2 + centroid_Q_))).homogeneous();
+                            };
+
+                    if (v.needsGlobalTransformation())
+                    {
+                        Eigen::Matrix<Scalar, 4, 4> transformation = transform;
+                        getGlobalTransform(transformation);
+                        v(-1, lcp, transformation);
+                    }
+                    else
+                        v(-1, lcp, transform);
+
+#pragma omp critical
+                    if (lcp > best_LCP_) {
+                        // Retain the best LCP and transformation.
+                        for (int j = 0; j!= Traits::size(); ++j)
+                            base_[j] = base[j];
+
+
+                        for (int j = 0; j!= Traits::size(); ++j)
+                            current_congruent_[j] = congruent_ids[j];
+
+                        best_LCP_    = lcp;
+                        transform_   = transform;
+                        qcentroid1_  = centroid1;
+                        qcentroid2_  = centroid2;
+                    }
+                    // Terminate if we have the desired LCP already.
+                    if (best_LCP_ > options_.getTerminateThreshold()){
+                        continue;
+                    }
+                }
+            }
+        }
+
+        nbCongruent = nbCongruentAto;
+
+        // If we reached here we do not have yet the desired LCP.
+        return best_LCP_ > options_.getTerminateThreshold() /*false*/;
+    }
+
 }

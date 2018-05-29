@@ -96,18 +96,11 @@ namespace gr {
     template <typename Functor>
     Match4pcsBase<Functor>::Match4pcsBase (const Match4PCSOptions& options
             , const Utils::Logger& logger)
-            : Base(options,logger)
+            : MatchBase(options,logger)
             , fun_(sampled_Q_3D_,base_3D_,options) {}
 
     template <typename Functor>
     Match4pcsBase<Functor>::~Match4pcsBase() {}
-
-    template <typename Functor>
-    // Initialize all internal data structures and data members.
-    void Match4pcsBase<Functor>::Initialize(const std::vector<Point3D>& P,
-                           const std::vector<Point3D>& Q) {
-        fun_.Initialize(P,Q);
-    }
 
     template <typename Functor>
     bool Match4pcsBase<Functor>::TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
@@ -159,187 +152,6 @@ namespace gr {
         id4 = tmpId[best4];
 
         return true;
-    }
-
-
-    // The main 4PCS function. Computes the best rigid transformation and transfoms
-    // Q toward P by this transformation
-    template <typename Functor>
-    template <typename Sampler, typename Visitor>
-    typename Match4pcsBase<Functor>::Scalar
-    Match4pcsBase<Functor>::ComputeTransformation(const std::vector<Point3D>& P,
-                                     std::vector<Point3D>* Q,
-                                     Eigen::Ref<MatrixType> transformation,
-                                     const Sampler& sampler,
-                                     const Visitor& v) {
-
-        if (Q == nullptr) return kLargeNumber;
-        if (P.empty() || Q->empty()) return kLargeNumber;
-
-        init(P, *Q, sampler);
-
-        if (best_LCP_ != Scalar(1.))
-            Perform_N_steps(number_of_trials_, transformation, Q, v);
-
-#ifdef TEST_GLOBAL_TIMINGS
-        Log<LogLevel::Verbose>( "----------- Timings (msec) -------------" );
-  Log<LogLevel::Verbose>( " Total computation time  : ", totalTime   );
-  Log<LogLevel::Verbose>( " Total verify time       : ", verifyTime  );
-  Log<LogLevel::Verbose>( "    Kdtree query         : ", kdTreeTime  );
-  Log<LogLevel::Verbose>( "----------------------------------------" );
-#endif
-
-        return best_LCP_;
-    }
-
-
-    // Performs N RANSAC iterations and compute the best transformation. Also,
-    // transforms the set Q by this optimal transformation.
-    template <typename Functor>
-    template <typename Visitor>
-    bool Match4pcsBase<Functor>::Perform_N_steps(int n,
-                                    Eigen::Ref<MatrixType> transformation,
-                                    std::vector<Point3D>* Q,
-                                    const Visitor &v) {
-        using std::chrono::system_clock;
-        if (Q == nullptr) return false;
-
-#ifdef TEST_GLOBAL_TIMINGS
-        Timer t (true);
-#endif
-
-
-        // The transformation has been computed between the two point clouds centered
-        // at the origin, we need to recompute the translation to apply it to the original clouds
-        auto getGlobalTransform = [this](Eigen::Ref<MatrixType> transformation){
-            Eigen::Matrix<Scalar, 3, 3> rot, scale;
-            Eigen::Transform<Scalar, 3, Eigen::Affine> (transform_).computeRotationScaling(&rot, &scale);
-            transformation = transform_;
-            transformation.col(3) = (qcentroid1_ + centroid_P_ - ( rot * scale * (qcentroid2_ + centroid_Q_))).homogeneous();
-        };
-
-        Scalar last_best_LCP = best_LCP_;
-        v(0, best_LCP_, transformation);
-
-        bool ok = false;
-        std::chrono::time_point<system_clock> t0 = system_clock::now(), end;
-        for (int i = current_trial_; i < current_trial_ + n; ++i) {
-            ok = TryOneBase(v);
-
-            Scalar fraction_try  = Scalar(i) / Scalar(number_of_trials_);
-            Scalar fraction_time =
-                    std::chrono::duration_cast<std::chrono::seconds>
-                            (system_clock::now() - t0).count() /
-                    options_.max_time_seconds;
-            Scalar fraction = std::max(fraction_time, fraction_try);
-
-            if (v.needsGlobalTransformation()) {
-                getGlobalTransform(transformation);
-            } else {
-                transformation = transform_;
-            }
-
-            v(fraction, best_LCP_, transformation);
-
-            // ok means that we already have the desired LCP.
-            if (ok || i > number_of_trials_ || fraction >= 0.99 || best_LCP_ == 1.0) break;
-        }
-
-        current_trial_ += n;
-        if (best_LCP_ > last_best_LCP) {
-            *Q = Q_copy_;
-
-            getGlobalTransform(transformation);
-
-            // Transforms Q by the new transformation.
-            for (size_t i = 0; i < Q->size(); ++i) {
-                (*Q)[i].pos() = (transformation * (*Q)[i].pos().homogeneous()).head<3>();
-            }
-        }
-#ifdef TEST_GLOBAL_TIMINGS
-        totalTime += Scalar(t.elapsed().count()) / Scalar(CLOCKS_PER_SEC);
-#endif
-
-        return ok || current_trial_ >= number_of_trials_;
-    }
-
-
-    template <typename Functor>
-    template <typename Visitor>
-    bool Match4pcsBase<Functor>::TryOneBase(const Visitor &v) {
-        Scalar invariant1, invariant2;
-        int base_id1, base_id2, base_id3, base_id4;
-
-//#define STATIC_BASE
-
-#ifdef STATIC_BASE
-        static bool first_time = true;
-
-  if (first_time){
-      base_id1 = 0;
-      base_id2 = 3;
-      base_id3 = 1;
-      base_id4 = 4;
-
-      base_3D_[0] = sampled_P_3D_ [base_id1];
-      base_3D_[1] = sampled_P_3D_ [base_id2];
-      base_3D_[2] = sampled_P_3D_ [base_id3];
-      base_3D_[3] = sampled_P_3D_ [base_id4];
-        // fun_. TryQuadrilateral(&invariant1, &invariant2, base_id1, base_id2, base_id3, base_id4);
-      TryQuadrilateral(&invariant1, &invariant2, base_id1, base_id2, base_id3, base_id4);
-
-      first_time = false;
-  }
-  else
-      return false;
-
-#else
-        if (!SelectQuadrilateral(invariant1, invariant2, base_id1, base_id2,
-                                 base_id3, base_id4)) {
-            return false;
-        }
-#endif
-
-        // Computes distance between pairs.
-        const Scalar distance1 = (base_3D_[0].pos()- base_3D_[1].pos()).norm();
-        const Scalar distance2 = (base_3D_[2].pos()- base_3D_[3].pos()).norm();
-
-        std::vector<std::pair<int, int>> pairs1, pairs2;
-        std::vector<Quadrilateral> congruent_quads;
-
-        // Compute normal angles.
-        const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
-        const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
-
-        fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
-        fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
-
-//  Log<LogLevel::Verbose>( "Pair creation ouput: ", pairs1.size(), " - ", pairs2.size());
-
-        if (pairs1.size() == 0 || pairs2.size() == 0) {
-            return false;
-        }
-
-        if (!fun_.FindCongruentQuadrilaterals(invariant1, invariant2,
-                                              distance_factor * options_.delta,
-                                              distance_factor * options_.delta,
-                                              pairs1,
-                                              pairs2,
-                                              &congruent_quads)) {
-            return false;
-        }
-
-        size_t nb = 0;
-
-        bool match = TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
-                                     congruent_quads,
-                                     v,
-                                     nb);
-
-        //if (nb != 0)
-        //  Log<LogLevel::Verbose>( "Congruent quads: (", nb, ")    " );
-
-        return match;
     }
 
     template <typename Functor>
@@ -417,139 +229,75 @@ namespace gr {
     }
 
     template <typename Functor>
-    template <typename Visitor>
-    bool Match4pcsBase<Functor>::TryCongruentSet(int base_id1,
-                                                 int base_id2,
-                                                 int base_id3,
-                                                 int base_id4,
-                                                 const std::vector<Quadrilateral> &congruent_quads,
-                                                 const Visitor &v,
-                                                 size_t &nbCongruent) {
-        static const double pi = std::acos(-1);
-
-        // get references to the basis coordinates
-        const Point3D& b1 = sampled_P_3D_[base_id1];
-        const Point3D& b2 = sampled_P_3D_[base_id2];
-        const Point3D& b3 = sampled_P_3D_[base_id3];
-        const Point3D& b4 = sampled_P_3D_[base_id4];
-
-        // set the basis coordinates in the congruent quad array
-        const std::array<Point3D, 4> congruent_base {{b1, b2, b3, b4}};
+    // Initialize all internal data structures and data members.
+    inline void Match4pcsBase<Functor>::Initialize(const std::vector<Point3D>& P,
+                           const std::vector<Point3D>& Q) {
+        fun_.Initialize(P,Q);
+    }
 
 
-        // Centroid of the basis, computed once and using only the three first points
-        Eigen::Matrix<Scalar, 3, 1> centroid1 = (b1.pos() + b2.pos() + b3.pos()) / Scalar(3);
+    template <typename Functor>
+    inline bool Match4pcsBase<Functor>::generateCongruents (Base& base, Set& congruent_quads) {
 
-
-        std::atomic<size_t> nbCongruentAto(0);
-
-#ifdef SUPER4PCS_USE_OPENMP
-#pragma omp parallel for num_threads(omp_nthread_congruent_)
-#endif
-        for (int i = 0; i < int(congruent_quads.size()); ++i) {
-            std::array<Point3D, 4> congruent_candidate;
-
-            Eigen::Matrix<Scalar, 4, 4> transform;
-
-            // Centroid of the sets, computed in the loop using only the three first points
-            Eigen::Matrix<Scalar, 3, 1> centroid2;
-
-            const int a = congruent_quads[i].vertices[0];
-            const int b = congruent_quads[i].vertices[1];
-            const int c = congruent_quads[i].vertices[2];
-            const int d = congruent_quads[i].vertices[3];
-            congruent_candidate[0] = sampled_Q_3D_[a];
-            congruent_candidate[1] = sampled_Q_3D_[b];
-            congruent_candidate[2] = sampled_Q_3D_[c];
-            congruent_candidate[3] = sampled_Q_3D_[d];
+        Scalar invariant1, invariant2;
+//#define STATIC_BASE
 
 #ifdef STATIC_BASE
-            Log<LogLevel::Verbose>( "Ids: ", base_id1, "\t", base_id2, "\t", base_id3, "\t", base_id4);
-      Log<LogLevel::Verbose>( "     ", a, "\t", b, "\t", c, "\t", d);
-#endif
+        static bool first_time = true;
 
-            centroid2 = (congruent_candidate[0].pos() +
-                         congruent_candidate[1].pos() +
-                         congruent_candidate[2].pos()) / Scalar(3.);
+  if (first_time){
+      base[0] = 0;
+      base[1] = 3;
+      base[2] = 1;
+      base[3] = 4;
 
-            Scalar rms = -1;
+      base_3D_[0] = sampled_P_3D_ [base[0]];
+      base_3D_[1] = sampled_P_3D_ [base[1]];
+      base_3D_[2] = sampled_P_3D_ [base[2]];
+      base_3D_[3] = sampled_P_3D_ [base[3]];
+      TryQuadrilateral(&invariant1, &invariant2, base[0], base[1], base[2], base[3]);
 
-            const bool ok =
-                    ComputeRigidTransformation(congruent_base,     // input congruent quad
-                                               congruent_candidate,// tested congruent quad
-                                               centroid1,          // input: basis centroid
-                                               centroid2,          // input: candidate quad centroid
-                                               options_.max_angle * pi / 180.0, // maximum per-dimension angle, check return value to detect invalid cases
-                                               transform,          // output: transformation
-                                               rms,                // output: rms error of the transformation between the basis and the congruent quad
-#ifdef MULTISCALE
-                            true
+      first_time = false;
+  }
+  else
+      return false;
+
 #else
-                                               false
+        if (!SelectQuadrilateral(invariant1, invariant2, base[0], base[1],
+                                 base[2], base[3])) {
+            return false;
+        }
 #endif
-                    );             // state: compute scale ratio ?
 
-            if (ok && rms >= Scalar(0.)) {
+        // Computes distance between pairs.
+        const Scalar distance1 = (base_3D_[0].pos()- base_3D_[1].pos()).norm();
+        const Scalar distance2 = (base_3D_[2].pos()- base_3D_[3].pos()).norm();
 
-                // We give more tolerant in computing the best rigid transformation.
-                if (rms < distance_factor * options_.delta) {
+        std::vector<std::pair<int, int>> pairs1, pairs2;
 
-                    nbCongruentAto++;
-                    // The transformation is computed from the point-clouds centered inn [0,0,0]
+        // Compute normal angles.
+        const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
+        const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
 
-                    // Verify the rest of the points in Q against P.
-                    Scalar lcp = Verify(transform);
+        fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
+        fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
 
-                    // transformation has been computed between the two point clouds centered
-                    // at the origin, we need to recompute the translation to apply it to the original clouds
-                    auto getGlobalTransform =
-                            [this, transform, centroid1, centroid2]
-                                    (Eigen::Ref<MatrixType> transformation){
-                                Eigen::Matrix<Scalar, 3, 3> rot, scale;
-                                Eigen::Transform<Scalar, 3, Eigen::Affine> (transform).computeRotationScaling(&rot, &scale);
-                                transformation = transform;
-                                transformation.col(3) = (centroid1 + centroid_P_ - ( rot * scale * (centroid2 + centroid_Q_))).homogeneous();
-                            };
+//  Log<LogLevel::Verbose>( "Pair creation ouput: ", pairs1.size(), " - ", pairs2.size());
 
-                    if (v.needsGlobalTransformation())
-                    {
-                        Eigen::Matrix<Scalar, 4, 4> transformation = transform;
-                        getGlobalTransform(transformation);
-                        v(-1, lcp, transformation);
-                    }
-                    else
-                        v(-1, lcp, transform);
-
-#pragma omp critical
-                    if (lcp > best_LCP_) {
-                        // Retain the best LCP and transformation.
-                        base_[0] = base_id1;
-                        base_[1] = base_id2;
-                        base_[2] = base_id3;
-                        base_[3] = base_id4;
-
-                        current_congruent_[0] = a;
-                        current_congruent_[1] = b;
-                        current_congruent_[2] = c;
-                        current_congruent_[3] = d;
-
-                        best_LCP_    = lcp;
-                        transform_   = transform;
-                        qcentroid1_  = centroid1;
-                        qcentroid2_  = centroid2;
-                    }
-                    // Terminate if we have the desired LCP already.
-                    if (best_LCP_ > options_.getTerminateThreshold()){
-                        continue;
-                    }
-                }
-            }
+        if (pairs1.size() == 0 || pairs2.size() == 0) {
+            return false;
         }
 
-        nbCongruent = nbCongruentAto;
+        if (!fun_.FindCongruentQuadrilaterals(invariant1, invariant2,
+                                         distance_factor * options_.delta,
+                                         distance_factor * options_.delta,
+                                         pairs1,
+                                         pairs2,
+                                         &congruent_quads)) {
+            return false;
+        }
 
-        // If we reached here we do not have yet the desired LCP.
-        return best_LCP_ > options_.getTerminateThreshold() /*false*/;
+        return true;
     }
 }
 

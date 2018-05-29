@@ -45,15 +45,14 @@ namespace gr {
                                    const std::vector<Point3D>& /*Q*/) {}
 
         // Finds congruent candidates in the set Q, given the invariants and threshold distances.
-        template <typename Scalar>
-       inline bool FindCongruentQuadrilaterals(
+        inline bool FindCongruentQuadrilaterals(
                                          Scalar invariant1,
                                          Scalar invariant2,
                                          Scalar /*distance_threshold1*/,
                                          Scalar distance_threshold2,
                                          const std::vector <std::pair<int, int>> &First_pairs,
                                          const std::vector <std::pair<int, int>> &Second_pairs,
-                                         std::vector<gr::Quadrilateral> * quadrilaterals) const {
+                                         Traits4pcs::Set* quadrilaterals) const {
             using RangeQuery = typename gr::KdTree<Scalar>::template RangeQuery<>;
 
             if (quadrilaterals == nullptr) return false;
@@ -87,9 +86,11 @@ namespace gr {
 
                 kdtree.doQueryDistProcessIndices(query,
                                                  [quadrilaterals, i, &First_pairs, &Second_pairs](int id) {
-                                                     quadrilaterals->emplace_back(First_pairs[id / 2].first,
-                                                                                  First_pairs[id / 2].second,
-                                                                                  Second_pairs[i].first, Second_pairs[i].second);
+                                                     quadrilaterals->push_back(
+                                                             { First_pairs[id / 2].first,
+                                                               First_pairs[id / 2].second,
+                                                               Second_pairs[i].first,
+                                                               Second_pairs[i].second });
                                                  });
             }
 

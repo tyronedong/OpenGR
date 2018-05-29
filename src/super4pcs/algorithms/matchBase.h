@@ -67,11 +67,14 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
-template <typename Traits>
+template <typename _Traits>
 class MatchBase {
 
 public:
+    using Traits = _Traits;
     using Base = typename Traits::Base;
+    using Set = typename Traits::Set;
+    using Coordinates = typename Traits::Coordinates;
     using PairsVector =  std::vector< std::pair<int, int> >;
     using Scalar = typename Point3D::Scalar;
     using VectorType = typename Point3D::VectorType;
@@ -101,7 +104,7 @@ public:
         return sampled_Q_3D_;
     }
 
-    /*
+
     /// Computes an approximation of the best LCP (directional) from Q to P
     /// and the rigid transformation that realizes it. The input sets may or may
     /// not contain normal information for any point.
@@ -120,7 +123,7 @@ public:
                           Eigen::Ref<MatrixType> transformation,
                           const Sampler& sampler = Sampler(),
                           const Visitor& v = Visitor());
-*/
+
 
 
 protected:
@@ -145,11 +148,13 @@ protected:
     Eigen::Matrix<Scalar, 3, 1> qcentroid1_, qcentroid2_;
     /// The points in the base (indices to P). It is being updated in every
     /// RANSAC iteration.
-    int base_[4];
+    //int base_[4];
+    Base base_;
     /// The current congruent 4 points from Q. Every RANSAC iteration the
     /// algorithm examines a set of such congruent 4-points from Q and retains
     /// the best from them (the one that realizes the best LCP).
-    int current_congruent_[4];
+    //int current_congruent_[4];
+    Base current_congruent_;
     /// Sampled P (3D coordinates).
     std::vector<Point3D> sampled_P_3D_;
     /// Sampled Q (3D coordinates).
@@ -234,7 +239,7 @@ protected :
     /// the translation vector and (cx,cy,cz) is the center of transformation.template <class MatrixDerived>
     Scalar Verify(const Eigen::Ref<const MatrixType> & mat) const;
 
-    /*
+
     /// Performs n RANSAC iterations, each one of them containing base selection,
     /// finding congruent sets and verification. Returns true if the process can be
     /// terminated (the target LCP was obtained or the maximum number of trials has
@@ -244,7 +249,13 @@ protected :
                          Eigen::Ref<MatrixType> transformation,
                          std::vector<Point3D>* Q,
                          const Visitor& v);
-*/
+    /// Tries one base and finds the best transformation for this base.
+    /// Returns true if the achieved LCP is greater than terminate_threshold_,
+    /// else otherwise.
+    template <typename Visitor>
+    bool TryOneBase(const Visitor &v);
+
+
     template <typename Sampler>
     void init(const std::vector<Point3D>& P,
               const std::vector<Point3D>& Q,
@@ -253,11 +264,20 @@ protected :
     const std::vector<Point3D> base3D() const { return base_3D_; }
 
 
-    // Initialize all internal data structures and data members.
-    virtual void Initialize(const std::vector<Point3D>& /*P*/,
-                               const std::vector<Point3D>& /*Q*/) =0;
 private:
     void initKdTree();
+
+public:
+
+    /// Initialize all internal data structures and data members.
+    virtual void Initialize(const std::vector<Point3D>& /*P*/,
+                            const std::vector<Point3D>& /*Q*/) =0;
+
+    virtual bool generateCongruents (Base& base,Set& congruent_quads) =0;
+
+    template <typename Visitor>
+    bool TryCongruentSet(Base& base, Set& set, Visitor &v,size_t &nbCongruent);
+
 
 }; /// class MatchBase
 } /// namespace Super4PCS

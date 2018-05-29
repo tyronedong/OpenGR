@@ -118,7 +118,7 @@ namespace gr {
                 Scalar distance_threshold2,
                 const std::vector<std::pair<int, int>>& First_pairs,
                 const std::vector<std::pair<int, int>>& Second_pairs,
-                std::vector<Quadrilateral>* quadrilaterals) const {
+               Traits4pcs::Set* quadrilaterals) const {
 
             typedef typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point Point;
 
@@ -201,8 +201,8 @@ namespace gr {
                 const unsigned int & id = (*it).first;
                 const unsigned int & i  = (*it).second;
 
-                quadrilaterals->emplace_back(First_pairs[id].first, First_pairs[id].second,
-                                             Second_pairs[i].first,  Second_pairs[i].second);
+                quadrilaterals->push_back( {First_pairs[id].first, First_pairs[id].second,
+                                             Second_pairs[i].first,  Second_pairs[i].second });
             }
 
             return quadrilaterals->size() != 0;
