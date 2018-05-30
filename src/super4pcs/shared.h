@@ -111,37 +111,6 @@ class Point3D {
 };
 
 
-
-/// Holds a base from P. The base contains 4 points (indices) from the set P.
-struct Quadrilateral {
-    std::array <int, 4> vertices;
-    inline Quadrilateral(int vertex0, int vertex1, int vertex2, int vertex3) {
-        vertices = { vertex0, vertex1, vertex2, vertex3 };
-    }
-
-    inline bool operator< (const Quadrilateral& rhs) const {
-        return    vertices[0] != rhs[0] ? vertices[0] < rhs[0]
-                : vertices[1] != rhs[1] ? vertices[1] < rhs[1]
-                : vertices[2] != rhs[2] ? vertices[2] < rhs[2]
-                : vertices[3] < rhs[3];
-    }
-
-    inline bool operator== (const Quadrilateral& rhs) const {
-        return  vertices[0] == rhs[0] &&
-                vertices[1] == rhs[1] &&
-                vertices[2] == rhs[2] &&
-                vertices[3] == rhs[3];
-    }
-
-    int  operator[](int idx) const { return vertices[idx]; }
-    int& operator[](int idx)       { return vertices[idx]; }
-};
-
-inline std::ofstream& operator<<(std::ofstream& ofs, const Quadrilateral& q){
-    ofs << "[" << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << "]";
-    return ofs;
-}
-
 // ----- MatchBase Options -----
 /// delta and overlap_estimation are the application parameters. All other
 /// parameters are more likely to keep fixed and they can be set via the setters.
@@ -181,18 +150,6 @@ inline std::ofstream& operator<<(std::ofstream& ofs, const Quadrilateral& q){
         /// may have corresponding point in Q. It's being used to estimate the number
         /// of RANSAC iterations needed to guarantee small failure probability.
         Scalar overlap_estimation = 0.2;
-    };
-// ----- 4PCS Options -----
-    struct Match4PCSOptions : public MatchOptions{
-        using Scalar = typename Point3D::Scalar;
-        Match4PCSOptions() {}
-
-        /// Maximum normal difference.
-        Scalar max_normal_difference = -1;
-        /// Maximum translation distance. Set negative to ignore
-        Scalar max_translation_distance = -1;
-        /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
-        Scalar max_color_distance = -1;
     };
 
 } /// namespace Super4PCS

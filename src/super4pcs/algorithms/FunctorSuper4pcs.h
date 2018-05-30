@@ -7,7 +7,7 @@
 
 
 #include <vector>
-#include "../shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "../algorithms/pairCreationFunctor.h"
 #include "../accelerators/bbox.h"
 

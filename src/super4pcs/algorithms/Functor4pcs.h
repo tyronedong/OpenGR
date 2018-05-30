@@ -6,7 +6,7 @@
 #define SUPER4PCS_FUNCTOR4PCS_H
 
 #include <vector>
-#include "../shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "../accelerators/kdtree.h"
 #include "../accelerators/utils.h"
 #include "FunctorFeaturePointTest.h"

@@ -11,7 +11,7 @@
 #include <omp.h>
 #endif
 
-#include "../shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "../sampling.h"
 #include "../accelerators/kdtree.h"
 #include "../utils/logger.h"
@@ -22,6 +22,20 @@
 #endif
 
 namespace gr {
+
+
+    // ----- 4PCS Options -----
+    struct Match4PCSOptions : public MatchOptions{
+        using Scalar = typename Point3D::Scalar;
+        Match4PCSOptions() {}
+
+        /// Maximum normal difference.
+        Scalar max_normal_difference = -1;
+        /// Maximum translation distance. Set negative to ignore
+        Scalar max_translation_distance = -1;
+        /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
+        Scalar max_color_distance = -1;
+    };
 
     struct Traits4pcs {
         static constexpr int size() { return 4; }

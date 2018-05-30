@@ -43,7 +43,7 @@
 
 #include <pcl/registration/registration.h>
 #include <pcl/registration/transformation_estimation_svd.h>
-#include <super4pcs/shared4pcs.h>
+#include <super4pcs/shared.h>
 
 namespace pcl
 {

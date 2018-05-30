@@ -50,7 +50,7 @@
 #include <omp.h>
 #endif
 
-#include "super4pcs/shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "super4pcs/sampling.h"
 #include "super4pcs/accelerators/kdtree.h"
 #include "super4pcs/utils/logger.h"
@@ -88,7 +88,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 
-    MatchBase(const Match4PCSOptions& options
+    MatchBase(const MatchOptions& options
             , const Utils::Logger &logger
     );
 

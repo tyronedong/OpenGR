@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "super4pcs/shared4pcs.h"
+#include "super4pcs/shared.h"
 
 #include "super4pcs/accelerators/bbox.h"
 

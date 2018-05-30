@@ -14,7 +14,7 @@
 #include <omp.h>
 #endif
 
-#include "../shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "../sampling.h"
 #include "../accelerators/kdtree.h"
 #include "../utils/logger.h"

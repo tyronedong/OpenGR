@@ -10,7 +10,7 @@
 #include <omp.h>
 #endif
 
-#include "super4pcs/shared4pcs.h"
+#include "super4pcs/shared.h"
 #include "super4pcs/sampling.h"
 #include "super4pcs/accelerators/kdtree.h"
 #include "super4pcs/utils/logger.h"
@@ -22,7 +22,7 @@
 
 namespace gr {
     template <typename Traits>
-    MatchBase<Traits>::MatchBase(  const Match4PCSOptions& options
+    MatchBase<Traits>::MatchBase(  const MatchOptions& options
             , const Utils::Logger& logger
     )
             :number_of_trials_(0)
@@ -42,8 +42,6 @@ namespace gr {
     template <typename Traits>
     MatchBase<Traits>::~MatchBase(){}
 
-
-//TODO : fonctions computeTransformation et perform_n_steps
 
 // The main 4PCS function. Computes the best rigid transformation and transfoms
 // Q toward P by this transformation
@@ -560,8 +558,6 @@ MatchBase<Traits>::Perform_N_steps(int n,
         Log<LogLevel::Verbose>( "Initial LCP: ", best_LCP_ );
     }
 
-
-    //TODO new fonctions
     template <typename Traits>
     template <typename Visitor>
     bool MatchBase<Traits>::TryOneBase(const Visitor &v) {

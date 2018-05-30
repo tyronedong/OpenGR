@@ -49,7 +49,7 @@
 #include <iostream>
 #include <string>
 
-#include <super4pcs/shared4pcs.h>
+#include <super4pcs/shared.h>
 #include <super4pcs/utils/logger.h>
 
 namespace gr {

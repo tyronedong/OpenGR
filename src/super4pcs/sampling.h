@@ -49,7 +49,7 @@
 
 #include <vector>
 #include <array>
-#include "super4pcs/shared4pcs.h"
+#include "super4pcs/shared.h"
 
 
 namespace gr {
