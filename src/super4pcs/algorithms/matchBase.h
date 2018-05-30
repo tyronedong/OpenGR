@@ -56,7 +56,7 @@
 #include "super4pcs/utils/logger.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
-#   include "super4pcs/utils/timer.h"
+#   include "gr/utils/timer.h"
 #endif
 
 namespace gr{
@@ -148,12 +148,10 @@ protected:
     Eigen::Matrix<Scalar, 3, 1> qcentroid1_, qcentroid2_;
     /// The points in the base (indices to P). It is being updated in every
     /// RANSAC iteration.
-    //int base_[4];
     Base base_;
     /// The current congruent 4 points from Q. Every RANSAC iteration the
     /// algorithm examines a set of such congruent 4-points from Q and retains
     /// the best from them (the one that realizes the best LCP).
-    //int current_congruent_[4];
     Base current_congruent_;
     /// Sampled P (3D coordinates).
     std::vector<Point3D> sampled_P_3D_;
@@ -224,8 +222,8 @@ protected :
     /// simpler.
     /// The method is the closed-form solution by Horn:
     /// people.csail.mit.edu/bkph/papers/Absolute_Orientation.pdf
-    bool ComputeRigidTransformation(const std::array<Point3D, 4>& ref,
-                                    const std::array<Point3D, 4>& candidate,
+    bool ComputeRigidTransformation(const Coordinates& ref,
+                                    const Coordinates& candidate,
                                     const Eigen::Matrix<Scalar, 3, 1>& centroid1,
                                     Eigen::Matrix<Scalar, 3, 1> centroid2,
                                     Scalar max_angle,

@@ -97,7 +97,10 @@ namespace gr {
     Match4pcsBase<Functor>::Match4pcsBase (const Match4PCSOptions& options
             , const Utils::Logger& logger)
             : MatchBase(options,logger)
-            , fun_(sampled_Q_3D_,base_3D_,options) {}
+            , fun_(sampled_Q_3D_,base_3D_,options)
+    {
+        base_3D_.resize(4);
+    }
 
     template <typename Functor>
     Match4pcsBase<Functor>::~Match4pcsBase() {}

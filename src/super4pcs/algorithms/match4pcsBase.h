@@ -42,7 +42,6 @@ namespace gr {
         using Base = std::array<int,4>;
         using Set = std::vector<Base>;
         using Coordinates = std::array<Point3D, 4>;
-    /* .... */
     };
 
     template <typename Functor>
@@ -76,10 +75,6 @@ namespace gr {
         void Initialize(const std::vector<Point3D>& /*P*/,
                         const std::vector<Point3D>& /*Q*/) override;
 
-
-        //TODO New Fonctions
-
-        //Redefinition TryOneBase
         bool generateCongruents (Base& base,Set& congruent_quads) override;
 
     };

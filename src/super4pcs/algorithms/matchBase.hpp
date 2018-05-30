@@ -35,9 +35,7 @@ namespace gr {
 #ifdef SUPER4PCS_USE_OPENMP
     , omp_nthread_congruent_(1)
 #endif
-    {
-        base_3D_.resize(4);
-    }
+    {}
 
     template <typename Traits>
     MatchBase<Traits>::~MatchBase(){}
@@ -222,8 +220,8 @@ MatchBase<Traits>::Perform_N_steps(int n,
 
     template <typename Traits>
     bool MatchBase<Traits>::ComputeRigidTransformation(
-            const std::array<Point3D, 4>& ref,
-            const std::array<Point3D, 4>& candidate,
+            const Coordinates& ref,
+            const Coordinates& candidate,
             const Eigen::Matrix<Scalar, 3, 1>& centroid1,
             Eigen::Matrix<Scalar, 3, 1> centroid2,
             Scalar max_angle,
