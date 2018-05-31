@@ -1,6 +1,6 @@
 project (OpenGR-UtilsLib)
 
-set(utils_ROOT "${SRC_DIR}/super4pcs/utils")
+set(utils_ROOT "${SRC_DIR}/gr/utils")
 
 file(GLOB_RECURSE utils_relative_INCLUDE ${utils_ROOT}/*.h ${utils_ROOT}/*.hpp)
 

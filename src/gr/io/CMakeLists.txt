@@ -1,6 +1,6 @@
 project (OpenGR-IOLib)
 
-set(io_ROOT "${SRC_DIR}/super4pcs/io")
+set(io_ROOT "${SRC_DIR}/gr/io")
 
 file(GLOB_RECURSE io_sources ${io_ROOT}/*.cc)
 file(GLOB_RECURSE io_headers ${io_ROOT}/*.h ${io_ROOT}/*.hpp)

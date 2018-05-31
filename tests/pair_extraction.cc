@@ -48,15 +48,15 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#include "super4pcs/algorithms/matchBase.h"
-#include "super4pcs/algorithms/match4pcsBase.h"
-#include "super4pcs/algorithms/Functor4pcs.h"
-#include "super4pcs/algorithms/FunctorSuper4pcs.h"
-#include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
-#include "super4pcs/utils/timer.h"
-#include "super4pcs/accelerators/bbox.h"
+#include "gr/algorithms/matchBase.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/Functor4pcs.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/accelerators/pairExtraction/bruteForceFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
+#include "gr/utils/timer.h"
+#include "gr/accelerators/bbox.h"
 
 #include <Eigen/Dense>
 

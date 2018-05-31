@@ -47,8 +47,8 @@
 #ifndef _SUPER4PCS_ACCELERATORS_KDTREE_H
 #define _SUPER4PCS_ACCELERATORS_KDTREE_H
 
-#include "super4pcs/utils/disablewarnings.h"
-#include "super4pcs/accelerators/bbox.h"
+#include "../utils/disablewarnings.h"
+#include "../accelerators/bbox.h"
 
 #include <Eigen/Core>
 

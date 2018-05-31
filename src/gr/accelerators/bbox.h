@@ -47,7 +47,7 @@
 #ifndef _SUPER4PCS_ACCELERATORS_BBOX_H
 #define _SUPER4PCS_ACCELERATORS_BBOX_H
 
-#include "super4pcs/utils/disablewarnings.h"
+#include "../utils/disablewarnings.h"
 #include <Eigen/Geometry>
 #include <limits>
 

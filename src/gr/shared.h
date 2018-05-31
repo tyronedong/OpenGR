@@ -44,7 +44,7 @@
 #ifndef _SHARED_4PCS_H_
 #define _SHARED_4PCS_H_
 
-#include "super4pcs/utils/disablewarnings.h"
+#include "gr/utils/disablewarnings.h"
 
 #include <Eigen/Core>
 

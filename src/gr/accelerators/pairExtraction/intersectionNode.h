@@ -49,7 +49,7 @@
 #define _SUPER4PCS_ACCELERATORS_INTERSECTION_NODE_H_
 
 #include <list>
-#include "super4pcs/accelerators/utils.h"
+#include "gr/accelerators/utils.h"
 
 namespace gr{
 namespace Accelerators{

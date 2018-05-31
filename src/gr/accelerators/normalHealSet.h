@@ -48,8 +48,8 @@
 #ifndef _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_HEAL_SET_H_
 #define _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_HEAL_SET_H_
 
-#include "super4pcs/utils/disablewarnings.h"
-#include "super4pcs/accelerators/utils.h"
+#include "../utils/disablewarnings.h"
+#include "../accelerators/utils.h"
 #include "chealpix.h"
 #include <Eigen/Core>
 

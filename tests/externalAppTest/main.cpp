@@ -1,7 +1,7 @@
-#include "super4pcs/algorithms/match4pcsBase.h"
-#include "super4pcs/algorithms/FunctorSuper4pcs.h"
-#include "super4pcs/io/io.h"
-#include "super4pcs/utils/geometry.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/io/io.h"
+#include "gr/utils/geometry.h"
 
 #include <Eigen/Dense>
 

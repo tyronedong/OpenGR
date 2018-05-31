@@ -1,4 +1,4 @@
-// Copyright 2017 Nicolas Mellado
+// Copyright 2014 Nicolas Mellado
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 //
 // -------------------------------------------------------------------------- //
 //
-// Authors: Nicolas Mellado
+// Authors: Nicolas Mellado, Dror Aiger
 //
 // An implementation of the Super 4-points Congruent Sets (Super 4PCS)
 // algorithm presented in:
@@ -44,44 +44,42 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#ifndef _SUPER4PCS_UTILS_GEOMETRY_H_
-#define _SUPER4PCS_UTILS_GEOMETRY_H_
+#ifndef _SUPER4PCS_UTILS_TIMER_H_
+#define _SUPER4PCS_UTILS_TIMER_H_
 
-#include "super4pcs/utils/disablewarnings.h"
+#include <chrono>  //timers
+#include "gr/utils/disablewarnings.h"
 
 namespace gr{
 namespace Utils{
 
+class Timer {
+public:
+    typedef std::chrono::high_resolution_clock clock;
+    typedef std::chrono::nanoseconds timestep;
 
-template <typename PointContainer, typename VecContainer>
-static inline void CleanInvalidNormals( PointContainer &v,
-                                        VecContainer &normals){
-  using Point = typename PointContainer::value_type;
-  using Vector = typename VecContainer::value_type;
-  if (v.size() == normals.size()){
-    typename PointContainer::iterator itV = v.begin();
-    typename VecContainer::iterator itN = normals.begin();
-
-    unsigned int nb = 0;
-    for( ; itV != v.end(); itV++, itN++){
-
-      if ((*itV).normal().squaredNorm() < 0.01){
-        (*itN) = {0., 0., 0.};
-        (*itV).set_normal({0., 0., 0.});
-        nb++;
-      }else{
-        (*itN).normalize();
-        (*itV).normalize();
-      }
+    explicit inline Timer(bool run = false)
+    {
+        if (run) reset();
     }
-
-    if (nb != 0){
-      std::cout << "Found " << nb << " vertices with invalid normals" << std::endl;
+    void reset()
+    {
+        _start = clock::now();
     }
-  }
-}
+    inline timestep elapsed() const
+    {
+        return std::chrono::duration_cast<timestep>(clock::now() - _start);
+    }
+    template <typename T, typename Traits>
+    friend std::basic_ostream<T, Traits>& operator<<(std::basic_ostream<T, Traits>& out, const Timer& timer)
+    {
+        return out << timer.elapsed().count();
+    }
+private:
+    clock::time_point _start;
+};
 
 } // namespace Utils
 } // namespace Super4PCS
 
-#endif // _UTILS_GEOMETRY_H_
+#endif // _TIMER_H_

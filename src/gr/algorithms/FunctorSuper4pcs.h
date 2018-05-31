@@ -7,12 +7,12 @@
 
 
 #include <vector>
-#include "super4pcs/shared.h"
+#include "gr/shared.h"
 #include "../algorithms/pairCreationFunctor.h"
 #include "../accelerators/bbox.h"
 
 #ifdef SUPER4PCS_USE_CHEALPIX
-#include "super4pcs/accelerators/normalHealSet.h"
+#include "gr/accelerators/normalHealSet.h"
 #else
 #include "../accelerators/normalset.h"
 #include "../accelerators/utils.h"

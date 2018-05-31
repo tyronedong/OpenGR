@@ -48,7 +48,7 @@
 #ifndef _SUPER4PCS_ACCELERATORS_INTERSECTION_FUNCTOR_H_
 #define _SUPER4PCS_ACCELERATORS_INTERSECTION_FUNCTOR_H_
 
-#include "super4pcs/accelerators/pairExtraction/intersectionNode.h"
+#include "gr/accelerators/pairExtraction/intersectionNode.h"
 #include <list>
 #include <iostream>
 

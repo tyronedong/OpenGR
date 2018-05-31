@@ -132,10 +132,10 @@ message(STATUS "STB root path: ${STB_INCLUDE_DIR}")
 
 include_directories(${SRC_DIR})
 
-add_subdirectory(${SRC_DIR}/super4pcs/io)
-add_subdirectory(${SRC_DIR}/super4pcs/utils)
-add_subdirectory(${SRC_DIR}/super4pcs/accelerators)
-add_subdirectory(${SRC_DIR}/super4pcs/algorithms)
+add_subdirectory(${SRC_DIR}/gr/io)
+add_subdirectory(${SRC_DIR}/gr/utils)
+add_subdirectory(${SRC_DIR}/gr/accelerators)
+add_subdirectory(${SRC_DIR}/gr/algorithms)
 
 # Add main target
 add_custom_target(opengr DEPENDS opengr_utils opengr_io opengr_accel opengr_algo )

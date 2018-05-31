@@ -3,13 +3,13 @@
 
 #include <iostream>
 #include <vector>
-#include "super4pcs/shared.h"
+#include "../shared.h"
 
-#include "super4pcs/accelerators/bbox.h"
+#include "../accelerators/bbox.h"
 
-#include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
+#include "../accelerators/pairExtraction/bruteForceFunctor.h"
+#include "../accelerators/pairExtraction/intersectionFunctor.h"
+#include "../accelerators/pairExtraction/intersectionPrimitive.h"
 #include "FunctorFeaturePointTest.h"
 
 namespace gr {

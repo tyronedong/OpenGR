@@ -10,13 +10,13 @@
 #include <omp.h>
 #endif
 
-#include "super4pcs/shared.h"
-#include "super4pcs/sampling.h"
-#include "super4pcs/accelerators/kdtree.h"
-#include "super4pcs/utils/logger.h"
+#include "../shared.h"
+#include "../sampling.h"
+#include "../accelerators/kdtree.h"
+#include "../utils/logger.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
-#   include "super4pcs/utils/timer.h"
+#   include "../utils/timer.h"
 #endif
 
 

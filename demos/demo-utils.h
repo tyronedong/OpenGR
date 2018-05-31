@@ -49,8 +49,8 @@
 #include <iostream>
 #include <string>
 
-#include <super4pcs/shared.h>
-#include <super4pcs/utils/logger.h>
+#include <gr/shared.h>
+#include <gr/utils/logger.h>
 
 namespace gr {
 namespace Demo {

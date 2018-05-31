@@ -57,7 +57,7 @@
 #include <sstream>
 #include <ctime>
 
-#include "super4pcs/shared.h"
+#include "gr/shared.h"
 
 #define DEFAULT_REPEAT 10
 

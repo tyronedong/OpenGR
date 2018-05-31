@@ -49,12 +49,12 @@
 // efficient acquisition of scenes at scales previously not possible. Complete
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
-#include "super4pcs/algorithms/matchBase.h"
-#include "super4pcs/algorithms/match4pcsBase.h"
-#include "super4pcs/algorithms/Functor4pcs.h"
-#include "super4pcs/algorithms/FunctorSuper4pcs.h"
-#include "super4pcs/io/io.h"
-#include "super4pcs/utils/geometry.h"
+#include "gr/algorithms/matchBase.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/Functor4pcs.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/io/io.h"
+#include "gr/utils/geometry.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>

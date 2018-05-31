@@ -1,6 +1,6 @@
 project (OpenGR-AccelLib)
 
-set(accel_ROOT "super4pcs/accelerators")
+set(accel_ROOT "gr/accelerators")
 
 #############################################
 
