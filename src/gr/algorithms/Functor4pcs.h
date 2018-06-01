@@ -16,6 +16,9 @@
 
 
 namespace gr {
+    /// Class for the computation of the 4PCS algorithm.
+    /// \param PointFilterFunctor is use to make the filter of points found in the second 3D model (Q).
+    /// If a point is similar to one of the base in the first 3D model (P) then it will pass the filter.
     template <typename PointFilterFunctor = FilterTests>
     struct Match4PCS {
     public :
@@ -40,11 +43,27 @@ namespace gr {
                         ,myBase_3D_(base_3D_)
                         ,myOptions_ (options) {}
 
-        // Initialize all internal data structures and data members.
+        /// Initializes the data structures and needed values before the match
+        /// computation.
+        /// @param [in] point_P First input set.
+        /// @param [in] point_Q Second input set.
+        /// expected to be in the inliers.
         inline void Initialize(const std::vector<Point3D>& /*P*/,
                                    const std::vector<Point3D>& /*Q*/) {}
 
-        // Finds congruent candidates in the set Q, given the invariants and threshold distances.
+        /// Finds congruent candidates in the set Q, given the invariants and threshold distances.
+        /// Returns true if a non empty set can be found, false otherwise.
+        /// @param invariant1 [in] The first invariant corresponding to the set P_pairs
+        /// of pairs, previously extracted from Q.
+        /// @param invariant2 [in] The second invariant corresponding to the set
+        /// Q_pairs of pairs, previously extracted from Q.
+        /// @param [in] distance_threshold1 The distance for verification.
+        /// @param [in] distance_threshold2 The distance for matching middle points due
+        /// to the invariants (See the paper for e1, e2).
+        /// @param [in] First_pairs The first set of pairs found in Q.
+        /// @param [in] Second_pairs The second set of pairs found in Q.
+        /// @param [out] quadrilaterals The set of congruent quadrilateral. In fact,
+        /// it's a super set from which we extract the real congruent set.
         inline bool FindCongruentQuadrilaterals(
                                          Scalar invariant1,
                                          Scalar invariant2,
@@ -97,7 +116,19 @@ namespace gr {
             return quadrilaterals->size() != 0;
         }
 
-
+        /// Constructs pairs of points in Q, corresponding to a single pair in the
+        /// in basein P.
+        /// @param [in] pair_distance The distance between the pairs in P that we have
+        /// to match in the pairs we select from Q.
+        /// @param [in] pair_normal_distance The angle between the normals of the pair
+        /// in P.
+        /// @param [in] pair_distance_epsilon Tolerance on the pair distance. We allow
+        /// candidate pair in Q to have distance of
+        /// pair_distance+-pair_distance_epsilon.
+        /// @param [in] base_point1 The index of the first point in P.
+        /// @param [in] base_point2 The index of the second point in P.
+        /// @param [out] pairs A set of pairs in Q that match the pair in P with
+        /// respect to distance and normals, up to the given tolerance.
        inline void ExtractPairs(Scalar pair_distance,
                                      Scalar pair_normals_angle,
                                      Scalar pair_distance_epsilon,

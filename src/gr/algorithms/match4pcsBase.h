@@ -44,6 +44,8 @@ namespace gr {
         using Coordinates = std::array<Point3D, 4>;
     };
 
+    /// Class for the computation of the 4PCS algorithm.
+    /// \param Functor use to determinate the use of Super4pcs or 4pcs algorithm.
     template <typename Functor>
     class Match4pcsBase : public MatchBase<Traits4pcs> {
     protected:
@@ -65,16 +67,30 @@ namespace gr {
         bool TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
                               int &id1, int &id2, int &id3, int &id4);
 
-        /// Selects a quadrilateral from P and returns the corresponding invariants
-        /// and point indices. Returns true if a quadrilateral has been found, false
-        /// otherwise.
+        /// Selects a random triangle in the set P (then we add another point to keep the
+        /// base as planar as possible). We apply a simple heuristic that works in most
+        /// practical cases. The idea is to accept maximum distance, computed by the
+        /// estimated overlap, multiplied by the diameter of P, and try to have
+        /// a triangle with all three edges close to this distance. Wide triangles helps
+        /// to make the transformation robust while too large triangles makes the
+        /// probability of having all points in the inliers small so we try to trade-off.
         bool SelectQuadrilateral(Scalar &invariant1, Scalar &invariant2,
                                  int& base1, int& base2, int& base3, int& base4);
 
-        /// Initialize all internal data structures and data members.
+        /// Initializes the data structures and needed values before the match
+        /// computation.
+        /// @param [in] point_P First input set.
+        /// @param [in] point_Q Second input set.
+        /// expected to be in the inliers.
+        /// This method is called once the internal state of the Base class as been
+        /// set.
         void Initialize(const std::vector<Point3D>& /*P*/,
                         const std::vector<Point3D>& /*Q*/) override;
 
+        /// Find all the congruent set similar to the base in the second 3D model (Q).
+        /// It could be with a 3 point base or a 4 point base.
+        /// \param base use to find the similar points congruent in Q.
+        /// \param congruent_set a set of all point congruent found in Q.
         bool generateCongruents (Base& base,Set& congruent_quads) override;
 
     };

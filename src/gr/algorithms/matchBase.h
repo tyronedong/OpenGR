@@ -67,6 +67,8 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
+/// Class contain the functions shared by 4pcs and 3pcs
+/// \param _Traits Functor used to configure the Base, Set and Coordinate types, dependent on the use of 4pcs or 3pcs search.
 template <typename _Traits>
 class MatchBase {
 
@@ -253,6 +255,21 @@ protected :
     template <typename Visitor>
     bool TryOneBase(const Visitor &v);
 
+    /// Loop over the set of congruent 4-points and test the compatibility with the
+    /// input base.
+    /// \param [out] Nb Number of quads corresponding to valid configurations
+    template <typename Visitor>
+    bool TryCongruentSet(Base& base, Set& set, Visitor &v,size_t &nbCongruent);
+
+    /// Initializes the data structures and needed values before the match
+    /// computation.
+    /// @param [in] point_P First input set.
+    /// @param [in] point_Q Second input set.
+    /// expected to be in the inliers.
+    /// This method is called once the internal state of the Base class as been
+    /// set.
+    virtual void Initialize(const std::vector<Point3D>& /*P*/,
+                            const std::vector<Point3D>& /*Q*/) =0;
 
     template <typename Sampler>
     void init(const std::vector<Point3D>& P,
@@ -261,21 +278,15 @@ protected :
 
     const std::vector<Point3D> base3D() const { return base_3D_; }
 
+    /// Find all the congruent set similar to the base in the second 3D model (Q).
+    /// It could be with a 3 point base or a 4 point base.
+    /// \param base use to find the similar points congruent in Q.
+    /// \param congruent_set a set of all point congruent found in Q.
+    virtual bool generateCongruents (Base& base,Set& congruent_set) =0;
 
 private:
+
     void initKdTree();
-
-public:
-
-    /// Initialize all internal data structures and data members.
-    virtual void Initialize(const std::vector<Point3D>& /*P*/,
-                            const std::vector<Point3D>& /*Q*/) =0;
-
-    virtual bool generateCongruents (Base& base,Set& congruent_quads) =0;
-
-    template <typename Visitor>
-    bool TryCongruentSet(Base& base, Set& set, Visitor &v,size_t &nbCongruent);
-
 
 }; /// class MatchBase
 } /// namespace Super4PCS

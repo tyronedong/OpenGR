@@ -36,6 +36,7 @@ namespace gr {
         Scalar max_color_distance = -1;
     };
 
+    /// Class for the computation of the 3PCS algorithm.
     class Match3pcs : public MatchBase<Traits3pcs> {
     public:
         Match3pcs (const Match3PCSOptions& options
@@ -43,8 +44,19 @@ namespace gr {
 
         virtual ~Match3pcs();
 
+        /// Find all the congruent set similar to the base in the second 3D model (Q).
+        /// It could be with a 3 point base or a 4 point base.
+        /// \param base use to find the similar points congruent in Q.
+        /// \param congruent_set a set of all point congruent found in Q.
         bool generateCongruents (Base& base, Set& congruent_quads) override;
 
+        /// Initializes the data structures and needed values before the match
+        /// computation.
+        /// @param [in] point_P First input set.
+        /// @param [in] point_Q Second input set.
+        /// expected to be in the inliers.
+        /// This method is called once the internal state of the Base class as been
+        /// set.
         void Initialize(const std::vector<Point3D>& /*P*/,
                         const std::vector<Point3D>& /*Q*/) override {};
 

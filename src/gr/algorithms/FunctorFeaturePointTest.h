@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace gr {
+    /// Functor use in 4pcs and Super4pcs algorithm to filter the found points in Q.
     struct FilterTests {
     public :
         using TypeBase = std::vector<Point3D>;
@@ -23,6 +24,9 @@ namespace gr {
     public :
         inline FilterTests (OptionType options, TypeBase base) : myOptions_(options), myBase_3D_(base) {}
 
+        /// Verify that the 2 points found in Q are similar to 2 of the points in the base.
+        /// A filter by point feature : normal, distance, translation distance, angle and color.
+        /// Return a pair of bool, according of the right addition of the pair (p,q) or (q,p) in the congruent set.
         inline std::pair<bool,bool> operator() (const Point3D& p, const Point3D& q, Scalar pair_normals_angle, int base_point1, int base_point2) {
             std::pair<bool,bool> res;
             res.first = false;

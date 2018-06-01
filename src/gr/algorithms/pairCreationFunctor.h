@@ -148,7 +148,6 @@ public:
   inline void endPrimitiveCollect(int /*primId*/){ }
 
 
-  //! FIXME Pair filtering is the same than 4pcs. Need refactoring
   inline void process(int i, int j){
     if (i>j){
       const Point3D& p = Q_[j];
