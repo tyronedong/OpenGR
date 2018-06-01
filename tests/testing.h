@@ -75,6 +75,8 @@ public:
     using MatrixType            = typename BaseMatcher::MatrixType;
     using PairsVector           = typename BaseMatcher::PairsVector;
     using DefaultSampler        = typename BaseMatcher::DefaultSampler;
+    using Traits                = typename BaseMatcher::Traits;
+    using Set                   = typename Traits::Set;
 
     using BaseMatcher::BaseMatcher;
 
@@ -113,7 +115,7 @@ public:
                                 int base_id2,
                                 int base_id3,
                                 int base_id4,
-                                const Traits4pcs::Set &congruent_quads,
+                                const Set &congruent_quads,
                                 size_t &nbCongruent){
         return BaseMatcher::TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
                                             congruent_quads,

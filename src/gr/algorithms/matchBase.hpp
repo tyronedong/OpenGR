@@ -542,7 +542,7 @@ MatchBase<Traits>::Perform_N_steps(int n,
         best_LCP_ = 0.0;
 
         Q_copy_ = Q;
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < Traits::size(); ++i) {
             base_[i] = 0;
             current_congruent_[i] = 0;
         }

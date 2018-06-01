@@ -23,17 +23,34 @@ namespace gr {
         using Coordinates = std::array<Point3D, 3>;
     };
 
+    // ----- 3PCS Options -----
+    struct Match3PCSOptions : public MatchOptions{
+        using Scalar = typename Point3D::Scalar;
+        Match3PCSOptions() {}
+
+        /// Maximum normal difference.
+        Scalar max_normal_difference = -1;
+        /// Maximum translation distance. Set negative to ignore
+        Scalar max_translation_distance = -1;
+        /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
+        Scalar max_color_distance = -1;
+    };
+
     class Match3pcs : public MatchBase<Traits3pcs> {
-        Match3pcs (const MatchOptions& options
+    public:
+        Match3pcs (const Match3PCSOptions& options
                 , const Utils::Logger& logger);
 
         virtual ~Match3pcs();
 
         bool generateCongruents (Base& base, Set& congruent_quads) override;
 
+        void Initialize(const std::vector<Point3D>& /*P*/,
+                        const std::vector<Point3D>& /*Q*/) override {};
+
 
     };
 }
 
-//#include "match3pcsBase.hpp"
+#include "match3pcs.hpp"
 #endif //OPENGR_MATCH3PCSBASE_H

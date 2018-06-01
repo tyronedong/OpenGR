@@ -11,7 +11,8 @@
 #include "match3pcs.h"
 
 namespace gr {
-    Match3pcs::Match3pcs(const gr::MatchOptions &options,
+
+    Match3pcs::Match3pcs(const gr::Match3PCSOptions &options,
                                  const gr::Utils::Logger &logger)
                                  : MatchBase(options,logger)
     {
@@ -50,12 +51,12 @@ namespace gr {
                 const Scalar dAB = (b.pos() - a.pos()).norm();
                 if (std::abs(dAB - d1) > distance_factor * options_.delta) continue;
                 for (int k=j+1; k<sampled_Q_3D_.size(); ++k) {
-                    const Point3D& c = sampled_Q_3D_[j];
+                    const Point3D& c = sampled_Q_3D_[k];
                     const Scalar dAC = (c.pos() - a.pos()).norm();
                     const Scalar dBC = (c.pos() - b.pos()).norm();
                     if (std::abs(dAC - d2) > distance_factor * options_.delta) continue;
                     if (std::abs(dBC - d3) > distance_factor * options_.delta) continue;
-                    congruent_set.push_back({a,b,c});
+                    congruent_set.push_back({i,j,k});
                 }
             }
         }
