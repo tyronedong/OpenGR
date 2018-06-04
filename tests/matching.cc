@@ -53,6 +53,7 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/Functor4pcs.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/FunctorFeaturePointTest.h"
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
 
@@ -209,6 +210,7 @@ void test_model(const vector<Transform> &transforms,
                 int i,
                 int param_i){
     using namespace gr;
+    using Filter = AdaptivePointFilter;
 
     const string input1 = files.at(i-1);
     const string input2 = files.at(i);
@@ -269,7 +271,7 @@ void test_model(const vector<Transform> &transforms,
     Scalar score = 0.;
 
     if(use_super4pcs){
-        Match4pcsBase<MatchSuper4PCS<>> matcher(options, logger);
+        Match4pcsBase<FunctorSuper4PCS<Filter>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -282,7 +284,7 @@ void test_model(const vector<Transform> &transforms,
              << endl;
         score = matcher.ComputeTransformation(mergedset, &set2, mat);
     }else{
-        Match4pcsBase<Match4PCS<>> matcher(options, logger);
+        Match4pcsBase<Functor4PCS<Filter>> matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()

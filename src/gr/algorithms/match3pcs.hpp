@@ -13,13 +13,12 @@
 namespace gr {
 
     Match3pcs::Match3pcs(const gr::Match3PCSOptions &options,
-                                 const gr::Utils::Logger &logger)
-                                 : MatchBase(options,logger)
+                         const gr::Utils::Logger &logger)
+        : MatchBase(options,logger)
     {
-        base_3D_.resize(3);
     }
 
-    Match3pcs::~Match3pcs() {};
+    Match3pcs::~Match3pcs() {}
 
     inline bool Match3pcs::generateCongruents (Base& base, Set& congruent_set) {
 

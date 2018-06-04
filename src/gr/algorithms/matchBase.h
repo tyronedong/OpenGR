@@ -160,7 +160,7 @@ protected:
     /// Sampled Q (3D coordinates).
     std::vector<Point3D> sampled_Q_3D_;
     /// The 3D points of the base.
-    std::vector<Point3D> base_3D_;
+    Coordinates base_3D_;
     /// The copy of the input Q. We transform Q to match P and returned the
     /// transformed version.
     std::vector<Point3D> Q_copy_;

@@ -99,7 +99,6 @@ namespace gr {
             : MatchBase(options,logger)
             , fun_(sampled_Q_3D_,base_3D_,options)
     {
-        base_3D_.resize(4);
     }
 
     template <typename Functor>
@@ -142,13 +141,13 @@ namespace gr {
 
         if(best1 < 0 || best2 < 0 || best3 < 0 || best4 < 0 ) return false;
 
-        std::vector<Point3D> tmp = base_3D_;
+        Coordinates tmp = base_3D_;
         base_3D_[0] = tmp[best1];
         base_3D_[1] = tmp[best2];
         base_3D_[2] = tmp[best3];
         base_3D_[3] = tmp[best4];
 
-        std::array<int, 4> tmpId = {id1, id2, id3, id4};
+        Base tmpId = {id1, id2, id3, id4};
         id1 = tmpId[best1];
         id2 = tmpId[best2];
         id3 = tmpId[best3];

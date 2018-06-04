@@ -1,5 +1,6 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/FunctorFeaturePointTest.h"
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
 
@@ -10,7 +11,7 @@ int main(int argc, char **argv) {
   using namespace gr;
   using namespace std;
 
-  using Matcher = Match4pcsBase<MatchSuper4PCS<>>;
+  using Matcher = Match4pcsBase<FunctorSuper4PCS<AdaptivePointFilter>>;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;

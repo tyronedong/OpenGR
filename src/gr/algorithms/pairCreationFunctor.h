@@ -3,14 +3,13 @@
 
 #include <iostream>
 #include <vector>
-#include "../shared.h"
+#include "gr/shared.h"
 
-#include "../accelerators/bbox.h"
-
-#include "../accelerators/pairExtraction/bruteForceFunctor.h"
-#include "../accelerators/pairExtraction/intersectionFunctor.h"
-#include "../accelerators/pairExtraction/intersectionPrimitive.h"
-#include "FunctorFeaturePointTest.h"
+#include "gr/accelerators/bbox.h"
+#include "gr/accelerators/pairExtraction/bruteForceFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
+#include "gr/algorithms/match4pcsBase.h"
 
 namespace gr {
 
@@ -21,6 +20,7 @@ public:
   using Scalar      = _Scalar;
   using PairsVector = std::vector<std::pair<int, int>>;
   using VectorType  = typename Point3D::VectorType;
+  using BaseCoordinates = Traits4pcs::Coordinates;
 
   // Processing data
   Scalar norm_threshold;
@@ -47,7 +47,7 @@ public:
 
 private:
   VectorType segment1;
-  std::vector<Point3D> base_3D_;
+  BaseCoordinates base_3D_;
   int base_point1_, base_point2_;
 
   typename PairCreationFunctor::Point _gcenter;
@@ -134,7 +134,7 @@ public:
   }
 
   inline void setBase( int base_point1, int base_point2,
-                       const std::vector<Point3D>& base_3D){
+                       const BaseCoordinates& base_3D){
     base_3D_     = base_3D;
     base_point1_ = base_point1;
     base_point2_ = base_point2;
@@ -162,8 +162,8 @@ public:
 #ifndef MULTISCALE
       if (std::abs(distance - pair_distance) > pair_distance_epsilon) return;
 #endif
-        FilterFunctor fun(options_,base_3D_);
-        std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_point1_,base_point2_);
+        FilterFunctor fun;
+        std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_3D_[base_point1_],base_3D_[base_point2_], options_);
         if (res.first)
             pairs->emplace_back(i, j);
         if (res.second)

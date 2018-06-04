@@ -3,6 +3,7 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/Functor4pcs.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/FunctorFeaturePointTest.h"
 
 #include <Eigen/Dense>
 
@@ -59,6 +60,8 @@ int main(int argc, char **argv) {
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
                             DummyTransformVisitor,
                             TransformVisitor>::type;
+  using PairFilter = gr::AdaptivePointFilter;
+
   SamplerType sampler;
   TrVisitorType visitor;
   Utils::Logger logger(loglvl);
@@ -110,7 +113,7 @@ int main(int argc, char **argv) {
   try {
 
       if (use_super4pcs) {
-          Match4pcsBase<MatchSuper4PCS<>> matcher(options, logger);
+          Match4pcsBase<FunctorSuper4PCS<PairFilter>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use Super4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
 
@@ -140,7 +143,7 @@ int main(int argc, char **argv) {
           }
       }
       else {
-          Match4pcsBase<Match4PCS<>> matcher(options, logger);
+          Match4pcsBase<Functor4PCS<PairFilter>> matcher(options, logger);
           logger.Log<Utils::Verbose>( "Use old 4PCS" );
           score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
       }

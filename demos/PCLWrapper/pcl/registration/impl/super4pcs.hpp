@@ -43,14 +43,16 @@
 
 #include <pcl/io/ply_io.h>
 #include <pcl/registration/super4pcs.h>
-#include <super4pcs/algorithms/super4pcs.h>
+#include <gr/algorithms/match4pcsBase.h>
+#include <gr/algorithms/FunctorSuper4pcs.h>
 
 
 struct TransformVisitor {
+    template <typename Derived>
     inline void operator()(
             float fraction,
             float best_LCP,
-            Eigen::Ref<gr::Match4PCSBase::MatrixType> /*transformation*/) const {
+            const Eigen::MatrixBase<Derived>& /*transformation*/) const {
       if(fraction >= 0)
         {
           printf("done: %d%c best: %f                  \r",
@@ -74,11 +76,11 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
   using SamplerType   = gr::Sampling::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
-                            Match4PCSBase::DummyTransformVisitor,
+                            DummyTransformVisitor,
                             TransformVisitor>::type;
 
   Utils::Logger logger(loglvl);
-  MatchSuper4PCS matcher(options_, logger);
+  Match4pcsBase<FunctorSuper4PCS<gr::AdaptivePointFilter>> matcher(options_, logger);
 
   SamplerType sampler;
   TrVisitorType visitor;

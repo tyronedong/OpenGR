@@ -43,7 +43,8 @@
 
 #include <pcl/registration/registration.h>
 #include <pcl/registration/transformation_estimation_svd.h>
-#include <super4pcs/shared.h>
+#include <gr/shared.h>
+#include <gr/algorithms/match4pcsBase.h>
 
 namespace pcl
 {

@@ -7,22 +7,23 @@
 
 #include <vector>
 #include "gr/shared.h"
-#include "../accelerators/kdtree.h"
-#include "../accelerators/utils.h"
-#include "FunctorFeaturePointTest.h"
+#include "gr/accelerators/kdtree.h"
+#include "gr/accelerators/utils.h"
+#include "gr/algorithms/match4pcsBase.h"
 
 #include <fstream>
 #include <time.h>  //clock
 
 
 namespace gr {
-    /// Class for the computation of the 4PCS algorithm.
-    /// \param PointFilterFunctor is use to make the filter of points found in the second 3D model (Q).
-    /// If a point is similar to one of the base in the first 3D model (P) then it will pass the filter.
-    template <typename PointFilterFunctor = FilterTests>
-    struct Match4PCS {
+    /// Processing functor for the computation of the 4PCS algorithm
+    /// \see Match4pcsBase
+    /// \tparam PairFilterFunctor filters pairs of points during the exploration.
+    ///         Must implement PairFilterConcept
+    template <typename PairFilterFunctor>
+    struct Functor4PCS {
     public :
-        using TypeBase = std::vector<Point3D>;
+        using BaseCoordinates = Traits4pcs::Coordinates;
         using Scalar      = typename Point3D::Scalar;
         using PairsVector = std::vector< std::pair<int, int> >;
         using VectorType  = typename Point3D::VectorType;
@@ -32,12 +33,12 @@ namespace gr {
     private :
         OptionType myOptions_;
         std::vector<Point3D>& mySampled_Q_3D_;
-        TypeBase &myBase_3D_;
+        BaseCoordinates &myBase_3D_;
 
 
     public :
-        inline Match4PCS(std::vector<Point3D> &sampled_Q_3D_,
-                         TypeBase& base_3D_,
+        inline Functor4PCS(std::vector<Point3D> &sampled_Q_3D_,
+                         BaseCoordinates& base_3D_,
                          OptionType options)
                         :mySampled_Q_3D_(sampled_Q_3D_)
                         ,myBase_3D_(base_3D_)
@@ -140,9 +141,7 @@ namespace gr {
             pairs->clear();
             pairs->reserve(2 * mySampled_Q_3D_.size());
 
-            VectorType segment1 = (myBase_3D_[base_point2].pos() -
-                    myBase_3D_[base_point1].pos()).normalized();
-
+            PairFilterFunctor fun;
 
             // Go over all ordered pairs in Q.
             for (size_t j = 0; j < mySampled_Q_3D_.size(); ++j) {
@@ -159,8 +158,7 @@ namespace gr {
                     if (std::abs(distance - pair_distance) > pair_distance_epsilon) continue;
 #endif
 
-                    PointFilterFunctor fun(myOptions_, myBase_3D_);
-                    std::pair<bool,bool> res = fun(p,q, pair_normals_angle, base_point1,base_point2);
+                    std::pair<bool,bool> res = fun(p,q, pair_normals_angle, myBase_3D_[base_point1],myBase_3D_[base_point2], myOptions_);
                     if (res.first)
                         pairs->emplace_back(i, j);
                     if (res.second)

@@ -8,14 +8,15 @@
 
 #include <vector>
 #include "gr/shared.h"
-#include "../algorithms/pairCreationFunctor.h"
-#include "../accelerators/bbox.h"
+#include "gr/algorithms/pairCreationFunctor.h"
+#include "gr/accelerators/bbox.h"
 
 #ifdef SUPER4PCS_USE_CHEALPIX
 #include "gr/accelerators/normalHealSet.h"
 #else
-#include "../accelerators/normalset.h"
-#include "../accelerators/utils.h"
+#include "gr/accelerators/normalset.h"
+#include "gr/accelerators/utils.h"
+#include "gr/algorithms/match4pcsBase.h"
 
 #endif
 
@@ -25,13 +26,14 @@
 
 namespace gr {
 
-    /// Class for the computation of the 4PCS algorithm.
-    /// \param PointFilterFunctor is use to make the filter of points found in the second 3D model (Q).
-    /// If a point is similar to one of the base in the first 3D model (P) then it will pass the filter.
-    template <typename PointFilterFunctor = FilterTests>
-    struct MatchSuper4PCS {
+    /// Processing functor for the computation of the Super4PCS algorithm
+    /// \see Match4pcsBase
+    /// \tparam PairFilterFunctor filters pairs of points during the exploration.
+    ///         Must implement PairFilterConcept
+    template <typename PointFilterFunctor>
+    struct FunctorSuper4PCS {
     public :
-        using TypeBase = std::vector<Point3D>;
+        using BaseCoordinates = Traits4pcs::Coordinates;
         using Scalar      = typename Point3D::Scalar;
         using PairsVector = std::vector< std::pair<int, int> >;
         using VectorType  = typename Point3D::VectorType;
@@ -41,7 +43,7 @@ namespace gr {
     private :
         OptionType myOptions_;
         std::vector<Point3D> &mySampled_Q_3D_;
-        TypeBase &myBase_3D_;
+        BaseCoordinates &myBase_3D_;
 
         /// Private data contains parameters and internal variables that are computed
         /// and change during the match computation. All parameters have default
@@ -53,8 +55,8 @@ namespace gr {
 
 
     public :
-        inline MatchSuper4PCS (std::vector<Point3D> &sampled_Q_3D_,
-                               TypeBase& base_3D_,
+        inline FunctorSuper4PCS (std::vector<Point3D> &sampled_Q_3D_,
+                               BaseCoordinates& base_3D_,
                                OptionType options)
                                 : pcfunctor_ (myOptions_,mySampled_Q_3D_)
                                 ,mySampled_Q_3D_(sampled_Q_3D_)

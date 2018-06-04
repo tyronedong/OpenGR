@@ -57,6 +57,7 @@
 #include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
 #include "gr/utils/timer.h"
 #include "gr/accelerators/bbox.h"
+#include "gr/algorithms/FunctorFeaturePointTest.h"
 
 #include <Eigen/Dense>
 
@@ -341,6 +342,7 @@ int main(int argc, const char **argv) {
     using std::cout;
     using std::endl;
     using namespace gr::Accelerators::PairExtraction;
+    using Filter = gr::DummyPointFilter<true>;
 
 
     cout << "Extract pairs in 2 dimensions (BRUTE FORCE)..." << endl;
@@ -380,11 +382,11 @@ int main(int argc, const char **argv) {
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4pcsBase<Match4PCS<> >>();
+    callMatchSubTests<Match4pcsBase<Functor4PCS<Filter>>>();
     cout << "Ok..." << endl;
 
     cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4pcsBase<MatchSuper4PCS<> >>();
+    callMatchSubTests<Match4pcsBase<FunctorSuper4PCS<Filter>>>();
     cout << "Ok..." << endl;
 
     return EXIT_SUCCESS;
