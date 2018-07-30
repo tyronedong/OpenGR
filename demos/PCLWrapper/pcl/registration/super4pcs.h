@@ -38,8 +38,8 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_SUPER4PCS_H_
-#define PCL_REGISTRATION_SUPER4PCS_H_
+#ifndef PCL_REGISTRATION_OPENGR_H_
+#define PCL_REGISTRATION_OPENGR_H_
 
 #include <pcl/registration/registration.h>
 #include <pcl/registration/transformation_estimation_svd.h>

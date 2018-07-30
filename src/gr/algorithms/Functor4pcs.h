@@ -2,8 +2,8 @@
 // Created by Sandra Alfaro on 24/04/18.
 //
 
-#ifndef SUPER4PCS_FUNCTOR4PCS_H
-#define SUPER4PCS_FUNCTOR4PCS_H
+#ifndef OPENGR_FUNCTOR4PCS_H
+#define OPENGR_FUNCTOR4PCS_H
 
 #include <vector>
 #include "gr/shared.h"
@@ -171,4 +171,4 @@ namespace gr {
 }
 
 
-#endif //SUPER4PCS_FUNCTOR4PCS_H
+#endif //OPENGR_FUNCTOR4PCS_H

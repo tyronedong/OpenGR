@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#ifdef SUPER4PCS_USE_OPENMP
+#ifdef OpenGR_USE_OPENMP
 #include <omp.h>
 #endif
 

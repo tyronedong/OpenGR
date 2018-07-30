@@ -44,8 +44,8 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#ifndef _SUPER4PCS_UTILS_GEOMETRY_H_
-#define _SUPER4PCS_UTILS_GEOMETRY_H_
+#ifndef _OPENGR_UTILS_GEOMETRY_H_
+#define _OPENGR_UTILS_GEOMETRY_H_
 
 #include "gr/utils/disablewarnings.h"
 

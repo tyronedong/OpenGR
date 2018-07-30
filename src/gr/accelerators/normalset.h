@@ -45,8 +45,8 @@
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
 
-#ifndef _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_SET_H_
-#define _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_SET_H_
+#ifndef _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_H_
+#define _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_H_
 
 #include "../utils/disablewarnings.h"
 #include "../accelerators/utils.h"

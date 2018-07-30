@@ -38,8 +38,8 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_SUPER4PCS_HPP_
-#define PCL_REGISTRATION_SUPER4PCS_HPP_
+#ifndef PCL_REGISTRATION_OPENGR_HPP_
+#define PCL_REGISTRATION_OPENGR_HPP_
 
 #include <pcl/io/ply_io.h>
 #include <pcl/registration/super4pcs.h>

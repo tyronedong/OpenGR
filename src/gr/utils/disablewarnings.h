@@ -36,8 +36,8 @@
 // when the application knows something on the initial pose but this is not
 // necessary in general (though can speed the runtime significantly).
 
-#ifndef _SUPER4PCS_UTILS_DISABLE_WIN_H_
-#define _SUPER4PCS_UTILS_DISABLE_WIN_H_
+#ifndef _OPENGR_UTILS_DISABLE_WIN_H_
+#define _OPENGR_UTILS_DISABLE_WIN_H_
 
 #   ifdef _MSC_VER
         // disable warnings:
@@ -47,4 +47,4 @@
 #       pragma warning ( disable : 4244 4267 4305 )
 #   endif
 
-#endif // _SUPER4PCS_UTILS_DISABLE_WIN_H_
+#endif // _OPENGR_UTILS_DISABLE_WIN_H_

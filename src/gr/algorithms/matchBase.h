@@ -41,12 +41,12 @@
 // Use google search on "4-points congruent sets" to see many related papers
 // and applications.
 
-#ifndef _SUPER4PCS_ALGO_MATCH_4PCS_BASE_
-#define _SUPER4PCS_ALGO_MATCH_4PCS_BASE_
+#ifndef _OPENGR_ALGO_MATCH_BASE_
+#define _OPENGR_ALGO_MATCH_BASE_
 
 #include <vector>
 
-#ifdef SUPER4PCS_USE_OPENMP
+#ifdef OpenGR_USE_OPENMP
 #include <omp.h>
 #endif
 
@@ -292,4 +292,4 @@ private:
 } /// namespace Super4PCS
 #include "matchBase.hpp"
 
-#endif
+#endif // _OPENGR_ALGO_MATCH_BASE_

@@ -47,8 +47,8 @@
 // Part of this file has been adapted from the Eigen library.
 
 
-#ifndef _SUPER4PCS_TESTING_H_
-#define _SUPER4PCS_TESTING_H_
+#ifndef _OPENGR_TESTING_H_
+#define _OPENGR_TESTING_H_
 
 #include <iostream>
 #include <vector>
@@ -289,4 +289,4 @@ static bool init_testing(int argc, const char *argv[])
 } // namespace Testing
 } // namespace Super4PCS
 
-#endif // _SUPER4PCS_TESTING_H_
+#endif // _OPENGR_TESTING_H_

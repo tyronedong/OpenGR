@@ -44,8 +44,8 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#ifndef _SUPER4PCS_ACCELERATORS_KDTREE_H
-#define _SUPER4PCS_ACCELERATORS_KDTREE_H
+#ifndef _OPENGR_ACCELERATORS_KDTREE_H
+#define _OPENGR_ACCELERATORS_KDTREE_H
 
 #include "../utils/disablewarnings.h"
 #include "../accelerators/bbox.h"

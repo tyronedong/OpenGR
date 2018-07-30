@@ -45,8 +45,8 @@
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
 
-#ifndef _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_SET_HPP_
-#define _SUPER4PCS_ACCELERATORS_INDEXED_NORMAL_SET_HPP_
+#ifndef _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_HPP_
+#define _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_HPP_
 
 #include <math.h>
 #include <set>
