@@ -53,7 +53,7 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/Functor4pcs.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
-#include "gr/algorithms/FunctorFeaturePointTest.h"
+#include "gr/algorithms/PointPairFilter.h"
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
 
@@ -210,7 +210,7 @@ void test_model(const vector<Transform> &transforms,
                 int i,
                 int param_i){
     using namespace gr;
-    using Filter = AdaptivePointFilter;
+    using SamplerType   = gr::UniformDistSampler;
 
     const string input1 = files.at(i-1);
     const string input2 = files.at(i);
@@ -259,19 +259,26 @@ void test_model(const vector<Transform> &transforms,
     mergedset.insert(mergedset.end(), set1.begin(), set1.end());
 
     // Our matcher.
-    Match4PCSOptions options;
 
     // Set parameters.
     MatrixType mat (MatrixType::Identity());
-    VERIFY(options.configureOverlap(overlaps[param_i]));
-    options.sample_size = n_points[param_i];
-    options.max_time_seconds = max_time_seconds;
-    options.delta = deltas[param_i];
+    SamplerType sampler;
+    TrVisitorType visitor;
 
     Scalar score = 0.;
 
     if(use_super4pcs){
-        Match4pcsBase<FunctorSuper4PCS<Filter>> matcher(options, logger);
+        using MatcherType = gr::Match4pcsBase<gr::FunctorSuper4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        using OptionType  = typename MatcherType::OptionsType;
+
+        OptionType options;
+
+        VERIFY(options.configureOverlap(overlaps[param_i]));
+        options.sample_size = n_points[param_i];
+        options.max_time_seconds = max_time_seconds;
+        options.delta = deltas[param_i];
+
+        MatcherType matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -282,9 +289,19 @@ void test_model(const vector<Transform> &transforms,
              << " -c " << options.max_color_distance
              << " -t " << options.max_time_seconds
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat);
+        score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
     }else{
-        Match4pcsBase<Functor4PCS<Filter>> matcher(options, logger);
+        using MatcherType = gr::Match4pcsBase<gr::Functor4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        using OptionType  = typename MatcherType::OptionsType;
+
+        OptionType options;
+
+        VERIFY(options.configureOverlap(overlaps[param_i]));
+        options.sample_size = n_points[param_i];
+        options.max_time_seconds = max_time_seconds;
+        options.delta = deltas[param_i];
+
+        MatcherType matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -296,7 +313,7 @@ void test_model(const vector<Transform> &transforms,
              << " -t " << options.max_time_seconds
              << " -x "
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat);
+        score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
     }
 
 

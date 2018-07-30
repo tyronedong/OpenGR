@@ -15,16 +15,20 @@ namespace gr {
     /// \tparam
     /// \implements PairFilterConcept
     ///
-    template <bool _response = true>
     struct DummyPointFilter {
-    template <typename OptionType>
+    template < class Derived, class TBase>
+    struct Options : public TBase {
+      bool dummyFilteringResponse;
+      enum { IS_DUMMYPOINTFILTER_OPTIONS = true };
+    };
+    template <typename WantedOptionsAndMore>
     inline std::pair<bool,bool> operator() (const Point3D& /*p*/,
                                             const Point3D& /*q*/,
                                             typename Point3D::Scalar /*pair_normals_angle*/,
                                             const Point3D& /*b0*/,
                                             const Point3D& /*b1*/,
-                                            const OptionType &/*options*/) {
-        return std::make_pair(_response, _response);
+                                            const WantedOptionsAndMore &options) {
+        return std::make_pair(options.dummyFilteringResponse, options.dummyFilteringResponse);
     }
     };
 
@@ -35,19 +39,30 @@ namespace gr {
     /// \implements PairFilterConcept
     ///
     struct AdaptivePointFilter {
+      template < class Derived, class TBase>
+      struct Options : public TBase {
+        using Scalar = typename TBase::Scalar;
 
-    public :
+        /// Maximum normal difference.
+        Scalar max_normal_difference = -1;
+        /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
+        Scalar max_color_distance = -1;
+
+        enum { IS_ADAPTIVEPOINTFILTER_OPTIONS = true };
+      };
 
         /// Verify that the 2 points found in Q are similar to 2 of the points in the base.
         /// A filter by point feature : normal, distance, translation distance, angle and color.
         /// Return a pair of bool, according of the right addition of the pair (p,q) or (q,p) in the congruent set.
-        template <typename OptionType>
+        template <typename WantedOptionsAndMore>
         inline std::pair<bool,bool> operator() (const Point3D& p,
                                                 const Point3D& q,
                                                 typename Point3D::Scalar pair_normals_angle,
                                                 const Point3D& b0,
                                                 const Point3D& b1,
-                                                const OptionType &options) {
+                                                const WantedOptionsAndMore &options) {
+            static_assert( WantedOptionsAndMore::IS_ADAPTIVEPOINTFILTER_OPTIONS,
+                           "Options passed to AdaptivePointFilter must inherit AdaptivePointFilter::Options" );
             using Scalar      = typename Point3D::Scalar;
             using PairsVector = std::vector< std::pair<int, int> >;
             using VectorType  = typename Point3D::VectorType;

@@ -47,7 +47,7 @@
 #ifndef _OPENGR_ACCELERATORS_KDTREE_H
 #define _OPENGR_ACCELERATORS_KDTREE_H
 
-#include "../utils/disablewarnings.h"
+#include "gr/utils/disablewarnings.h"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -66,76 +66,7 @@
 namespace gr{
 
 /*!
-  <h3>Generation</h3>
-  You can create the KdTree in two way :
-   - Simple pass construction : easy to use, but use a full vertices memory
-   copy :
-   \code
-    basic::TArray < KdTree<float>::VectorType > data(60);
-    int i = 0;
-
-    for ( ; i != 30; i++ ) {
-        data << vec3 (rand() % 10 + 1,
-               rand() % 10 + 1,
-               rand() % 10 + 1); // vertex to add
-    }
-
-    data << vec3(0.5,0.5,0.5);   // we must find this vertex
-    i++;
-
-    for ( ; i != 60; i++ ) {
-        data << vec3 (rand() % 10 + 1,
-               rand() % 10 + 1,
-               rand() % 10 + 1); // vertex to add
-    }
-
-    KdTree<float> t ( data ); // Memory copy
-   \endcode
-
-    - Per-vertex pass construction : more code, but avoid copy :
-    \code
-    KdTree<float> t ( 60 );
-    int i = 0;
-
-    for ( ; i != 30; i++ ) {
-        vec3 v( rand() % 10 + 1,
-                rand() % 10 + 1,
-                rand() % 10 + 1); // vertex to add
-        t.set( i ,v );
-    }
-
-    t.set(i, vec3(0.5,0.5,0.5));   // we must find this vertex
-    i++;
-
-    for ( ; i != 60; i++ ) {
-        vec3 v( rand() % 10 + 1,
-                rand() % 10 + 1,
-                rand() % 10 + 1); // vertex to add
-        t.set( i ,v );
-    }
-
-    t.finalize();  // the real creation of the KdTree
-    \endcode
-    This version is very usefull if data are computed on the fly.
-
-
-  <h3>Closest-Point query</h3>
-    It is important to note that in the case of multiple neighbors request,
-    the result isn't sorted (see HeapMaxPriorityQueue for more explanations).
-    So if you want to get the closest point, you must perform a single request.
-
-    You must specify the size of the request using setMaxNofNeighbors.
-
-    \code
-    t.setMaxNofNeighbors(1);
-    vec3 result           = t.getNeighbor( 0 ).p;
-    unsigned int resultId = t.getNeighborId( 0 );
-
-    cout << resultId << endl;
-    cout << result(0) << " " << result(1) << " " << result(2) << endl;
-    cout << t.getNeighborSquaredDistance( 0 ) << endl;
-    \endcode
-    \ingroup groupGeometry
+  \brief 3D Kdtree with reentrant queries
   */
 template<typename _Scalar, typename _Index = int >
 class KdTree

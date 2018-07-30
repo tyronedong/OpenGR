@@ -52,12 +52,13 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/Functor4pcs.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/FunctorBrute4pcs.h"
 #include "gr/accelerators/pairExtraction/bruteForceFunctor.h"
 #include "gr/accelerators/pairExtraction/intersectionFunctor.h"
 #include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
 #include "gr/utils/timer.h"
-#include "gr/accelerators/bbox.h"
-#include "gr/algorithms/FunctorFeaturePointTest.h"
+#include "gr/algorithms/PointPairFilter.h"
+#include "gr/sampling.h"
 
 #include <Eigen/Dense>
 
@@ -253,14 +254,20 @@ void callSubTests()
     }
 }
 
-template <typename MatchType>
-void callMatchSubTests()
+template <template <typename, typename> typename FunctorType>
+void callMatch4SubTestsWithFunctor()
 {
-    using Scalar = typename MatchType::Scalar;
-    using PairsVector = typename MatchType::PairsVector;
+    using MatcherType = gr::Match4pcsBase<FunctorType, TrVisitorType, gr::DummyPointFilter, gr::DummyPointFilter::Options>;
+    using Scalar = typename MatcherType::Scalar;
+    using PairsVector = typename MatcherType::PairsVector;
+    using OptionType  = typename MatcherType::OptionsType;
+    using SamplerType = gr::UniformDistSampler;
 
-    Match4PCSOptions opt;
+    SamplerType sampler;
+
+    OptionType opt;
     opt.delta = 0.1;
+    opt.dummyFilteringResponse = true;
     VERIFY(opt.configureOverlap(0.5));
 
     const size_t nbPointP = 200;
@@ -271,7 +278,7 @@ void callMatchSubTests()
     Scalar normal_angle1 = 0.6;
     Scalar normal_angle2 = 0.4;
 
-    Scalar pair_distance_epsilon = MatchType::distance_factor * opt.delta;
+    Scalar pair_distance_epsilon = MatcherType::distance_factor * opt.delta;
 
 #pragma omp parallel for
     for(int i = 0; i < Testing::g_repeat; ++i)
@@ -291,8 +298,8 @@ void callMatchSubTests()
 
 
         // extract point using matcher
-        Testing::TestMatcher<MatchType> match (opt, logger);
-        match.init(P, Q);
+        Testing::TestMatcher<MatcherType> match (opt, logger);
+        match.init(P, Q, sampler);
 
         std::vector<std::pair<int, int>> pairs1, pairs2;
         match.getFunctor().ExtractPairs(distance1,
@@ -333,6 +340,25 @@ void callMatchSubTests()
 
 }
 
+void callMatch4SubTests() {
+
+  using std::cout;
+  using std::endl;
+
+  cout << "Extract pairs using Functor4PCS" << endl;
+  callMatch4SubTestsWithFunctor<Functor4PCS>();
+  cout << "Ok..." << endl;
+
+  cout << "Extract pairs using Functor4PCS" << endl;
+  callMatch4SubTestsWithFunctor<FunctorBrute4PCS>();
+  cout << "Ok..." << endl;
+
+  cout << "Extract pairs using FunctorSuper4PCS" << endl;
+  callMatch4SubTestsWithFunctor<FunctorSuper4PCS>();
+  cout << "Ok..." << endl;
+}
+
+
 int main(int argc, const char **argv) {
     if(!Testing::init_testing(argc, argv))
     {
@@ -342,7 +368,6 @@ int main(int argc, const char **argv) {
     using std::cout;
     using std::endl;
     using namespace gr::Accelerators::PairExtraction;
-    using Filter = gr::DummyPointFilter<true>;
 
 
     cout << "Extract pairs in 2 dimensions (BRUTE FORCE)..." << endl;
@@ -381,13 +406,7 @@ int main(int argc, const char **argv) {
     callSubTests<long double, 4, IntersectionFunctor>();
     cout << "Ok..." << endl;
 
-    cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4pcsBase<Functor4PCS<Filter>>>();
-    cout << "Ok..." << endl;
-
-    cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4pcsBase<FunctorSuper4PCS<Filter>>>();
-    cout << "Ok..." << endl;
+    callMatch4SubTests();
 
     return EXIT_SUCCESS;
 }

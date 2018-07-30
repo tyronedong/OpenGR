@@ -1,9 +1,11 @@
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
+#include "gr/sampling.h"
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/Functor4pcs.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
-#include "gr/algorithms/FunctorFeaturePointTest.h"
+#include "gr/algorithms/FunctorBrute4pcs.h"
+#include <gr/algorithms/PointPairFilter.h>
 
 #include <Eigen/Dense>
 
@@ -18,6 +20,11 @@
 using namespace std;
 using namespace gr;
 using namespace gr::Demo;
+
+
+
+// data IO
+IOManager iomananger;
 
 
 static inline void printS4PCSParameterList(){
@@ -43,6 +50,61 @@ struct TransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
+template <
+    typename Matcher,
+    typename Options,
+    typename Sampler,
+    typename TransformVisitor>
+typename Point3D::Scalar computeAlignment (
+    const Options& options,
+    const Utils::Logger& logger,
+    const std::vector<Point3D>& P,
+    std::vector<Point3D>* Q,
+    Eigen::Ref<Eigen::Matrix<typename Point3D::Scalar, 4, 4>> mat,
+    const Sampler& sampler,
+    TransformVisitor& visitor
+    ) {
+  Matcher matcher (options, logger);
+  logger.Log<Utils::Verbose>( "Starting registration" );
+  typename Point3D::Scalar score = matcher.ComputeTransformation(P, Q, mat, sampler, visitor);
+
+
+  logger.Log<Utils::Verbose>( "Score: ", score );
+  logger.Log<Utils::Verbose>( "(Homogeneous) Transformation from ",
+                              input2.c_str(),
+                              " to ",
+                              input1.c_str(),
+                              ": \n",
+                              mat);
+
+  if(! outputSampled1.empty() ){
+      logger.Log<Utils::Verbose>( "Exporting Sampled cloud 1 to ",
+                                  outputSampled1.c_str(),
+                                  " ..." );
+      iomananger.WriteObject((char *)outputSampled1.c_str(),
+                             matcher.getFirstSampled(),
+                             vector<Eigen::Matrix2f>(),
+                             vector<typename Point3D::VectorType>(),
+                             vector<tripple>(),
+                             vector<string>());
+      logger.Log<Utils::Verbose>( "Export DONE" );
+  }
+  if(! outputSampled2.empty() ){
+      logger.Log<Utils::Verbose>( "Exporting Sampled cloud 2 to ",
+                                  outputSampled2.c_str(),
+                                  " ..." );
+      iomananger.WriteObject((char *)outputSampled2.c_str(),
+                             matcher.getSecondSampled(),
+                             vector<Eigen::Matrix2f>(),
+                             vector<typename Point3D::VectorType>(),
+                             vector<tripple>(),
+                             vector<string>());
+      logger.Log<Utils::Verbose>( "Export DONE" );
+  }
+
+  return score;
+}
+
 int main(int argc, char **argv) {
   using namespace gr;
 
@@ -56,7 +118,7 @@ int main(int argc, char **argv) {
   typename Point3D::Scalar score = 0;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using SamplerType   = gr::Sampling::UniformDistSampler;
+  using SamplerType   = gr::UniformDistSampler;
   using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
                             DummyTransformVisitor,
                             TransformVisitor>::type;
@@ -78,18 +140,9 @@ int main(int argc, char **argv) {
     exit(std::max(c,0));
   }
 
-  // prepare matcher ressources
-  Match4PCSOptions options;
+  // prepare matcher ressourcesoutputSampled2
   using MatrixType = Eigen::Matrix<typename Point3D::Scalar, 4, 4>;
   MatrixType mat (MatrixType::Identity());
-
-  if(! Demo::setOptionsFromArgs(options, logger))
-  {
-    exit(-3);
-  }
-
-  // load data
-  IOManager iomananger;
 
   // Read the inputs.
   if (!iomananger.ReadObject((char *)input1.c_str(), set1, tex_coords1, normals1, tris1,
@@ -113,59 +166,41 @@ int main(int argc, char **argv) {
   try {
 
       if (use_super4pcs) {
-          Match4pcsBase<FunctorSuper4PCS<PairFilter>> matcher(options, logger);
-          logger.Log<Utils::Verbose>( "Use Super4PCS" );
-          score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
+          using MatcherType = gr::Match4pcsBase<gr::FunctorSuper4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+          using OptionType  = typename MatcherType::OptionsType;
 
-          if(! outputSampled1.empty() ){
-              logger.Log<Utils::Verbose>( "Exporting Sampled cloud 1 to ",
-                                          outputSampled1.c_str(),
-                                          " ..." );
-              iomananger.WriteObject((char *)outputSampled1.c_str(),
-                                     matcher.getFirstSampled(),
-                                     vector<Eigen::Matrix2f>(),
-                                     vector<typename Point3D::VectorType>(),
-                                     vector<tripple>(),
-                                     vector<string>());
-              logger.Log<Utils::Verbose>( "Export DONE" );
+          OptionType options;
+          if(! Demo::setOptionsFromArgs(options, logger))
+          {
+            exit(-2); /// \FIXME use status codes for error reporting
           }
-          if(! outputSampled2.empty() ){
-              logger.Log<Utils::Verbose>( "Exporting Sampled cloud 2 to ",
-                                          outputSampled2.c_str(),
-                                          " ..." );
-              iomananger.WriteObject((char *)outputSampled2.c_str(),
-                                     matcher.getSecondSampled(),
-                                     vector<Eigen::Matrix2f>(),
-                                     vector<typename Point3D::VectorType>(),
-                                     vector<tripple>(),
-                                     vector<string>());
-              logger.Log<Utils::Verbose>( "Export DONE" );
-          }
+
+          score = computeAlignment<MatcherType> (options, logger, set1, &set2, mat, sampler, visitor);
+
       }
       else {
-          Match4pcsBase<Functor4PCS<PairFilter>> matcher(options, logger);
-          logger.Log<Utils::Verbose>( "Use old 4PCS" );
-          score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
+          using MatcherType = gr::Match4pcsBase<gr::Functor4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+          using OptionType  = typename MatcherType::OptionsType;
+
+          OptionType options;
+          if(! Demo::setOptionsFromArgs(options, logger))
+          {
+            exit(-2); /// \FIXME use status codes for error reporting
+          }
+
+          score = computeAlignment<MatcherType> (options, logger, set1, &set2, mat, sampler, visitor);
       }
 
   }
   catch (const std::exception& e) {
       logger.Log<Utils::ErrorReport>( "[Error]: " , e.what() );
-      logger.Log<Utils::ErrorReport>( "Aborting with code -2 ..." );
-      return -2;
-  }
-  catch (...) {
-      logger.Log<Utils::ErrorReport>( "[Unknown Error]: Aborting with code -3 ..." );
+      logger.Log<Utils::ErrorReport>( "Aborting with code -3 ..." );
       return -3;
   }
-
-  logger.Log<Utils::Verbose>( "Score: ", score );
-  logger.Log<Utils::Verbose>( "(Homogeneous) Transformation from ",
-                              input2.c_str(),
-                              " to ",
-                              input1.c_str(),
-                              ": \n",
-                              mat);
+  catch (...) {
+      logger.Log<Utils::ErrorReport>( "[Unknown Error]: Aborting with code -4 ..." );
+      return -4;
+  }
 
 
   if(! outputMat.empty() ){

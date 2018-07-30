@@ -58,6 +58,7 @@
 #include <ctime>
 
 #include "gr/shared.h"
+#include "gr/algorithms/matchBase.h"
 
 #define DEFAULT_REPEAT 10
 
@@ -68,48 +69,54 @@ namespace gr {
 namespace Testing {
 
 //! Matcher class providing public visilibility of internal routines
-template <class BaseMatcher>
-class TestMatcher : public BaseMatcher {
+template <class _MatchBaseType>
+class TestMatcher : public _MatchBaseType {
 public:
-    using Scalar                = typename BaseMatcher::Scalar;
-    using MatrixType            = typename BaseMatcher::MatrixType;
-    using PairsVector           = typename BaseMatcher::PairsVector;
-    using DefaultSampler        = typename BaseMatcher::DefaultSampler;
-    using Traits                = typename BaseMatcher::Traits;
-    using Set                   = typename Traits::Set;
+    using MatchBaseType         = _MatchBaseType;
+    using Scalar                = typename MatchBaseType::Scalar;
+    using VectorType            = typename MatchBaseType::VectorType;
+    using MatrixType            = typename MatchBaseType::MatrixType;
+    using TransformVisitor      = typename MatchBaseType::TransformVisitor;
+    using OptionsType           = typename MatchBaseType::OptionsType;
 
-    using BaseMatcher::BaseMatcher;
+    // Alias types from CongruentSetExplorationBase
+    using Traits               = typename MatchBaseType::Traits;
+    using CongruentBaseType    = typename MatchBaseType::CongruentBaseType;
+    using Set                  = typename MatchBaseType::Set;
+    using Coordinates          = typename MatchBaseType::Coordinates;
 
-    template < typename Sampler = DefaultSampler,
-               typename Visitor = DummyTransformVisitor>
+    // inherit constructor
+    using MatchBaseType::MatchBaseType;
+
+    template < typename Sampler>
     inline Scalar
     ComputeTransformation(const std::vector<Point3D>& P,
                           std::vector<Point3D>* Q,
                           Eigen::Ref<MatrixType> transformation,
-                          const Sampler& s = Sampler(),
-                          const Visitor& v = Visitor()){
-        return BaseMatcher::ComputeTransformation(P, Q,
+                          const Sampler& s,
+                          TransformVisitor& v ){
+        return MatchBaseType::ComputeTransformation(P, Q,
                                                   transformation,
                                                   s,
                                                   v);
     }
 
-    template < typename Sampler = DefaultSampler>
+    template < typename Sampler >
     inline void init(const std::vector<Point3D>& P,
                      const std::vector<Point3D>& Q,
-                     const Sampler& sampler = Sampler())
-    { BaseMatcher::init(P,Q, sampler); }
+                     const Sampler& sampler )
+    { MatchBaseType::init(P,Q, sampler); }
 
     inline bool SelectQuadrilateral(Scalar &inv1, Scalar &inv2,
                                     int& base1, int& base2,
                                     int& base3, int& base4)
     {
-        return BaseMatcher::SelectQuadrilateral(inv1, inv2,
+        return MatchBaseType::SelectQuadrilateral(inv1, inv2,
                                                 base1, base2, base3, base4);
     }
 
     inline const std::vector<Point3D>& base3D() const
-    { return BaseMatcher::base3D(); }
+    { return MatchBaseType::base3D(); }
 
     inline bool TryCongruentSet(int base_id1,
                                 int base_id2,
@@ -117,7 +124,7 @@ public:
                                 int base_id4,
                                 const Set &congruent_quads,
                                 size_t &nbCongruent){
-        return BaseMatcher::TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
+        return MatchBaseType::TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
                                             congruent_quads,
                                             nbCongruent);
     }
@@ -266,12 +273,12 @@ static bool init_testing(int argc, const char *argv[])
     return false;
   }
 
-  char *env_SUPER4PCS_REPEAT = getenv("SUPER4PCS_REPEAT");
-  if(!g_has_set_repeat && env_SUPER4PCS_REPEAT)
-    set_repeat_from_string(env_SUPER4PCS_REPEAT);
-  char *env_SUPER4PCS_SEED = getenv("SUPER4PCS_SEED");
-  if(!g_has_set_seed && env_SUPER4PCS_SEED)
-    set_seed_from_string(env_SUPER4PCS_SEED);
+  char *env_OPENGR_REPEAT = getenv("SUPER4PCS_REPEAT");
+  if(!g_has_set_repeat && env_OPENGR_REPEAT)
+    set_repeat_from_string(env_OPENGR_REPEAT);
+  char *env_OPENGR_SEED = getenv("SUPER4PCS_SEED");
+  if(!g_has_set_seed && env_OPENGR_SEED)
+    set_seed_from_string(env_OPENGR_SEED);
 
   if(!g_has_set_seed) g_seed = (unsigned int) time(NULL);
   if(!g_has_set_repeat) g_repeat = DEFAULT_REPEAT;

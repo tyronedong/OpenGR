@@ -2,7 +2,9 @@
 // Created by Sandra Alfaro on 31/05/18.
 //
 
-#include "gr/algorithms/match3pcs.h"
+#include <gr/algorithms/matchBase.h>
+#include <gr/algorithms/match3pcs.h>
+#include <gr/algorithms/PointPairFilter.h>
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
 
@@ -205,7 +207,14 @@ void test_model(const vector<Transform> &transforms,
     mergedset.insert(mergedset.end(), set1.begin(), set1.end());
 
     // Our matcher.
-    Match3PCSOptions options;
+    using MatcherType = gr::Match3pcs<TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+    using OptionType  = typename MatcherType::OptionsType;
+    using SamplerType   = gr::UniformDistSampler;
+
+
+    OptionType options;
+    TrVisitorType visitor;
+    SamplerType sampler;
 
     // Set parameters.
     MatrixType mat (MatrixType::Identity());
@@ -216,7 +225,7 @@ void test_model(const vector<Transform> &transforms,
 
     Scalar score = 0.;
 
-    Match3pcs matcher(options, logger);
+    MatcherType matcher(options, logger);
 
     cout << "./Super4PCS -i "
          << input1.c_str() << " "
@@ -228,7 +237,7 @@ void test_model(const vector<Transform> &transforms,
          << " -c " << options.max_color_distance
          << " -t " << options.max_time_seconds
          << endl;
-    score = matcher.ComputeTransformation(mergedset, &set2, mat);
+    score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
 
 #ifdef WRITE_OUTPUT_FILES
     stringstream iss;

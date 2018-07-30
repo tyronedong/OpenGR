@@ -53,15 +53,28 @@
 
 
 namespace gr {
-namespace Sampling {
+
+#ifdef PARSED_BY_DOXYGEN
+struct SamplerConcept {
+    template <class Options>
+    void operator() (const std::vector<Point3D>& /*inputset*/,
+                     const Options& /*options*/,
+                     std::vector<Point3D>& /*output*/) const{}
+};
+#endif
 
 
-struct UniformDistSampler{
+struct UniformDistSampler
+#ifdef PARSED_BY_DOXYGEN
+    : public SamplerConcept
+#endif
+{
 private:
-    template <typename _Scalar>
+    template <typename _Point>
     class HashTable {
     public:
-        using Scalar = _Scalar;
+        using Point  = _Point;
+        using Scalar = typename Point::Scalar;
 
     private:
         const uint64_t MAGIC1 = 100000007;
@@ -102,14 +115,14 @@ private:
         }
     };
 public:
-    template <typename Point>
+    template <class Options>
     inline
-    void operator() (const std::vector<Point>& inputset,
-                     const MatchOptions& options,
-                     std::vector<Point>& output) const {
+    void operator() (const std::vector<Point3D>& inputset,
+                     const Options& options,
+                     std::vector<Point3D>& output) const {
       int num_input = inputset.size();
       output.clear();
-      HashTable<typename Point::Scalar> hash(num_input, options.delta);
+      HashTable<Point3D> hash(num_input, options.delta);
       for (int i = 0; i < num_input; i++) {
         uint64_t& ind = hash[inputset[i]];
         if (ind >= num_input) {
@@ -121,7 +134,6 @@ public:
 };
 
 
-} // namespace Sampling
 } // namespace Super4PCS
 
 

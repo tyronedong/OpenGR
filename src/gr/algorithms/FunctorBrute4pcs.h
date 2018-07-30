@@ -1,12 +1,10 @@
-//
-// Created by Sandra Alfaro on 24/04/18.
-//
 
-#ifndef OPENGR_FUNCTOR4PCS_H
-#define OPENGR_FUNCTOR4PCS_H
+#ifndef BRUTE4PCS_FUNCTOR4PCS_H
+#define BRUTE4PCS_FUNCTOR4PCS_H
 
 #include <vector>
 #include "gr/shared.h"
+#include "gr/algorithms/match4pcsBase.h"
 
 
 namespace gr {
@@ -15,7 +13,7 @@ namespace gr {
     /// \tparam PairFilterFunctor filters pairs of points during the exploration.
     ///         Must implement PairFilterConcept
     template <typename PairFilterFunctor, typename Options>
-    struct Functor4PCS {
+    struct FunctorBrute4PCS {
     public :
         using BaseCoordinates = Traits4pcs::Coordinates;
         using Scalar      = typename Point3D::Scalar;
@@ -31,7 +29,7 @@ namespace gr {
 
 
     public :
-        inline Functor4PCS(std::vector<Point3D> &sampled_Q_3D_,
+        inline FunctorBrute4PCS(std::vector<Point3D> &sampled_Q_3D_,
                          BaseCoordinates& base_3D_,
                          const OptionType &options)
                         :mySampled_Q_3D_(sampled_Q_3D_)
@@ -67,7 +65,7 @@ namespace gr {
                                          const std::vector <std::pair<int, int>> &First_pairs,
                                          const std::vector <std::pair<int, int>> &Second_pairs,
                                          Traits4pcs::Set* quadrilaterals) const {
-            using RangeQuery = typename gr::KdTree<Scalar>::template RangeQuery<>;
+            using VectorType = gr::Point3D::VectorType;
 
             if (quadrilaterals == nullptr) return false;
 
@@ -78,34 +76,31 @@ namespace gr {
             // the new points corresponding to the invariants in Second_pairs.
             quadrilaterals->clear();
 
-            gr::KdTree<Scalar> kdtree(number_of_points);
+            std::vector<VectorType> invariant1Set;
+            invariant1Set.reserve(number_of_points);
 
-            // Build the kdtree tree using the invariants on First_pairs.
+            // build invariants for the first pair set
             for (size_t i = 0; i < First_pairs.size(); ++i) {
                 const VectorType &p1 = mySampled_Q_3D_[First_pairs[i].first].pos();
                 const VectorType &p2 = mySampled_Q_3D_[First_pairs[i].second].pos();
-                kdtree.add(p1 + invariant1 * (p2 - p1));
+                invariant1Set.push_back(p1 + invariant1 * (p2 - p1));
             }
-            kdtree.finalize();
 
-            //Point3D invRes;
-            // Query the Kdtree for all the points corresponding to the invariants in Second_pairs.
+            VectorType query;
             for (size_t i = 0; i < Second_pairs.size(); ++i) {
                 const VectorType &p1 = mySampled_Q_3D_[Second_pairs[i].first].pos();
                 const VectorType &p2 = mySampled_Q_3D_[Second_pairs[i].second].pos();
 
-                RangeQuery query;
-                query.queryPoint = p1 + invariant2 * (p2 - p1);
-                query.sqdist = distance_threshold2;
-
-                kdtree.doQueryDistProcessIndices(query,
-                                                 [quadrilaterals, i, &First_pairs, &Second_pairs](int id) {
-                                                     quadrilaterals->push_back(
-                                                             { First_pairs[id].first,
-                                                               First_pairs[id].second,
-                                                               Second_pairs[i].first,
-                                                               Second_pairs[i].second });
-                                                 });
+                query = p1 + invariant2 * (p2 - p1);
+                for (size_t j = 0; j < invariant1Set.size(); ++j) {
+                        const auto&other = invariant1Set[j];
+                        if ( (query - other).squaredNorm() < distance_threshold2 )
+                            quadrilaterals->push_back(
+                                    { First_pairs[j].first,
+                                      First_pairs[j].second,
+                                      Second_pairs[i].first,
+                                      Second_pairs[i].second });
+                    }
             }
 
             return quadrilaterals->size() != 0;
@@ -165,4 +160,4 @@ namespace gr {
 }
 
 
-#endif //OPENGR_FUNCTOR4PCS_H
+#endif //BRUTE4PCS_FUNCTOR4PCS_H

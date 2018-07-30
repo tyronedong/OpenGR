@@ -11,31 +11,17 @@
 #include <omp.h>
 #endif
 
-#include "../shared.h"
-#include "../sampling.h"
-#include "../accelerators/kdtree.h"
-#include "../utils/logger.h"
-#include "matchBase.h"
+#include "gr/shared.h"
+#include "gr/sampling.h"
+#include "gr/accelerators/kdtree.h"
+#include "gr/utils/logger.h"
+#include "gr/algorithms/congruentSetExplorationBase.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
-#   include "super4pcs/utils/timer.h"
+#   include "gr/utils/timer.h"
 #endif
 
 namespace gr {
-
-
-    // ----- 4PCS Options -----
-    struct Match4PCSOptions : public MatchOptions{
-        using Scalar = typename Point3D::Scalar;
-        Match4PCSOptions() {}
-
-        /// Maximum normal difference.
-        Scalar max_normal_difference = -1;
-        /// Maximum translation distance. Set negative to ignore
-        Scalar max_translation_distance = -1;
-        /// Maximum color RGB distance between corresponding vertices. Set negative to ignore
-        Scalar max_color_distance = -1;
-    };
 
     struct Traits4pcs {
         static constexpr int size() { return 4; }
@@ -46,14 +32,30 @@ namespace gr {
 
     /// Class for the computation of the 4PCS algorithm.
     /// \param Functor use to determinate the use of Super4pcs or 4pcs algorithm.
-    template <typename Functor>
-    class Match4pcsBase : public MatchBase<Traits4pcs> {
+    template <template <typename, typename> typename _Functor,
+              typename _TransformVisitor,
+              typename _PairFilteringFunctor,  /// <\brief Must implements PairFilterConcept
+              template < class, class > typename PairFilteringOptions >
+    class Match4pcsBase : public CongruentSetExplorationBase<Traits4pcs, _TransformVisitor, _PairFilteringFunctor, PairFilteringOptions> {
+    public:
+        using Scalar            = typename Point3D::Scalar;
+        using PairFilteringFunctor = _PairFilteringFunctor;
+        using MatchBaseType     = CongruentSetExplorationBase<Traits4pcs, _TransformVisitor, _PairFilteringFunctor, PairFilteringOptions>;
+        using VectorType        = typename MatchBaseType::VectorType;
+        using MatrixType        = typename MatchBaseType::MatrixType;
+        using TransformVisitor  = typename MatchBaseType::TransformVisitor;
+        using CongruentBaseType = typename MatchBaseType::CongruentBaseType;
+        using Set               = typename MatchBaseType::Set;
+        using Coordinates       = typename MatchBaseType::Coordinates;
+        using OptionsType       = typename MatchBaseType::OptionsType;
+        using Functor           = _Functor<PairFilteringFunctor, OptionsType>;
+
     protected:
         Functor fun_;
 
     public:
 
-        Match4pcsBase (const Match4PCSOptions& options
+        Match4pcsBase (const OptionsType& options
                 , const Utils::Logger& logger);
 
         virtual ~Match4pcsBase();
@@ -91,7 +93,7 @@ namespace gr {
         /// It could be with a 3 point base or a 4 point base.
         /// \param base use to find the similar points congruent in Q.
         /// \param congruent_set a set of all point congruent found in Q.
-        bool generateCongruents (Base& base,Set& congruent_quads) override;
+        bool generateCongruents (CongruentBaseType& base,Set& congruent_quads) override;
 
     };
 }

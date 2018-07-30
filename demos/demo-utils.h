@@ -42,8 +42,8 @@
 // and applications.
 
 
-#ifndef _SUPER4PCS_DEMO_UTILS_H_
-#define _SUPER4PCS_DEMO_UTILS_H_
+#ifndef _OPENGR_DEMO_UTILS_H_
+#define _OPENGR_DEMO_UTILS_H_
 
 #include <fstream>
 #include <iostream>
@@ -161,7 +161,8 @@ static inline int getArgs(int argc,
   return 0;
 }
 
-static inline bool setOptionsFromArgs( Match4PCSOptions &options,
+template <typename OptionType>
+static inline bool setOptionsFromArgs( OptionType &options,
                                        const Utils::Logger& logger = Utils::Logger())
 {
     bool overlapOk = options.configureOverlap(overlap);

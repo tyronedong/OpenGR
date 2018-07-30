@@ -1,8 +1,8 @@
 #include "gr/algorithms/match4pcsBase.h"
 #include "gr/algorithms/FunctorSuper4pcs.h"
-#include "gr/algorithms/FunctorFeaturePointTest.h"
 #include "gr/io/io.h"
 #include "gr/utils/geometry.h"
+#include <gr/algorithms/PointPairFilter.h>
 
 #include <Eigen/Dense>
 
@@ -11,7 +11,11 @@ int main(int argc, char **argv) {
   using namespace gr;
   using namespace std;
 
-  using Matcher = Match4pcsBase<FunctorSuper4PCS<AdaptivePointFilter>>;
+  using TrVisitor = gr::DummyTransformVisitor;
+
+  using MatcherType = gr::Match4pcsBase<gr::FunctorSuper4PCS, TrVisitor, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+  using OptionType  = typename MatcherType::OptionsType;
+  using SamplerType = gr::UniformDistSampler;
 
   vector<Point3D> set1, set2;
   vector<Eigen::Matrix2f> tex_coords1, tex_coords2;
@@ -29,22 +33,22 @@ int main(int argc, char **argv) {
     Utils::CleanInvalidNormals(set1, normals1);
 
   // Our matcher.
-  Match4PCSOptions options;
+  OptionType options;
 
   // Set parameters.
-  typename Matcher::MatrixType mat;
+  typename MatcherType::MatrixType mat;
   double overlap (1);
   options.configureOverlap(overlap);
 
   typename Point3D::Scalar score = 0;
 
   constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using TrVisitorType = DummyTransformVisitor;
-  using SamplerType   = typename Matcher::DefaultSampler;
   Utils::Logger logger(loglvl);
+  SamplerType sampler;
+  TrVisitor visitor;
 
-  Matcher matcher(options, logger);
-  score = matcher.ComputeTransformation<SamplerType,TrVisitorType>(set1, &set2, mat);
+  MatcherType matcher(options, logger);
+  score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
 
   logger.Log<Utils::Verbose>( "Score: ", score );
 

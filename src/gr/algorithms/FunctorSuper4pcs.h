@@ -9,14 +9,12 @@
 #include <vector>
 #include "gr/shared.h"
 #include "gr/algorithms/pairCreationFunctor.h"
-#include "gr/accelerators/bbox.h"
 
 #ifdef SUPER4PCS_USE_CHEALPIX
 #include "gr/accelerators/normalHealSet.h"
 #else
 #include "gr/accelerators/normalset.h"
 #include "gr/accelerators/utils.h"
-#include "gr/algorithms/match4pcsBase.h"
 
 #endif
 
@@ -30,38 +28,31 @@ namespace gr {
     /// \see Match4pcsBase
     /// \tparam PairFilterFunctor filters pairs of points during the exploration.
     ///         Must implement PairFilterConcept
-    template <typename PointFilterFunctor>
+    template <typename PointFilterFunctor, typename Options>
     struct FunctorSuper4PCS {
     public :
         using BaseCoordinates = Traits4pcs::Coordinates;
         using Scalar      = typename Point3D::Scalar;
         using PairsVector = std::vector< std::pair<int, int> >;
         using VectorType  = typename Point3D::VectorType;
-        using OptionType  = Match4PCSOptions;
+        using OptionType  = Options;
+        using PairCreationFunctorType = PairCreationFunctor<Scalar, PointFilterFunctor, OptionType>;
 
 
     private :
-        OptionType myOptions_;
         std::vector<Point3D> &mySampled_Q_3D_;
         BaseCoordinates &myBase_3D_;
 
-        /// Private data contains parameters and internal variables that are computed
-        /// and change during the match computation. All parameters have default
-        /// values.
-
-        /// Internal data members.
-
-        mutable PairCreationFunctor<Scalar, PointFilterFunctor> pcfunctor_;
+        mutable PairCreationFunctorType pcfunctor_;
 
 
     public :
         inline FunctorSuper4PCS (std::vector<Point3D> &sampled_Q_3D_,
                                BaseCoordinates& base_3D_,
-                               OptionType options)
-                                : pcfunctor_ (myOptions_,mySampled_Q_3D_)
+                               const OptionType& options)
+                                : pcfunctor_ (options,mySampled_Q_3D_)
                                 ,mySampled_Q_3D_(sampled_Q_3D_)
-                                ,myBase_3D_(base_3D_)
-                                ,myOptions_ (options) {}
+                                ,myBase_3D_(base_3D_){}
 
         /// Initializes the data structures and needed values before the match
         /// computation.
@@ -78,8 +69,6 @@ namespace gr {
         /// in basein P.
         /// @param [in] pair_distance The distance between the pairs in P that we have
         /// to match in the pairs we select from Q.
-        /// @param [in] pair_normal_distance The angle between the normals of the pair
-        /// in P.
         /// @param [in] pair_distance_epsilon Tolerance on the pair distance. We allow
         /// candidate pair in Q to have distance of
         /// pair_distance+-pair_distance_epsilon.
@@ -88,11 +77,11 @@ namespace gr {
         /// @param [out] pairs A set of pairs in Q that match the pair in P with
         /// respect to distance and normals, up to the given tolerance.
         inline void ExtractPairs(Scalar pair_distance,
-                          Scalar pair_normals_angle,
-                          Scalar pair_distance_epsilon,
-                          int base_point1,
-                          int base_point2,
-                          PairsVector* pairs) const {
+                                 Scalar pair_normals_angle,
+                                 Scalar pair_distance_epsilon,
+                                 int base_point1,
+                                 int base_point2,
+                                 PairsVector* pairs) const {
 
             using namespace gr::Accelerators::PairExtraction;
 
@@ -104,20 +93,16 @@ namespace gr {
             pcfunctor_.pair_distance         = pair_distance;
             pcfunctor_.pair_distance_epsilon = pair_distance_epsilon;
             pcfunctor_.pair_normals_angle    = pair_normals_angle;
-            pcfunctor_.norm_threshold =
-                    0.5 * myOptions_.max_normal_difference * M_PI / 180.0;
-
             pcfunctor_.setRadius(pair_distance);
             pcfunctor_.setBase(base_point1, base_point2, myBase_3D_);
 
-
 #ifdef MULTISCALE
             BruteForceFunctor
-  <PairCreationFunctor<Scalar>::Primitive, PairCreationFunctor<Scalar>::Point, 3, Scalar> interFunctor;
+  <typename PairCreationFunctorType::Primitive, typename PairCreationFunctorType::Point, 3, Scalar> interFunctor;
 #else
             IntersectionFunctor
-                    <typename PairCreationFunctor<Scalar,PointFilterFunctor>::Primitive,
-                            typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point, 3, Scalar> interFunctor;
+                    <typename PairCreationFunctorType::Primitive,
+                     typename PairCreationFunctorType::Point, 3, Scalar> interFunctor;
 #endif
 
             Scalar eps = pcfunctor_.getNormalizedEpsilon(pair_distance_epsilon);
@@ -151,7 +136,7 @@ namespace gr {
                 const std::vector<std::pair<int, int>>& Second_pairs,
                Traits4pcs::Set* quadrilaterals) const {
 
-            typedef typename PairCreationFunctor<Scalar,PointFilterFunctor>::Point Point;
+            typedef typename PairCreationFunctorType::Point Point;
 
 #ifdef SUPER4PCS_USE_CHEALPIX
             typedef gr::IndexedNormalHealSet IndexedNormalSet3D;
@@ -159,7 +144,8 @@ namespace gr {
             typedef  gr::IndexedNormalSet
                     < Point,   //! \brief Point type used internally
                             3,       //! \brief Nb dimension
-                            7,       //! \brief Nb cells/dim normal
+                            5,       //! \brief Nb cells/dim normal
+ // FIXME_REFACTORING       7,       //! \brief Nb cells/dim normal
                             Scalar>  //! \brief Scalar type
                     IndexedNormalSet3D;
 #endif

@@ -5,7 +5,6 @@
 #include <vector>
 #include "gr/shared.h"
 
-#include "gr/accelerators/bbox.h"
 #include "gr/accelerators/pairExtraction/bruteForceFunctor.h"
 #include "gr/accelerators/pairExtraction/intersectionFunctor.h"
 #include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
@@ -13,7 +12,7 @@
 
 namespace gr {
 
-template <typename _Scalar, typename FilterFunctor>
+template <typename _Scalar, typename FilterFunctor, typename Options>
 struct PairCreationFunctor{
 
 public:
@@ -21,15 +20,13 @@ public:
   using PairsVector = std::vector<std::pair<int, int>>;
   using VectorType  = typename Point3D::VectorType;
   using BaseCoordinates = Traits4pcs::Coordinates;
-
-  // Processing data
-  Scalar norm_threshold;
-  double pair_normals_angle;
-  double pair_distance;
-  double pair_distance_epsilon;
+  using OptionType  = Options;
 
   // Shared data
-  Match4PCSOptions options_;
+  OptionType options_;
+  double pair_distance;
+  double pair_normals_angle;
+  double pair_distance_epsilon;
   const std::vector<Point3D>& Q_;
 
   PairsVector* pairs;
@@ -56,7 +53,7 @@ private:
 
 public:
   inline PairCreationFunctor(
-    Match4PCSOptions options,
+    const OptionType& options,
     const std::vector<Point3D>& Q)
     :options_(options), Q_(Q),
      pairs(NULL), _ratio(1.f)
@@ -92,7 +89,7 @@ public:
     points.clear();
     primitives.clear();
 
-    gr::AABB3D<Scalar> bbox;
+    Eigen::AlignedBox<_Scalar, 3> bbox;
 
     unsigned int nSamples = Q_.size();
 

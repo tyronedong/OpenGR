@@ -10,7 +10,7 @@
 #include <Eigen/Core>                     // Transform.computeRotationScaling()
 
 
-#ifdef SUPER4PCS_USE_OPENMP
+#ifdef OpenGR_USE_OPENMP
 #include <omp.h>
 #endif
 
@@ -21,7 +21,7 @@
 #include "match4pcsBase.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
-#   include "super4pcs/utils/timer.h"
+#   include "gr/utils/timer.h"
 #endif
 
 template <typename VectorType, typename Scalar>
@@ -93,20 +93,31 @@ static Scalar distSegmentToSegment(const VectorType& p1, const VectorType& p2,
 }
 
 namespace gr {
-    template <typename Functor>
-    Match4pcsBase<Functor>::Match4pcsBase (const Match4PCSOptions& options
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::Match4pcsBase (const OptionsType& options
             , const Utils::Logger& logger)
-            : MatchBase(options,logger)
-            , fun_(sampled_Q_3D_,base_3D_,options)
+            : MatchBaseType(options,logger)
+            , fun_(MatchBaseType::sampled_Q_3D_,MatchBaseType::base_3D_,MatchBaseType::options_)
     {
     }
 
-    template <typename Functor>
-    Match4pcsBase<Functor>::~Match4pcsBase() {}
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::~Match4pcsBase() {}
 
-    template <typename Functor>
-    bool Match4pcsBase<Functor>::TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                                                  int &id1, int &id2, int &id3, int &id4) {
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::TryQuadrilateral(
+        typename Point3D::Scalar &invariant1,
+        typename Point3D::Scalar &invariant2,
+        int &id1, int &id2, int &id3, int &id4) {
 
         Scalar min_distance = std::numeric_limits<Scalar>::max();
         int best1, best2, best3, best4;
@@ -123,8 +134,8 @@ namespace gr {
                 // Compute the closest points on both segments, the corresponding
                 // invariants and the distance between the closest points.
                 Scalar segment_distance = distSegmentToSegment(
-                        base_3D_[i].pos(), base_3D_[j].pos(),
-                        base_3D_[k].pos(), base_3D_[l].pos(),
+                        MatchBaseType::base_3D_[i].pos(), MatchBaseType::base_3D_[j].pos(),
+                        MatchBaseType::base_3D_[k].pos(), MatchBaseType::base_3D_[l].pos(),
                         local_invariant1, local_invariant2);
                 // Retail the smallest distance and the best order so far.
                 if (segment_distance < min_distance) {
@@ -141,13 +152,13 @@ namespace gr {
 
         if(best1 < 0 || best2 < 0 || best3 < 0 || best4 < 0 ) return false;
 
-        Coordinates tmp = base_3D_;
-        base_3D_[0] = tmp[best1];
-        base_3D_[1] = tmp[best2];
-        base_3D_[2] = tmp[best3];
-        base_3D_[3] = tmp[best4];
+        Coordinates tmp = MatchBaseType::base_3D_;
+        MatchBaseType::base_3D_[0] = tmp[best1];
+        MatchBaseType::base_3D_[1] = tmp[best2];
+        MatchBaseType::base_3D_[2] = tmp[best3];
+        MatchBaseType::base_3D_[3] = tmp[best4];
 
-        Base tmpId = {id1, id2, id3, id4};
+        CongruentBaseType tmpId = {id1, id2, id3, id4};
         id1 = tmpId[best1];
         id2 = tmpId[best2];
         id3 = tmpId[best3];
@@ -156,35 +167,40 @@ namespace gr {
         return true;
     }
 
-    template <typename Functor>
-    bool Match4pcsBase<Functor>::SelectQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                                                     int& base1, int& base2, int& base3, int& base4)  {
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::SelectQuadrilateral(
+        Scalar &invariant1,
+        Scalar &invariant2,
+        int& base1, int& base2, int& base3, int& base4)  {
 
         const Scalar kBaseTooSmall (0.2);
         int current_trial = 0;
 
         // Try fix number of times.
-        while (current_trial < kNumberOfDiameterTrials) {
+        while (current_trial < MatchBaseType::kNumberOfDiameterTrials) {
             // Select a triangle if possible. otherwise fail.
-            if (!SelectRandomTriangle(base1, base2, base3)){
+            if (!MatchBaseType::SelectRandomTriangle(base1, base2, base3)){
                 return false;
             }
 
-            base_3D_[0] = sampled_P_3D_[base1];
-            base_3D_[1] = sampled_P_3D_[base2];
-            base_3D_[2] = sampled_P_3D_[base3];
+            const auto& b0 = MatchBaseType::base_3D_[0] = MatchBaseType::sampled_P_3D_[base1];
+            const auto& b1 = MatchBaseType::base_3D_[1] = MatchBaseType::sampled_P_3D_[base2];
+            const auto& b2 = MatchBaseType::base_3D_[2] = MatchBaseType::sampled_P_3D_[base3];
 
             // The 4th point will be a one that is close to be planar to the other 3
             // while still not too close to them.
-            const double x1 = base_3D_[0].x();
-            const double y1 = base_3D_[0].y();
-            const double z1 = base_3D_[0].z();
-            const double x2 = base_3D_[1].x();
-            const double y2 = base_3D_[1].y();
-            const double z2 = base_3D_[1].z();
-            const double x3 = base_3D_[2].x();
-            const double y3 = base_3D_[2].y();
-            const double z3 = base_3D_[2].z();
+            const double x1 = b0.x();
+            const double y1 = b0.y();
+            const double z1 = b0.z();
+            const double x2 = b1.x();
+            const double y2 = b1.y();
+            const double z2 = b1.z();
+            const double x3 = b2.x();
+            const double y3 = b2.y();
+            const double z3 = b2.z();
 
             // Fit a plan.
             Scalar denom = (-x3 * y2 * z1 + x2 * y3 * z1 + x3 * y1 * z2 - x1 * y3 * z2 -
@@ -200,15 +216,15 @@ namespace gr {
                 base4 = -1;
                 Scalar best_distance = std::numeric_limits<Scalar>::max();
                 // Go over all points in P.
-                const Scalar too_small = std::pow(max_base_diameter_ * kBaseTooSmall, 2);
-                for (unsigned int i = 0; i < sampled_P_3D_.size(); ++i) {
-                    if ((sampled_P_3D_[i].pos()- sampled_P_3D_[base1].pos()).squaredNorm() >= too_small &&
-                        (sampled_P_3D_[i].pos()- sampled_P_3D_[base2].pos()).squaredNorm() >= too_small &&
-                        (sampled_P_3D_[i].pos()- sampled_P_3D_[base3].pos()).squaredNorm() >= too_small) {
+                const Scalar too_small = std::pow(MatchBaseType::max_base_diameter_ * kBaseTooSmall, 2);
+                for (unsigned int i = 0; i < MatchBaseType::sampled_P_3D_.size(); ++i) {
+                    const auto &p = MatchBaseType::sampled_P_3D_[i];
+                    if ((p.pos() - b0.pos()).squaredNorm() >= too_small &&
+                        (p.pos() - b1.pos()).squaredNorm() >= too_small &&
+                        (p.pos() - b2.pos()).squaredNorm() >= too_small) {
                         // Not too close to any of the first 3.
                         const Scalar distance =
-                                std::abs(A * sampled_P_3D_[i].x() + B * sampled_P_3D_[i].y() +
-                                         C * sampled_P_3D_[i].z() - 1.0);
+                                std::abs(A * p.x() + B * p.y() + C * p.z() - 1.0);
                         // Search for the most planar.
                         if (distance < best_distance) {
                             best_distance = distance;
@@ -218,7 +234,7 @@ namespace gr {
                 }
                 // If we have a good one we can quit.
                 if (base4 != -1) {
-                    base_3D_[3] = sampled_P_3D_[base4];
+                    MatchBaseType::base_3D_[3] = MatchBaseType::sampled_P_3D_[base4];
                     if(TryQuadrilateral(invariant1, invariant2, base1, base2, base3, base4))
                         return true;
                 }
@@ -230,34 +246,44 @@ namespace gr {
         return false;
     }
 
-    template <typename Functor>
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
     // Initialize all internal data structures and data members.
-    inline void Match4pcsBase<Functor>::Initialize(const std::vector<Point3D>& P,
-                           const std::vector<Point3D>& Q) {
+    inline void Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::Initialize(
+        const std::vector<Point3D>& P,
+        const std::vector<Point3D>& Q) {
         fun_.Initialize(P,Q);
     }
 
 
-    template <typename Functor>
-    inline bool Match4pcsBase<Functor>::generateCongruents (Base& base, Set& congruent_quads) {
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    inline bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::generateCongruents (
+        CongruentBaseType &base, Set& congruent_quads) {
+      std::cout << "------------------" << std::endl;
 
-        Scalar invariant1, invariant2;
+      Scalar invariant1, invariant2;
 //#define STATIC_BASE
 
 #ifdef STATIC_BASE
-        static bool first_time = true;
+  static bool first_time = true;
 
   if (first_time){
+      std::cerr << "Warning: Running with static base" << std::endl;
       base[0] = 0;
       base[1] = 3;
       base[2] = 1;
       base[3] = 4;
 
-      base_3D_[0] = sampled_P_3D_ [base[0]];
-      base_3D_[1] = sampled_P_3D_ [base[1]];
-      base_3D_[2] = sampled_P_3D_ [base[2]];
-      base_3D_[3] = sampled_P_3D_ [base[3]];
-      TryQuadrilateral(&invariant1, &invariant2, base[0], base[1], base[2], base[3]);
+      MatchBaseType::base_3D_[0] = MatchBaseType::sampled_P_3D_ [base[0]];
+      MatchBaseType::base_3D_[1] = MatchBaseType::sampled_P_3D_ [base[1]];
+      MatchBaseType::base_3D_[2] = MatchBaseType::sampled_P_3D_ [base[2]];
+      MatchBaseType::base_3D_[3] = MatchBaseType::sampled_P_3D_ [base[3]];
+      TryQuadrilateral(invariant1, invariant2, base[0], base[1], base[2], base[3]);
 
       first_time = false;
   }
@@ -267,22 +293,32 @@ namespace gr {
 #else
         if (!SelectQuadrilateral(invariant1, invariant2, base[0], base[1],
                                  base[2], base[3])) {
+            std::cout << "Skipping wrong base" << std::endl;
             return false;
         }
 #endif
+        std::cout << "Found a new base !" << std::endl;
+        const auto& b0 = MatchBaseType::base_3D_[0];
+        const auto& b1 = MatchBaseType::base_3D_[1];
+        const auto& b2 = MatchBaseType::base_3D_[2];
+        const auto& b3 = MatchBaseType::base_3D_[3];
 
         // Computes distance between pairs.
-        const Scalar distance1 = (base_3D_[0].pos()- base_3D_[1].pos()).norm();
-        const Scalar distance2 = (base_3D_[2].pos()- base_3D_[3].pos()).norm();
+        const Scalar distance1 = (b0.pos()- b1.pos()).norm();
+        const Scalar distance2 = (b2.pos()- b3.pos()).norm();
 
         std::vector<std::pair<int, int>> pairs1, pairs2;
 
         // Compute normal angles.
-        const Scalar normal_angle1 = (base_3D_[0].normal() - base_3D_[1].normal()).norm();
-        const Scalar normal_angle2 = (base_3D_[2].normal() - base_3D_[3].normal()).norm();
+        const Scalar normal_angle1 = (b0.normal() - b1.normal()).norm();
+        const Scalar normal_angle2 = (b2.normal() - b3.normal()).norm();
 
-        fun_.ExtractPairs(distance1, normal_angle1, distance_factor * options_.delta, 0, 1, &pairs1);
-        fun_.ExtractPairs(distance2, normal_angle2, distance_factor * options_.delta, 2, 3, &pairs2);
+        fun_.ExtractPairs(distance1, normal_angle1, MatchBaseType::distance_factor * MatchBaseType::options_.delta, 0, 1, &pairs1);
+        fun_.ExtractPairs(distance2, normal_angle2, MatchBaseType::distance_factor * MatchBaseType::options_.delta, 2, 3, &pairs2);
+
+
+        std::cout << "Pair set 1 has " << pairs1.size() << " elements" << std::endl;
+        std::cout << "Pair set 2 has " << pairs2.size() << " elements" << std::endl;
 
 //  Log<LogLevel::Verbose>( "Pair creation ouput: ", pairs1.size(), " - ", pairs2.size());
 
@@ -291,8 +327,8 @@ namespace gr {
         }
 
         if (!fun_.FindCongruentQuadrilaterals(invariant1, invariant2,
-                                         distance_factor * options_.delta,
-                                         distance_factor * options_.delta,
+                                         MatchBaseType::distance_factor * MatchBaseType::options_.delta,
+                                         MatchBaseType::distance_factor * MatchBaseType::options_.delta,
                                          pairs1,
                                          pairs2,
                                          &congruent_quads)) {

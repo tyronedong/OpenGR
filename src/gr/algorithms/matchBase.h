@@ -50,10 +50,11 @@
 #include <omp.h>
 #endif
 
-#include "../shared.h"
-#include "../sampling.h"
-#include "../accelerators/kdtree.h"
-#include "../utils/logger.h"
+#include "gr/shared.h"
+#include "gr/sampling.h"
+#include "gr/accelerators/kdtree.h"
+#include "gr/utils/logger.h"
+#include "gr/utils/crtp.h"
 
 #ifdef TEST_GLOBAL_TIMINGS
 #   include "gr/utils/timer.h"
@@ -67,32 +68,53 @@ struct DummyTransformVisitor {
     constexpr bool needsGlobalTransformation() const { return false; }
 };
 
-/// Class contain the functions shared by 4pcs and 3pcs
-/// \param _Traits Functor used to configure the Base, Set and Coordinate types, dependent on the use of 4pcs or 3pcs search.
-template <typename _Traits>
+/// \brief Abstract class for registration algorithms
+template <typename _TransformVisitor = DummyTransformVisitor,
+          template < class, class > typename ... OptExts >
 class MatchBase {
 
 public:
-    using Traits = _Traits;
-    using Base = typename Traits::Base;
-    using Set = typename Traits::Set;
-    using Coordinates = typename Traits::Coordinates;
-    using PairsVector =  std::vector< std::pair<int, int> >;
     using Scalar = typename Point3D::Scalar;
     using VectorType = typename Point3D::VectorType;
     using MatrixType = Eigen::Matrix<Scalar, 4, 4>;
     using LogLevel = Utils::LogLevel;
-    using DefaultSampler = Sampling::UniformDistSampler;
-    static constexpr int kNumberOfDiameterTrials = 1000;
-    static constexpr Scalar kLargeNumber = 1e9;
-    static constexpr Scalar distance_factor = 2.0;
+    using TransformVisitor = _TransformVisitor;
+
+    template < class Derived, class TBase>
+    class Options : public TBase
+    {
+    public:
+        using Scalar = typename Point3D::Scalar;
+
+        /// Distance threshold used to compute the LCP
+        /// \todo Move to DistanceMeasure
+        Scalar delta       = Scalar(5.0);
+        /// The number of points in the sample. We sample this number of points
+        /// uniformly from P and Q.
+        size_t sample_size = 200;
+        /// Maximum time we allow the computation to take. This makes the algorithm
+        /// an ANY TIME algorithm that can be stopped at any time, producing the best
+        /// solution so far.
+        /// \warning Max. computation time must be handled in child classes
+        int max_time_seconds = 60;
+        /// use a constant default seed by default
+        unsigned int randomSeed = std::mt19937::default_seed;
+
+        /// Constraints about transformations
+
+        /// Maximum rotation angle. Set negative to ignore
+        Scalar max_angle = -1;
+        /// Maximum translation distance. Set negative to ignore
+        Scalar max_translation_distance = -1;
+        // \FIXME std::pair <Scalar, Scalar> scale_range;
+    };
+
+    using OptionsType = gr::Utils::CRTP < OptExts ... , Options >;
+
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-
-    MatchBase(const MatchOptions& options
-            , const Utils::Logger &logger
-    );
+    MatchBase(const OptionsType& options, const Utils::Logger &logger);
 
     virtual ~MatchBase();
 
@@ -107,6 +129,7 @@ public:
     }
 
 
+#ifdef PARSED_BY_DOXYGEN
     /// Computes an approximation of the best LCP (directional) from Q to P
     /// and the rigid transformation that realizes it. The input sets may or may
     /// not contain normal information for any point.
@@ -118,19 +141,15 @@ public:
     /// @return the computed LCP measure.
     /// The method updates the coordinates of the second set, Q, applying
     /// the found transformation.
-    template <typename Sampler = DefaultSampler,
-              typename Visitor = DummyTransformVisitor>
+    template <typename Sampler>
     Scalar ComputeTransformation(const std::vector<Point3D>& P,
-                          std::vector<Point3D>* Q,
-                          Eigen::Ref<MatrixType> transformation,
-                          const Sampler& sampler = Sampler(),
-                          const Visitor& v = Visitor());
-
-
+                                 std::vector<Point3D>* Q,
+                                 Eigen::Ref<MatrixType> transformation,
+                                 const Sampler& sampler,
+                                 TransformVisitor& v) {}
+#endif
 
 protected:
-    /// Number of trials. Every trial picks random base from P.
-    int number_of_trials_;
     /// Maximum base diameter. It is computed automatically from the diameter of
     /// P and the estimated overlap and used to limit the distance between the
     /// points in the base in P so that the probability to have all points in
@@ -143,24 +162,10 @@ protected:
     Scalar P_mean_distance_;
     /// The transformation matrix by wich we transform Q to P
     Eigen::Matrix<Scalar, 4, 4> transform_;
-    /// Quad centroids in first and second clouds
-    /// They are used temporarily and makes the transformations more robust to
-    /// noise. At the end, the direct transformation applied as a 4x4 matrix on
-    /// every points in Q is computed and returned.
-    Eigen::Matrix<Scalar, 3, 1> qcentroid1_, qcentroid2_;
-    /// The points in the base (indices to P). It is being updated in every
-    /// RANSAC iteration.
-    Base base_;
-    /// The current congruent 4 points from Q. Every RANSAC iteration the
-    /// algorithm examines a set of such congruent 4-points from Q and retains
-    /// the best from them (the one that realizes the best LCP).
-    Base current_congruent_;
     /// Sampled P (3D coordinates).
     std::vector<Point3D> sampled_P_3D_;
     /// Sampled Q (3D coordinates).
     std::vector<Point3D> sampled_Q_3D_;
-    /// The 3D points of the base.
-    Coordinates base_3D_;
     /// The copy of the input Q. We transform Q to match P and returned the
     /// transformed version.
     std::vector<Point3D> Q_copy_;
@@ -168,31 +173,17 @@ protected:
     VectorType centroid_P_;
     /// The centroid of Q.
     VectorType centroid_Q_;
-    /// The best LCP (Largest Common Point) fraction so far.
-    Scalar best_LCP_;
-    /// Current trial.
-    int current_trial_;
+    VectorType qcentroid1_;
+    VectorType qcentroid2_;
     /// KdTree used to compute the LCP
     KdTree<Scalar> kd_tree_;
-    /// Parameters.
-    const MatchOptions options_;
     std::mt19937 randomGenerator_;
     const Utils::Logger &logger_;
 
-#ifdef SUPER4PCS_USE_OPENMP
-    /// number of threads used to verify the congruent set
-    const int omp_nthread_congruent_;
-#endif
+    OptionsType options_;
 
-#ifdef TEST_GLOBAL_TIMINGS
-
-    mutable Scalar totalTime;
-    mutable Scalar kdTreeTime;
-    mutable Scalar verifyTime;
-
-    using Timer = gr::Utils::Timer;
-
-#endif
+    /// \todo Rationnalize use and name of this variable
+    static constexpr int kNumberOfDiameterTrials = 1000;
 
 protected :
     template <Utils::LogLevel level, typename...Args>
@@ -202,7 +193,7 @@ protected :
     /// Computes the mean distance between points in Q and their nearest neighbor.
     /// We need this for normalization of the user delta (See the paper) to the
     /// "scale" of the set.
-    Scalar MeanDistance();
+    Scalar MeanDistance() const;
 
 
     /// Selects a random triangle in the set P (then we add another point to keep the
@@ -218,48 +209,21 @@ protected :
     /// The transformation is characterized by rotation matrix, translation vector
     /// and a center about which we rotate. The set of pairs is potentially being
     /// updated by the best permutation of the second set. Returns the RMS of the
-    /// fit. The method is being called with 4 points but it applies the fit for
+    /// fit. The method is being called with n points but it applies the fit for
     /// only 3 after the best permutation is selected in the second set (see
     /// bellow). This is done because the solution for planar points is much
     /// simpler.
     /// The method is the closed-form solution by Horn:
     /// people.csail.mit.edu/bkph/papers/Absolute_Orientation.pdf
+    /// \tparam Coordinates Struct with operator[](int i) ->i\in[0:2]
+    template <typename Coordinates>
     bool ComputeRigidTransformation(const Coordinates& ref,
                                     const Coordinates& candidate,
                                     const Eigen::Matrix<Scalar, 3, 1>& centroid1,
                                     Eigen::Matrix<Scalar, 3, 1> centroid2,
-                                    Scalar max_angle,
                                     Eigen::Ref<MatrixType> transform,
                                     Scalar& rms_,
                                     bool computeScale ) const;
-
-    /// For each randomly picked base, verifies the computed transformation by
-    /// computing the number of points that this transformation brings near points
-    /// in Q. Returns the current LCP. R is the rotation matrix, (tx,ty,tz) is
-    /// the translation vector and (cx,cy,cz) is the center of transformation.template <class MatrixDerived>
-    Scalar Verify(const Eigen::Ref<const MatrixType> & mat) const;
-
-
-    /// Performs n RANSAC iterations, each one of them containing base selection,
-    /// finding congruent sets and verification. Returns true if the process can be
-    /// terminated (the target LCP was obtained or the maximum number of trials has
-    /// been reached), false otherwise.
-    template <typename Visitor>
-    bool Perform_N_steps(int n,
-                         Eigen::Ref<MatrixType> transformation,
-                         std::vector<Point3D>* Q,
-                         const Visitor& v);
-    /// Tries one base and finds the best transformation for this base.
-    /// Returns true if the achieved LCP is greater than terminate_threshold_,
-    /// else otherwise.
-    template <typename Visitor>
-    bool TryOneBase(const Visitor &v);
-
-    /// Loop over the set of congruent 4-points and test the compatibility with the
-    /// input base.
-    /// \param [out] Nb Number of quads corresponding to valid configurations
-    template <typename Visitor>
-    bool TryCongruentSet(Base& base, Set& set, Visitor &v,size_t &nbCongruent);
 
     /// Initializes the data structures and needed values before the match
     /// computation.
@@ -275,15 +239,6 @@ protected :
     void init(const std::vector<Point3D>& P,
               const std::vector<Point3D>& Q,
               const Sampler& sampler);
-
-    const std::vector<Point3D> base3D() const { return base_3D_; }
-
-    /// Find all the congruent set similar to the base in the second 3D model (Q).
-    /// It could be with a 3 point base or a 4 point base.
-    /// \param base use to find the similar points congruent in Q.
-    /// \param congruent_set a set of all point congruent found in Q.
-    virtual bool generateCongruents (Base& base,Set& congruent_set) =0;
-
 private:
 
     void initKdTree();
