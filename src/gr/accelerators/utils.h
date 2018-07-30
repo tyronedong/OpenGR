@@ -65,6 +65,7 @@ constexpr baseT POW(baseT base, expoT expo)
 }
 
 
+#ifndef PARSED_BY_DOXYGEN
 namespace internal{
 
 /*!
@@ -120,6 +121,7 @@ IndexValidator<false>::validate(const IndexT& n,
     return n;
 }
 } // namespace gr::Utils::internal
+#endif
 
 /*!
  * \brief Convert a normalized n-d vector to a linear index in a uniform regular grid

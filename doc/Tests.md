@@ -1,18 +1,25 @@
 # Tests {#tests}
 
 Tests are currently under active development. We use the following tools in this project:
-* [Travis](https://travis-ci.org/nmellado/Super4PCS) : continuous integration for linux and MacOS
-* [AppVeyor](https://ci.appveyor.com/project/nmellado/super4pcs) : continuous integration for windows
-* [CDash](http://my.cdash.org/index.php?project=Super4PCS): reporting
+* [Travis](https://travis-ci.org/STORM-IRIT/OpenGR) : continuous integration for linux and MacOS
+* [AppVeyor](https://ci.appveyor.com/project/nmellado/opengr/) : continuous integration for windows
 
+## Continuous integration
 Continuous Integration status:
 
-[stsimg-linux]: https://api.travis-ci.org/nmellado/Super4PCS.svg?branch=master
-[stsimg-windw]: https://ci.appveyor.com/api/projects/status/reg4cmhn309w1s8k/branch/master?svg=true
+[stsimg-linux]: https://api.travis-ci.org/STORM-IRIT/OpenGR.svg?branch=master
+[stsimg-windw]: https://ci.appveyor.com/api/projects/status/wpilmlfk8obuod8b/branch/master?svg=true
 
 | Linux  \& MacOS | Windows         |
 | :----:          | :-----:         |
 | ![stsimg-linux] | ![stsimg-windw] |
+
+
+## Compiling and running tests
+Tests are implemented with CTest. To run the tests, call:
+```{bash}
+make buildtests && make test
+```
 
 
 Tests currently available:
