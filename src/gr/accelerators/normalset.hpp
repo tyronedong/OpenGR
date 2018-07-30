@@ -168,8 +168,17 @@ IndexedNormalSet<Point, dim, _ngSize, Scalar>::getNeighbors(
   std::vector<unsigned int>&nei,
   bool tryReverse)
 {
+  // FIXME_REFACTORING
+  for (AngularGrid* grid: _grid){
+    if (grid == NULL) continue;
+    for(const auto&lnei : (*grid))
+      nei.insert( nei.end(), lnei.begin(), lnei.end() );
+    }
+  return;
+
   AngularGrid* grid = angularGrid(p);
-  if ( grid == NULL ) return;
+   if ( grid == NULL ) return;
+  // END_FIXME_REFACTORING
 
   const Scalar alpha          = std::acos(cosAlpha);
   const Scalar perimeter      = Scalar(2) * M_PI * std::atan(alpha);
