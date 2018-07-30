@@ -48,9 +48,9 @@
 #define _OPENGR_ACCELERATORS_KDTREE_H
 
 #include "../utils/disablewarnings.h"
-#include "../accelerators/bbox.h"
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <limits>
 #include <iostream>
@@ -163,7 +163,7 @@ public:
     static constexpr Index invalidIndex() { return -1; }
 
     typedef Eigen::Matrix<Scalar,3,1> VectorType;
-    typedef AABB3D<Scalar> AxisAlignedBoxType;
+    typedef Eigen::AlignedBox<_Scalar, 3> AxisAlignedBoxType;
 
     typedef std::vector<KdNode>      NodeList;
     typedef std::vector<VectorType>  PointList;

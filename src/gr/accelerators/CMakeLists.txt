@@ -12,7 +12,6 @@ set(accel_relative_INCLUDE
     ${accel_ROOT}/pairExtraction/intersectionPrimitive.h
     ${accel_ROOT}/normalset.h
     ${accel_ROOT}/normalset.hpp
-    ${accel_ROOT}/bbox.h
     ${accel_ROOT}/utils.h)
 
 

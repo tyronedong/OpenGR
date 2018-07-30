@@ -42,8 +42,8 @@
 // and applications.
 
 
-#ifndef _OPENGR_DEMO_UTILS_H_
-#define _OPENGR_DEMO_UTILS_H_
+#ifndef _SUPER4PCS_DEMO_UTILS_H_
+#define _SUPER4PCS_DEMO_UTILS_H_
 
 #include <fstream>
 #include <iostream>
