@@ -174,6 +174,120 @@ UnrollIndexLoop(const ndIndexT& coord,
     : internal::IndexValidator<validate>::validate(IndexT(offset[cdim]+std::floor(coord[cdim])), gsize);
 }
 
+
+/// Compute the 3^dim neighborhood for a cell
+/// \FIXME This implementation is not efficient and must be improved
+/// e.g., do no allocate any array, just call a function with the ids.
+struct OneRingNeighborhood {
+    /// helper class
+    template <int dim>
+    struct NeighborhoodType {
+        static constexpr int size () { return Utils::POW(3, dim); }
+        using type = std::array<int, size() >;
+    };
+
+    /// \param queryId Linear index of the query
+    /// \param nbElementPerDim Number of cells in the grid per dimension
+    ///        Total size of the grid is `pow(nbElementPerDim, dim)`.
+    /// \return An array of the neighboring cells ids. When the query is
+    ///         on the grid boundaries, out of bounds cells ids are marked
+    ///         with -1 in the output array.
+    template <int dim>
+    void get(
+        int queryId,
+        int nElPerDim,
+        typename NeighborhoodType<dim>::type& nei) {
+          get<dim> ( queryId, nElPerDim, 0, nei.begin(), nei.end() );
+    }
+
+private:
+    template <int dim>
+    void get(
+        int /*queryId*/,
+        int /*nElPerDim*/,
+        int /*offset*/,
+        typename NeighborhoodType<dim>::type::iterator first,
+        typename NeighborhoodType<dim>::type::iterator last) {
+          std::fill(first, last, -1);
+    }
+};
+
+
+template<>
+void
+OneRingNeighborhood::get<1> (
+     int queryId,
+     int nElPerDim,
+     int offset,
+     typename NeighborhoodType<1>::type::iterator first,
+     typename NeighborhoodType<1>::type::iterator last)
+{
+  if ( queryId < 0 || queryId >= nElPerDim ) {
+      std::fill(first, last, -1);
+    } else {
+      *first++ = (queryId > 0) ? queryId-1 : -1;
+      *first++ = queryId;
+      *first++ = (queryId < nElPerDim-1) ? queryId+1 : -1;
+    }
+}
+template<>
+void
+OneRingNeighborhood::get<2> (
+     int queryId,
+     int nElPerDim,
+     int offset,
+     typename NeighborhoodType<2>::type::iterator first,
+     typename NeighborhoodType<2>::type::iterator last)
+{
+  int offQueryId = queryId - offset;
+  if ( offset < 0 || offset >= nElPerDim*nElPerDim*nElPerDim || offQueryId < 0 || offQueryId >= nElPerDim*nElPerDim ) {
+      std::fill(first, last, -1);
+    } else {
+      std::div_t d = std::div( offQueryId, nElPerDim );
+
+      // previous row
+      if ( d.quot == 0 ) {
+          std::fill(first, first + 3, -1); first+=3;
+        }
+      else {
+          *first++ = (d.rem > 0) ? queryId-1-nElPerDim : -1;
+          *first++ = queryId - nElPerDim;
+          *first++ = (d.rem < nElPerDim-1) ? queryId+1-nElPerDim : -1;
+        }
+
+      // current row
+      *first++ = (d.rem > 0) ? queryId-1: -1;
+      *first++ = queryId;
+      *first++ = (d.rem < nElPerDim-1) ? queryId+1 : -1;
+
+      if ( d.quot+1 >= nElPerDim ) {
+          std::fill(first, first + 3, -1); first+=3;
+        }
+      else {
+          *first++ = (d.rem > 0) ? queryId-1+nElPerDim : -1;
+          *first++ = queryId + nElPerDim;
+          *first++ = (d.rem < nElPerDim-1) ? queryId+1+nElPerDim : -1;
+        }
+    }
+}
+template<>
+void
+OneRingNeighborhood::get<3> (
+     int queryId,
+     int nElPerDim,
+     int /*offset*/,
+     typename NeighborhoodType<3>::type::iterator first,
+     typename NeighborhoodType<3>::type::iterator /*last*/)
+{
+  int sliceSize = nElPerDim*nElPerDim;
+  int neiSliceSize = 9;
+  std::div_t d = std::div( queryId, sliceSize );
+  get<2>( queryId - sliceSize, nElPerDim, sliceSize*(d.quot - 1), first                 , first +   neiSliceSize );
+  get<2>( queryId            , nElPerDim, sliceSize*(d.quot    ), first +   neiSliceSize, first + 2*neiSliceSize );
+  get<2>( queryId + sliceSize, nElPerDim, sliceSize*(d.quot + 1), first + 2*neiSliceSize, first + 3*neiSliceSize );
+}
+
+
 } //namespace gr::Utils
 } //namespace Super4PCS
 

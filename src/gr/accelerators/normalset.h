@@ -48,8 +48,8 @@
 #ifndef _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_H_
 #define _OPENGR_ACCELERATORS_INDEXED_NORMAL_SET_H_
 
-#include "../utils/disablewarnings.h"
-#include "../accelerators/utils.h"
+#include "gr/utils/disablewarnings.h"
+#include "gr/accelerators/utils.h"
 
 namespace gr{
 
@@ -73,7 +73,8 @@ struct IndexedNormalSet{
                       Utils::POW(_ngSize, dim)> AngularGrid;
 
   enum MOVE_DIR { POSITIVE, NEGATIVE };
-  using Scalar = _Scalar;
+  using Scalar    = _Scalar;
+  using NeiIdsBox = typename gr::Utils::OneRingNeighborhood::NeighborhoodType<dim>::type;
 
 #ifdef DEBUG
 #define VALIDATE_INDICES true
@@ -135,6 +136,24 @@ public:
     const int pId = indexPos(p);
     if (pId == -1) return NULL;
     return _grid[pId];
+  }
+
+  //! \return the Angular Grid contained in p cell + its n*n neighb
+  inline std::vector<AngularGrid*> angularGrids(const Point&p) {
+    std::vector<AngularGrid*> buf;
+    const int pId = indexPos(p);
+    if (pId != -1) {
+        gr::Utils::OneRingNeighborhood neiFun;
+        NeiIdsBox arr;
+        neiFun.get<dim>( pId, _egSize, arr );
+        buf.reserve(arr.size());
+        for (auto& id : arr){
+            if ( id != -1 && _grid[id] != nullptr){
+                buf.push_back(_grid[id]);
+              }
+          }
+    }
+    return buf;
   }
 
   //! Get closest points in euclidean space

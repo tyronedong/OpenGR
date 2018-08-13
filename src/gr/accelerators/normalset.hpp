@@ -51,6 +51,7 @@
 #include <math.h>
 #include <set>
 #include <Eigen/Geometry>
+#include <gr/accelerators/utils.h>
 
 namespace gr{
 
@@ -120,8 +121,20 @@ IndexedNormalSet<Point, dim, _ngSize, Scalar>::addElement(
   const int nId = indexNormal(n);
   if (nId == -1) return false;
 
-  if (_grid[pId] == NULL) _grid[pId] = new AngularGrid;
-  (_grid[pId])->at(nId).push_back(id);
+  gr::Utils::OneRingNeighborhood neiFun;
+  using neiArray = typename gr::Utils::OneRingNeighborhood::NeighborhoodType<dim>::type;
+  neiArray arr;
+  neiFun.get<dim>( pId, _egSize, arr );
+
+  for (auto& gid : arr){
+    if (gid != -1) {
+      if (_grid[gid] == NULL) _grid[gid] = new AngularGrid;
+        (_grid[gid])->at(nId).push_back(id);
+      }
+  }
+//  if (_grid[pId] == NULL) _grid[pId] = new AngularGrid;
+//  (_grid[pId])->at(nId).push_back(id);
+
 
   return true;
 }
@@ -169,16 +182,26 @@ IndexedNormalSet<Point, dim, _ngSize, Scalar>::getNeighbors(
   bool tryReverse)
 {
   // FIXME_REFACTORING
-  for (AngularGrid* grid: _grid){
-    if (grid == NULL) continue;
-    for(const auto&lnei : (*grid))
-      nei.insert( nei.end(), lnei.begin(), lnei.end() );
-    }
-  return;
+ //F    for(const auto&lnei : (*grid))
+ //F      nei.insert( nei.end(), lnei.begin(), lnei.end() );
+ //F    }
+ //F  return;
 
   AngularGrid* grid = angularGrid(p);
-   if ( grid == NULL ) return;
+  if ( grid == NULL ) return;
+  {
   // END_FIXME_REFACTORING
+
+    ////////////// TESTS
+//    gr::Utils::OneRingNeighborhood neiFun;
+//    static const int dddim = 3;
+//    using neiArray = typename gr::Utils::OneRingNeighborhood::NeighborhoodType<dddim>::type;
+//    neiArray arr;
+//    neiFun.get<dddim>( 3, 4, arr );
+//    for (const auto&e : arr) std::cout << e << " ";
+//    std::cout << "\n";
+
+    ////////////// TESTS END
 
   const Scalar alpha          = std::acos(cosAlpha);
   const Scalar perimeter      = Scalar(2) * M_PI * std::atan(alpha);
@@ -191,6 +214,9 @@ IndexedNormalSet<Point, dim, _ngSize, Scalar>::getNeighbors(
   q.setFromTwoVectors(Point(0.,0.,1.), n);
 
   std::set<unsigned int> colored;
+//  for (AngularGrid* grid: angularGrids(p)) {//_grid){
+//  for (AngularGrid* grid: _grid){
+//    if (grid == NULL) continue;
 
   // Do the rendering independently of the content
   for(unsigned int a = 0; a != nbSample; a++){
@@ -216,6 +242,7 @@ IndexedNormalSet<Point, dim, _ngSize, Scalar>::getNeighbors(
     const std::vector<unsigned int>& lnei = grid->at(*it);
     nei.insert( nei.end(), lnei.begin(), lnei.end() );
   }
+    } //F
 }
 
 } // namespace Super4CS
