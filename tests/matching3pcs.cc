@@ -39,11 +39,12 @@ struct TrVisitorType {
             float fraction,
             float best_LCP,
             const Eigen::MatrixBase<Derived>& /*transformation*/) {
-        std::cout << "New LCP: "
-                  << static_cast<int>(fraction * 100)
-                  << '%'
-                  << best_LCP
-                  <<std::endl;
+      if (fraction >= 0)
+        {
+          printf("done: %d%c best: %f                  \r",
+                 static_cast<int>(fraction * 100), '%', best_LCP);
+          fflush(stdout);
+        }
     }
     constexpr bool needsGlobalTransformation() const { return false; }
 };
