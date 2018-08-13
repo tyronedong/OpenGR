@@ -128,15 +128,12 @@ public:
     /// not contain normal information for any point.
     /// @param [in] P The first input set.
     /// @param [in] Q The second input set.
-    /// as a fraction of the size of P ([0..1]).
     /// @param [out] transformation Rigid transformation matrix (4x4) that brings
     /// Q to the (approximate) optimal LCP. Initial value is considered as a guess
-    /// @return the computed LCP measure.
-    /// The method updates the coordinates of the second set, Q, applying
-    /// the found transformation.
+    /// @return the computed LCP measure as a fraction of the size of P ([0..1]).
     template <typename Sampler>
     Scalar ComputeTransformation(const std::vector<Point3D>& P,
-                                 std::vector<Point3D>* Q,
+                                 const std::vector<Point3D>& Q,
                                  Eigen::Ref<MatrixType> transformation,
                                  const Sampler& sampler,
                                  TransformVisitor& v);
@@ -181,7 +178,6 @@ protected :
     /// been reached), false otherwise.
     bool Perform_N_steps(int n,
                          Eigen::Ref<MatrixType> transformation,
-                         std::vector<Point3D>* Q,
                          TransformVisitor& v);
     /// Tries one base and finds the best transformation for this base.
     /// Returns true if the achieved LCP is greater than terminate_threshold_,

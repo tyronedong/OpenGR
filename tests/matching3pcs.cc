@@ -58,23 +58,28 @@ Utils::Logger logger(loglvl);
   */
 
 std::array<std::string, nbSet> confFiles = {
-        "./datasets/bunny/data/bun.conf",
-        "./datasets/armadillo/ArmadilloSide.conf"
+    "./datasets/bunny/data/bun.conf",
+    "./datasets/armadillo/ArmadilloSide.conf"
 };
 
 std::array<Scalar, nbSet> deltas  = {
-        0.005,
-        0.005,
+    0.004,
+    0.003,
 };
 
 std::array<Scalar, nbSet> overlaps = {
-        0.8,
-        0.8,
+    0.8,
+    0.7,
+};
+
+std::array<bool, nbSet> swapPQ {
+    true,
+    false,
 };
 
 std::array<Scalar, nbSet> n_points = {
-        200,
-        200,
+    200,
+    200,
 };
 
 
@@ -237,12 +242,13 @@ void test_model(const vector<Transform> &transforms,
          << " -c " << options.max_color_distance
          << " -t " << options.max_time_seconds
          << endl;
-    score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
+    score = matcher.ComputeTransformation(mergedset, set2, mat, sampler, visitor);
 
 #ifdef WRITE_OUTPUT_FILES
     stringstream iss;
     iss << input2;
     iss << "_aligned.ply";
+    Utils::TransformPointCloud(set2, mat);
     iomanager.WriteObject(iss.str().c_str(),
                           set2,
                           tex_coords2,

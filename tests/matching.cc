@@ -112,13 +112,18 @@ std::array<std::string, nbSet> confFiles = {
 };
 
 std::array<Scalar, nbSet> deltas  = {
-    0.005,
-    0.005,
+    0.004,
+    0.003,
 };
 
 std::array<Scalar, nbSet> overlaps = {
     0.8,
-    0.8,
+    0.7,
+};
+
+std::array<bool, nbSet> swapPQ {
+    true,
+    false,
 };
 
 std::array<Scalar, nbSet> n_points = {
@@ -172,6 +177,8 @@ extractFilesAndTrFromStandfordConfFile(
 
         if (tokens.size() == 9){
             if (tokens[0].compare("bmesh") == 0){
+                // skip problematic models
+                if (tokens[1].compare("ArmadilloSide_165.ply") == 0) continue;
 
                 string inputfile = filesystem::path(confFilePath).parent_path().string()+string("/")+tokens[1];
                 VERIFY(filesystem::exists(inputfile) && filesystem::is_regular_file(inputfile));
@@ -239,24 +246,22 @@ void test_model(const vector<Transform> &transforms,
     // we compare only pairwise matching, so we don't want to
     // accumulate error during the matching process
     // Transforms Q by the new transformation.
-    {
-        MatrixType transformation = transforms[i-1].inverse().matrix();
-        for (int j = 0; j < set1.size(); ++j) {
-            set1[j].pos() = (transformation * set1[j].pos().homogeneous()).head<3>();
-
-//            cv::Mat first(4, 1, CV_64F), transformed;
-//            first.at<double>(0, 0) = set1[j].x();
-//            first.at<double>(1, 0) = set1[j].y();
-//            first.at<double>(2, 0) = set1[j].z();
-//            first.at<double>(3, 0) = 1;
-//            transformed = transformation * first;
-//            set1[j].x() = transformed.at<double>(0, 0);
-//            set1[j].y() = transformed.at<double>(1, 0);
-//            set1[j].z() = transformed.at<double>(2, 0);
-        }
-    }
+    Utils::TransformPointCloud( set1, transforms[i-1].inverse().matrix() );
 
     mergedset.insert(mergedset.end(), set1.begin(), set1.end());
+
+#ifdef WRITE_OUTPUT_FILES
+    stringstream iss2;
+    iss2 << input1;
+    iss2 << "_merged.ply";
+    std::cout << "Exporting file " << iss2.str().c_str() << "\n";
+    iomanager.WriteObject(iss2.str().c_str(),
+                           mergedset,
+                           vector<Eigen::Matrix2f>(),
+                           vector<typename Point3D::VectorType>(),
+                           vector<tripple>(),
+                           vector<std::string>());
+#endif
 
     // Our matcher.
 
@@ -289,7 +294,10 @@ void test_model(const vector<Transform> &transforms,
              << " -c " << options.max_color_distance
              << " -t " << options.max_time_seconds
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
+        if (swapPQ[param_i])
+          score = matcher.ComputeTransformation(set2, mergedset, mat, sampler, visitor);
+        else
+          score = matcher.ComputeTransformation(mergedset, set2, mat, sampler, visitor);
     }else{
         using MatcherType = gr::Match4pcsBase<gr::Functor4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
         using OptionType  = typename MatcherType::OptionsType;
@@ -313,14 +321,27 @@ void test_model(const vector<Transform> &transforms,
              << " -t " << options.max_time_seconds
              << " -x "
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat, sampler, visitor);
+        if (swapPQ[param_i])
+          score = matcher.ComputeTransformation(set2, mergedset, mat, sampler, visitor);
+        else
+          score = matcher.ComputeTransformation(mergedset, set2, mat, sampler, visitor);
     }
+
+    // get inverse transformation as we registered from mergedset to set2
+    if (swapPQ[param_i])
+      mat = mat.inverse();
+
+    Transform transformEst (mat);
+    cout << "Reference: " << endl << transforms[i].matrix() << endl;
+    cout << "Estimation: " << endl << transformEst.matrix() << endl;
 
 
 #ifdef WRITE_OUTPUT_FILES
     stringstream iss;
     iss << input2;
     iss << "_aligned.ply";
+    std::cout << "Exporting file " << iss.str().c_str() << "\n";
+    Utils::TransformPointCloud(set2, mat);
     iomanager.WriteObject(iss.str().c_str(),
                            set2,
                            tex_coords2,
@@ -329,10 +350,6 @@ void test_model(const vector<Transform> &transforms,
                            mtls2);
 #endif
 
-    Transform transformEst (mat);
-
-    cout << "Reference: " << endl << transforms[i].matrix() << endl;
-    cout << "Estimation: " << endl << transformEst.matrix() << endl;
 
     Eigen::Quaternion<Scalar>
             q    (transformEst.rotation()),
@@ -356,18 +373,6 @@ void test_model(const vector<Transform> &transforms,
     VERIFY(rotDiff <= 0.2);
     VERIFY(trDiff <= 0.1);
     VERIFY(rotDiff + trDiff <= 0.2);
-
-#ifdef WRITE_OUTPUT_FILES
-    stringstream iss2;
-    iss2 << input1;
-    iss2 << "_merged.ply";
-    iomanager.WriteObject(iss2.str().c_str(),
-                           mergedset,
-                           vector<Eigen::Matrix2f>(),
-                           vector<typename Point3D::VectorType>(),
-                           vector<tripple>(),
-                           vector<std::string>());
-#endif
 }
 
 int main(int argc, const char **argv) {

@@ -53,7 +53,7 @@ template <typename Sampler>
 typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Scalar
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::ComputeTransformation(
         const std::vector<Point3D>& P,
-        std::vector<Point3D>* Q,
+        const std::vector<Point3D>& Q,
         Eigen::Ref<typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::MatrixType> transformation,
         const Sampler& sampler,
         TransformVisitor& v) {
@@ -67,8 +67,7 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
     verifyTime = 0;
 #endif
 
-  if (Q == nullptr) return kLargeNumber;
-  if (P.empty() || Q->empty()) return kLargeNumber;
+  if (P.empty() || Q.empty()) return kLargeNumber;
 
   // RANSAC probability and number of needed trials.
   Scalar first_estimation =
@@ -87,19 +86,18 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
   current_trial_ = 0;
   best_LCP_ = 0.0;
 
-  MatchBaseType::Q_copy_ = *Q;
   for (int i = 0; i < Traits::size(); ++i) {
       base_[i] = 0;
       current_congruent_[i] = 0;
   }
 
-  MatchBaseType::init(P, *Q, sampler);
+  MatchBaseType::init(P, Q, sampler);
 
   best_LCP_ = Verify(MatchBaseType::transform_);
   MatchBaseType::template Log<LogLevel::Verbose>( "Initial LCP: ", best_LCP_ );
 
   if (best_LCP_ != Scalar(1.))
-    Perform_N_steps(number_of_trials_, transformation, Q, v);
+    Perform_N_steps(number_of_trials_, transformation, v);
 
 #ifdef TEST_GLOBAL_TIMINGS
   MatchBaseType::template Log<LogLevel::Verbose>( "----------- Timings (msec) -------------" );
@@ -121,10 +119,8 @@ bool
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Perform_N_steps(
         int n,
         Eigen::Ref<typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::MatrixType> transformation,
-        std::vector<Point3D>* Q,
         TransformVisitor &v) {
   using std::chrono::system_clock;
-  if (Q == nullptr) return false;
 
 #ifdef TEST_GLOBAL_TIMINGS
     Timer t (true);
@@ -168,17 +164,12 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
     if (ok || i > number_of_trials_ || fraction >= 0.99 || best_LCP_ == 1.0) break;
   }
 
-  current_trial_ += n;
-  if (best_LCP_ > last_best_LCP) {
-    *Q = MatchBaseType::Q_copy_;
-
+  // Need to force global transformation update at the end of the process
+  // if not already performed for the visitor during the process
+  if (! v.needsGlobalTransformation())
     getGlobalTransform(transformation);
 
-    // Transforms Q by the new transformation.
-    for (size_t i = 0; i < Q->size(); ++i) {
-      (*Q)[i].pos() = (transformation * (*Q)[i].pos().homogeneous()).template head<3>();
-    }
-  }
+  current_trial_ += n;
 #ifdef TEST_GLOBAL_TIMINGS
     totalTime += Scalar(t.elapsed().count()) / Scalar(CLOCKS_PER_SEC);
 #endif
@@ -220,20 +211,20 @@ bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor,
 
     // get references to the basis coordinate
     Coordinates references;
-    std::cout << "Process congruent set for base: \n";
+//    std::cout << "Process congruent set for base: \n";
     for (int i = 0; i!= Traits::size(); ++i) {
         references[i] = MatchBaseType::sampled_P_3D_[base[i]];
-        std::cout << "[" << base[i] << "]: " << references[i].pos().transpose() << "\n";
+//        std::cout << "[" << base[i] << "]: " << references[i].pos().transpose() << "\n";
     }
     const Coordinates& ref = references;
     Scalar targetAngle = (references[1].pos() - references[0].pos()).normalized().dot(
           (references[3].pos() - references[2].pos()).normalized());
-    std::cout << "Target Angle : " << std::acos(targetAngle)*Scalar(180)/pi << std::endl;
+//    std::cout << "Target Angle : " << std::acos(targetAngle)*Scalar(180)/pi << std::endl;
 
     // Centroid of the basis, computed once and using only the three first points
     Eigen::Matrix<Scalar, 3, 1> centroid1 = (ref[0].pos() + ref[1].pos() + ref[2].pos()) / Scalar(3);
 
-    std::cout << "Congruent set size: " << set.size() <<  std::endl;
+//    std::cout << "Congruent set size: " << set.size() <<  std::endl;
 
     std::atomic<size_t> nbCongruentAto(0);
 
@@ -286,71 +277,74 @@ bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor,
             // We give more tolerant in computing the best rigid transformation.
             if (rms < distance_factor * MatchBaseType::options_.delta) {
 
-                std::cout << "congruent candidate: [";
-                for (int j = 0; j!= Traits::size(); ++j)
-                    std::cout << congruent_ids[j] << " ";
-                std::cout << "]";
+//                std::cout << "congruent candidate: [";
+//                for (int j = 0; j!= Traits::size(); ++j)
+//                    std::cout << congruent_ids[j] << " ";
+//                std::cout << "]";
 
                 nbCongruentAto++;
                 // The transformation is computed from the point-clouds centered inn [0,0,0]
 
                 // Verify the rest of the points in Q against P.
                 Scalar lcp = Verify(transform);
-                std::cout << " " << lcp << " - Angle: ";
+//                std::cout << " " << lcp << " - Angle: ";
 
                 // compute angle between pairs of points: for debug only
-                Scalar angle = (congruent_candidate[1].pos() - congruent_candidate[0].pos()).normalized().dot(
-                      (congruent_candidate[3].pos() - congruent_candidate[2].pos()).normalized());
-                std::cout << std::acos(angle)*Scalar(180)/pi << " (error: "
-                          << (std::acos(targetAngle) - std::acos(angle))*Scalar(180)/pi << ")\n";
+//                Scalar angle = (congruent_candidate[1].pos() - congruent_candidate[0].pos()).normalized().dot(
+//                      (congruent_candidate[3].pos() - congruent_candidate[2].pos()).normalized());
+//                std::cout << std::acos(angle)*Scalar(180)/pi << " (error: "
+//                          << (std::acos(targetAngle) - std::acos(angle))*Scalar(180)/pi << ")\n";
 
                 // transformation has been computed between the two point clouds centered
                 // at the origin, we need to recompute the translation to apply it to the original clouds
-                auto getGlobalTransform =
-                        [this, transform, centroid1, centroid2]
-                        (Eigen::Ref<MatrixType> transformation){
-                    Eigen::Matrix<Scalar, 3, 3> rot, scale;
-                    Eigen::Transform<Scalar, 3, Eigen::Affine> (transform).computeRotationScaling(&rot, &scale);
-                    transformation = transform;
-                    transformation.col(3) = (centroid1 + MatchBaseType::centroid_P_ -
-                            ( rot * scale * (centroid2 + MatchBaseType::centroid_Q_))).homogeneous();
-                };
-
-                if (v.needsGlobalTransformation())
+#pragma omp critical
                 {
-                    Eigen::Matrix<Scalar, 4, 4> transformation = transform;
-                    getGlobalTransform(transformation);
-                    v(-1, lcp, transformation);
-                }
-                else
+                  auto getGlobalTransform =
+                      [this, transform, centroid1, centroid2]
+                      (Eigen::Ref<MatrixType> transformation){
+                      Eigen::Matrix<Scalar, 3, 3> rot, scale;
+                      Eigen::Transform<Scalar, 3, Eigen::Affine> (transform).computeRotationScaling(&rot, &scale);
+                      transformation = transform;
+                      transformation.col(3) = (centroid1 + MatchBaseType::centroid_P_ -
+                                               ( rot * scale * (centroid2 + MatchBaseType::centroid_Q_))).homogeneous();
+                    };
+
+                  if (v.needsGlobalTransformation())
+                    {
+                      Eigen::Matrix<Scalar, 4, 4> transformation = transform;
+                      getGlobalTransform(transformation);
+                      v(-1, lcp, transformation);
+                    }
+                  else
                     v(-1, lcp, transform);
 
-#pragma omp critical
-                if (lcp > best_LCP_) {
-                    // Retain the best LCP and transformation.
-                    for (int j = 0; j!= Traits::size(); ++j)
+                  if (lcp > best_LCP_) {
+                      // Retain the best LCP and transformation.
+                      for (int j = 0; j!= Traits::size(); ++j)
                         base_[j] = base[j];
 
 
-                    for (int j = 0; j!= Traits::size(); ++j)
+                      for (int j = 0; j!= Traits::size(); ++j)
                         current_congruent_[j] = congruent_ids[j];
 
-                    best_LCP_                   = lcp;
-                    MatchBaseType::transform_   = transform;
-                    MatchBaseType::qcentroid1_  = centroid1;
-                    MatchBaseType::qcentroid2_  = centroid2;
+                      best_LCP_                   = lcp;
+                      MatchBaseType::transform_   = transform;
+                      MatchBaseType::qcentroid1_  = centroid1;
+                      MatchBaseType::qcentroid2_  = centroid2;
+                    }
+
                 }
                 // Terminate if we have the desired LCP already.
-                if (best_LCP_ > MatchBaseType::options_.getTerminateThreshold()){
+                if (lcp > MatchBaseType::options_.getTerminateThreshold()){
                     continue;
-                }
+                  }
             }
           } else {
 
-            std::cout << "skipped candidate: [";
-            for (int j = 0; j!= Traits::size(); ++j)
-                std::cout << congruent_ids[j] << " ";
-            std::cout << "]\n";
+//            std::cout << "skipped candidate: [";
+//            for (int j = 0; j!= Traits::size(); ++j)
+//                std::cout << congruent_ids[j] << " ";
+//            std::cout << "]\n";
           }
     }
 

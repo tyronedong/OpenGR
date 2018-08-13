@@ -59,7 +59,7 @@ typename Point3D::Scalar computeAlignment (
     const Options& options,
     const Utils::Logger& logger,
     const std::vector<Point3D>& P,
-    std::vector<Point3D>* Q,
+    const std::vector<Point3D>& Q,
     Eigen::Ref<Eigen::Matrix<typename Point3D::Scalar, 4, 4>> mat,
     const Sampler& sampler,
     TransformVisitor& visitor
@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
             exit(-2); /// \FIXME use status codes for error reporting
           }
 
-          score = computeAlignment<MatcherType> (options, logger, set1, &set2, mat, sampler, visitor);
+          score = computeAlignment<MatcherType> (options, logger, set1, set2, mat, sampler, visitor);
 
       }
       else {
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
             exit(-2); /// \FIXME use status codes for error reporting
           }
 
-          score = computeAlignment<MatcherType> (options, logger, set1, &set2, mat, sampler, visitor);
+          score = computeAlignment<MatcherType> (options, logger, set1, set2, mat, sampler, visitor);
       }
 
   }
@@ -216,6 +216,7 @@ int main(int argc, char **argv) {
       logger.Log<Utils::Verbose>( "Exporting Registered geometry to ",
                                   output.c_str(),
                                   "..." );
+      Utils::TransformPointCloud(set2, mat);
       iomananger.WriteObject((char *)output.c_str(),
                              set2,
                              tex_coords2,

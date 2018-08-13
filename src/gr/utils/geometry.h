@@ -48,6 +48,7 @@
 #define _OPENGR_UTILS_GEOMETRY_H_
 
 #include "gr/utils/disablewarnings.h"
+#include "Eigen/Core"
 
 namespace gr{
 namespace Utils{
@@ -79,6 +80,17 @@ static inline void CleanInvalidNormals( PointContainer &v,
       std::cout << "Found " << nb << " vertices with invalid normals" << std::endl;
     }
   }
+}
+
+template <typename PointContainer>
+static inline void TransformPointCloud( PointContainer& v,
+                                        Eigen::Ref<Eigen::Matrix<typename PointContainer::value_type::Scalar, 4, 4>> tr){
+  using Scalar = typename PointContainer::value_type::Scalar;
+  auto tr3x3 = tr.template block<3,3>(0,0);
+  for (auto& vertex : v){
+      vertex.pos() = (tr * vertex.pos().homogeneous()).template head<3>();
+      vertex.set_normal(tr3x3 * vertex.normal());
+    }
 }
 
 } // namespace Utils

@@ -264,7 +264,7 @@ namespace gr {
               template < class, class > typename PFO>
     inline bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::generateCongruents (
         CongruentBaseType &base, Set& congruent_quads) {
-      std::cout << "------------------" << std::endl;
+//      std::cout << "------------------" << std::endl;
 
       Scalar invariant1, invariant2;
 //#define STATIC_BASE
@@ -293,11 +293,11 @@ namespace gr {
 #else
         if (!SelectQuadrilateral(invariant1, invariant2, base[0], base[1],
                                  base[2], base[3])) {
-            std::cout << "Skipping wrong base" << std::endl;
+//            std::cout << "Skipping wrong base" << std::endl;
             return false;
         }
 #endif
-        std::cout << "Found a new base !" << std::endl;
+//        std::cout << "Found a new base !" << std::endl;
         const auto& b0 = MatchBaseType::base_3D_[0];
         const auto& b1 = MatchBaseType::base_3D_[1];
         const auto& b2 = MatchBaseType::base_3D_[2];
@@ -317,8 +317,8 @@ namespace gr {
         fun_.ExtractPairs(distance2, normal_angle2, MatchBaseType::distance_factor * MatchBaseType::options_.delta, 2, 3, &pairs2);
 
 
-        std::cout << "Pair set 1 has " << pairs1.size() << " elements" << std::endl;
-        std::cout << "Pair set 2 has " << pairs2.size() << " elements" << std::endl;
+//        std::cout << "Pair set 1 has " << pairs1.size() << " elements" << std::endl;
+//        std::cout << "Pair set 2 has " << pairs2.size() << " elements" << std::endl;
 
 //  Log<LogLevel::Verbose>( "Pair creation ouput: ", pairs1.size(), " - ", pairs2.size());
 
