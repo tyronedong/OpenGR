@@ -144,8 +144,7 @@ namespace gr {
             typedef  gr::IndexedNormalSet
                     < Point,   //! \brief Point type used internally
                             3,       //! \brief Nb dimension
-                            5,       //! \brief Nb cells/dim normal
- // FIXME_REFACTORING       7,       //! \brief Nb cells/dim normal
+                            7,       //! \brief Nb cells/dim normal
                             Scalar>  //! \brief Scalar type
                     IndexedNormalSet3D;
 #endif
