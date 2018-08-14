@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   TrVisitor visitor;
 
   MatcherType matcher(options, logger);
-  score = matcher.ComputeTransformation(set1, &set2, mat, sampler, visitor);
+  score = matcher.ComputeTransformation(set1, set2, mat, sampler, visitor);
 
   logger.Log<Utils::Verbose>( "Score: ", score );
 
