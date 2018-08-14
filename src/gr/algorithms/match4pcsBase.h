@@ -55,7 +55,7 @@ namespace gr {
 
     public:
 
-        Match4pcsBase (const OptionsType& options
+        inline Match4pcsBase (const OptionsType& options
                 , const Utils::Logger& logger);
 
         virtual ~Match4pcsBase();
@@ -66,8 +66,8 @@ namespace gr {
         /// (approximate as the lines might not intersect) and returns the invariants
         /// corresponding to the two selected lines. The method also updates the order
         /// of the base base_3D_.
-        bool TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                              int &id1, int &id2, int &id3, int &id4);
+        inline bool TryQuadrilateral(Scalar &invariant1, Scalar &invariant2,
+                                     int &id1, int &id2, int &id3, int &id4);
 
         /// Selects a random triangle in the set P (then we add another point to keep the
         /// base as planar as possible). We apply a simple heuristic that works in most
@@ -76,8 +76,8 @@ namespace gr {
         /// a triangle with all three edges close to this distance. Wide triangles helps
         /// to make the transformation robust while too large triangles makes the
         /// probability of having all points in the inliers small so we try to trade-off.
-        bool SelectQuadrilateral(Scalar &invariant1, Scalar &invariant2,
-                                 int& base1, int& base2, int& base3, int& base4);
+        inline bool SelectQuadrilateral(Scalar &invariant1, Scalar &invariant2,
+                                        int& base1, int& base2, int& base3, int& base4);
 
         /// Initializes the data structures and needed values before the match
         /// computation.
@@ -95,6 +95,10 @@ namespace gr {
         /// \param congruent_set a set of all point congruent found in Q.
         bool generateCongruents (CongruentBaseType& base,Set& congruent_quads) override;
 
+    private:
+        static inline Scalar distSegmentToSegment( const VectorType& p1, const VectorType& p2,
+                                                   const VectorType& q1, const VectorType& q2,
+                                                   Scalar& invariant1, Scalar& invariant2);
     };
 }
 

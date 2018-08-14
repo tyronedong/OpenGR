@@ -24,73 +24,6 @@
 #   include "gr/utils/timer.h"
 #endif
 
-template <typename VectorType, typename Scalar>
-static Scalar distSegmentToSegment(const VectorType& p1, const VectorType& p2,
-                                   const VectorType& q1, const VectorType& q2,
-                                   Scalar& invariant1, Scalar& invariant2) {
-
-    static const Scalar kSmallNumber = 0.0001;
-    VectorType u = p2 - p1;
-    VectorType v = q2 - q1;
-    VectorType w = p1 - q1;
-    Scalar a = u.dot(u);
-    Scalar b = u.dot(v);
-    Scalar c = v.dot(v);
-    Scalar d = u.dot(w);
-    Scalar e = v.dot(w);
-    Scalar f = a * c - b * b;
-    // s1,s2 and t1,t2 are the parametric representation of the intersection.
-    // they will be the invariants at the end of this simple computation.
-    Scalar s1 = 0.0;
-    Scalar s2 = f;
-    Scalar t1 = 0.0;
-    Scalar t2 = f;
-
-    if (f < kSmallNumber) {
-        s1 = 0.0;
-        s2 = 1.0;
-        t1 = e;
-        t2 = c;
-    } else {
-        s1 = (b * e - c * d);
-        t1 = (a * e - b * d);
-        if (s1 < 0.0) {
-            s1 = 0.0;
-            t1 = e;
-            t2 = c;
-        } else if (s1 > s2) {
-            s1 = s2;
-            t1 = e + b;
-            t2 = c;
-        }
-    }
-
-    if (t1 < 0.0) {
-        t1 = 0.0;
-        if (-d < 0.0)
-            s1 = 0.0;
-        else if (-d > a)
-            s1 = s2;
-        else {
-            s1 = -d;
-            s2 = a;
-        }
-    } else if (t1 > t2) {
-        t1 = t2;
-        if ((-d + b) < 0.0)
-            s1 = 0;
-        else if ((-d + b) > a)
-            s1 = s2;
-        else {
-            s1 = (-d + b);
-            s2 = a;
-        }
-    }
-    invariant1 = (std::abs(s1) < kSmallNumber ? 0.0 : s1 / s2);
-    invariant2 = (std::abs(t1) < kSmallNumber ? 0.0 : t1 / t2);
-
-    return ( w + (invariant1 * u) - (invariant2 * v)).norm();
-}
 
 namespace gr {
     template <template <typename, typename> typename _Functor,
@@ -129,8 +62,8 @@ namespace gr {
                 while (k == i || k == j) k++;
                 int l = 0;
                 while (l == i || l == j || l == k) l++;
-                double local_invariant1;
-                double local_invariant2;
+                Scalar local_invariant1;
+                Scalar local_invariant2;
                 // Compute the closest points on both segments, the corresponding
                 // invariants and the distance between the closest points.
                 Scalar segment_distance = distSegmentToSegment(
@@ -251,7 +184,7 @@ namespace gr {
               typename PairFilteringFunctor,
               template < class, class > typename PFO>
     // Initialize all internal data structures and data members.
-    inline void Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::Initialize(
+    void Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::Initialize(
         const std::vector<Point3D>& P,
         const std::vector<Point3D>& Q) {
         fun_.Initialize(P,Q);
@@ -262,7 +195,7 @@ namespace gr {
               typename TransformVisitor,
               typename PairFilteringFunctor,
               template < class, class > typename PFO>
-    inline bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::generateCongruents (
+    bool Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::generateCongruents (
         CongruentBaseType &base, Set& congruent_quads) {
 //      std::cout << "------------------" << std::endl;
 
@@ -336,6 +269,79 @@ namespace gr {
         }
 
         return true;
+    }
+
+    template <template <typename, typename> typename _Functor,
+              typename TransformVisitor,
+              typename PairFilteringFunctor,
+              template < class, class > typename PFO>
+    typename Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::Scalar
+    Match4pcsBase<_Functor, TransformVisitor, PairFilteringFunctor, PFO>::distSegmentToSegment(
+        const VectorType& p1, const VectorType& p2,
+        const VectorType& q1, const VectorType& q2,
+        Scalar& invariant1, Scalar& invariant2) {
+
+        static const Scalar kSmallNumber = 0.0001;
+        VectorType u = p2 - p1;
+        VectorType v = q2 - q1;
+        VectorType w = p1 - q1;
+        Scalar a = u.dot(u);
+        Scalar b = u.dot(v);
+        Scalar c = v.dot(v);
+        Scalar d = u.dot(w);
+        Scalar e = v.dot(w);
+        Scalar f = a * c - b * b;
+        // s1,s2 and t1,t2 are the parametric representation of the intersection.
+        // they will be the invariants at the end of this simple computation.
+        Scalar s1 = 0.0;
+        Scalar s2 = f;
+        Scalar t1 = 0.0;
+        Scalar t2 = f;
+
+        if (f < kSmallNumber) {
+            s1 = 0.0;
+            s2 = 1.0;
+            t1 = e;
+            t2 = c;
+        } else {
+            s1 = (b * e - c * d);
+            t1 = (a * e - b * d);
+            if (s1 < 0.0) {
+                s1 = 0.0;
+                t1 = e;
+                t2 = c;
+            } else if (s1 > s2) {
+                s1 = s2;
+                t1 = e + b;
+                t2 = c;
+            }
+        }
+
+        if (t1 < 0.0) {
+            t1 = 0.0;
+            if (-d < 0.0)
+                s1 = 0.0;
+            else if (-d > a)
+                s1 = s2;
+            else {
+                s1 = -d;
+                s2 = a;
+            }
+        } else if (t1 > t2) {
+            t1 = t2;
+            if ((-d + b) < 0.0)
+                s1 = 0;
+            else if ((-d + b) > a)
+                s1 = s2;
+            else {
+                s1 = (-d + b);
+                s2 = a;
+            }
+        }
+        invariant1 = (std::abs(s1) < kSmallNumber ? 0.0 : s1 / s2);
+        invariant2 = (std::abs(t1) < kSmallNumber ? 0.0 : t1 / t2);
+
+        return ( w + (invariant1 * u) - (invariant2 * v)).norm();
     }
 }
 
