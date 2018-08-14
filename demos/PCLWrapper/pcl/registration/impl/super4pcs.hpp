@@ -42,29 +42,9 @@
 #define PCL_REGISTRATION_OPENGR_HPP_
 
 #include <pcl/io/ply_io.h>
-#include <pcl/registration/super4pcs.h>
-#include <gr/algorithms/match4pcsBase.h>
-#include <gr/algorithms/FunctorSuper4pcs.h>
-
-
-struct TransformVisitor {
-    template <typename Derived>
-    inline void operator()(
-            float fraction,
-            float best_LCP,
-            const Eigen::MatrixBase<Derived>& /*transformation*/) const {
-      if(fraction >= 0)
-        {
-          printf("done: %d%c best: %f                  \r",
-                 static_cast<int>(fraction * 100), '%', best_LCP);
-          fflush(stdout);
-        }
-    }
-    constexpr bool needsGlobalTransformation() const { return false; }
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace pcl {
 template <typename PointSource, typename PointTarget> void
 pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSource &output, const Eigen::Matrix4f& guess)
 {
@@ -73,17 +53,13 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
   // Initialize results
   final_transformation_ = guess;
 
-  constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using SamplerType   = gr::Sampling::UniformDistSampler;
-  using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
-                            DummyTransformVisitor,
-                            TransformVisitor>::type;
+  constexpr ::gr::Utils::LogLevel loglvl = ::gr::Utils::Verbose;
 
-  Utils::Logger logger(loglvl);
-  Match4pcsBase<FunctorSuper4PCS<gr::AdaptivePointFilter>> matcher(options_, logger);
+  gr::Utils::Logger logger(loglvl);
+  MatcherType matcher(options_, logger);
 
   SamplerType sampler;
-  TrVisitorType visitor;
+  TransformVisitor visitor;
 
   std::vector<gr::Point3D> set1, set2;
 
@@ -109,7 +85,7 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
 
   converged_ = true;
 }
-
+}
 
 #endif
 

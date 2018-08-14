@@ -51,7 +51,7 @@ main (int argc, char **argv)
   Demo::getArgs(argc, argv);
 
   pcl::Super4PCS<PointNT,PointNT> align;
-  Demo::setOptionsFromArgs(align.options_);
+//  Demo::setOptionsFromArgs(align.options_);
 
   // Downsample
 //  pcl::console::print_highlight ("Downsampling...\n");

@@ -30,7 +30,7 @@ if(MESHLAB_FOUND)
 
     # Main target visible in the project
     add_custom_target(Meshlab_install_plugin
-       COMMENT "Performing Meshlab plugin installation (manual compilation is still requires. See ${PLUGIN_INSTALL_DIR}/readme.md)"
+       COMMENT "Performing Meshlab plugin installation (manual compilation is still required. See ${PLUGIN_INSTALL_DIR}/readme.md)"
        DEPENDS internal_install_opengr_to_meshlab_externals internal_install_meshlab_plugin_source)
 else()
      message(WARNING "Skipping Meshlab plugin preparation - Meshlab not found")
