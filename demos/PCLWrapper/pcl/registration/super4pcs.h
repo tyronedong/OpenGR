@@ -101,8 +101,7 @@ namespace pcl
 
       /** \brief Get the fitness score of alignment. Range from 0-1, higher is better.
        */
-      float
-      getFitnessScore() const;
+      inline float getFitnessScore() const { return fitness_score_; }
 
     protected:
 

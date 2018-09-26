@@ -108,11 +108,6 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
   converged_ = true;
 }
 
-float getFitnessScore() const
-{
-    return fitness_score_;
-}
-
 
 #endif
 
