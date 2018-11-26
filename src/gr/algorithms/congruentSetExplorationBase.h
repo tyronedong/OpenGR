@@ -90,7 +90,7 @@ private:
 template <typename _Traits,
           typename _TransformVisitor,
           typename _PairFilteringFunctor, /// <\brief Must implements PairFilterConcept
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 class CongruentSetExplorationBase : public MatchBase<_TransformVisitor, OptExts ..., CongruentSetExplorationOptions> {
 
 public:

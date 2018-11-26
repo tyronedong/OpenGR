@@ -40,7 +40,7 @@ template <typename Traits, typename TransformVisitor,
 
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::~CongruentSetExplorationBase(){}
 
 
@@ -48,7 +48,7 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
 // Q toward P by this transformation
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 template <typename Sampler>
 typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Scalar
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::ComputeTransformation(
@@ -114,7 +114,7 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
 // transforms the set Q by this optimal transformation.
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 bool
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Perform_N_steps(
         int n,
@@ -181,7 +181,7 @@ CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptE
 
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::TryOneBase(
         TransformVisitor &v) {
         CongruentBaseType base;
@@ -201,7 +201,7 @@ bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor,
 
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::TryCongruentSet(
         typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::CongruentBaseType& base,
         typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Set& set,
@@ -361,7 +361,7 @@ bool CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor,
 // early termination. It was found to be fast in practice.
 template <typename Traits, typename TransformVisitor,
           typename PairFilteringFunctor,
-          template < class, class > typename ... OptExts >
+          template < class, class > class ... OptExts >
 typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Scalar
 CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::Verify(
         const Eigen::Ref<const typename CongruentSetExplorationBase<Traits, TransformVisitor, PairFilteringFunctor, OptExts ...>::MatrixType> &mat) const {
