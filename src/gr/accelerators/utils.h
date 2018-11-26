@@ -182,8 +182,8 @@ struct OneRingNeighborhood {
     /// helper class
     template <int dim>
     struct NeighborhoodType {
-        static constexpr int size () { return Utils::POW(3, dim); }
-        using type = std::array<int, size() >;
+        using type = std::array<int, Utils::POW(3, dim) >;
+        using ptr = int*;
     };
 
     /// \param queryId Linear index of the query
@@ -197,7 +197,7 @@ struct OneRingNeighborhood {
         int queryId,
         int nElPerDim,
         typename NeighborhoodType<dim>::type& nei) {
-          get<dim> ( queryId, nElPerDim, 0, nei.begin(), nei.end() );
+          get<dim> ( queryId, nElPerDim, 0, nei.data(), nei.data()+nei.size() );
     }
 
 private:
@@ -206,8 +206,8 @@ private:
         int /*queryId*/,
         int /*nElPerDim*/,
         int /*offset*/,
-        typename NeighborhoodType<dim>::type::iterator first,
-        typename NeighborhoodType<dim>::type::iterator last) {
+        typename NeighborhoodType<dim>::ptr first,
+        typename NeighborhoodType<dim>::ptr last) {
           std::fill(first, last, -1);
     }
 };
@@ -219,8 +219,8 @@ OneRingNeighborhood::get<1> (
      int queryId,
      int nElPerDim,
      int offset,
-     typename NeighborhoodType<1>::type::iterator first,
-     typename NeighborhoodType<1>::type::iterator last)
+     typename NeighborhoodType<1>::ptr first,
+     typename NeighborhoodType<1>::ptr last)
 {
   if ( queryId < 0 || queryId >= nElPerDim ) {
       std::fill(first, last, -1);
@@ -236,8 +236,8 @@ OneRingNeighborhood::get<2> (
      int queryId,
      int nElPerDim,
      int offset,
-     typename NeighborhoodType<2>::type::iterator first,
-     typename NeighborhoodType<2>::type::iterator last)
+     typename NeighborhoodType<2>::ptr first,
+     typename NeighborhoodType<2>::ptr last)
 {
   int offQueryId = queryId - offset;
   if ( offset < 0 || offset >= nElPerDim*nElPerDim*nElPerDim || offQueryId < 0 || offQueryId >= nElPerDim*nElPerDim ) {
@@ -276,8 +276,8 @@ OneRingNeighborhood::get<3> (
      int queryId,
      int nElPerDim,
      int /*offset*/,
-     typename NeighborhoodType<3>::type::iterator first,
-     typename NeighborhoodType<3>::type::iterator /*last*/)
+     typename NeighborhoodType<3>::ptr first,
+     typename NeighborhoodType<3>::ptr /*last*/)
 {
   int sliceSize = nElPerDim*nElPerDim;
   int neiSliceSize = 9;
