@@ -11,7 +11,7 @@
 
 #include <pcl/registration/super4pcs.h>
 
-#include <super4pcs/shared4pcs.h>
+#include <gr/shared.h>
 #include "../demo-utils.h"
 
 // Types
@@ -19,7 +19,7 @@ typedef pcl::PointNormal PointNT;
 typedef pcl::PointCloud<PointNT> PointCloudT;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointNT> ColorHandlerT;
 
-using namespace GlobalRegistration;
+using namespace gr;
 
 // Align a rigid object to a scene with clutter and occlusions
 int
@@ -51,7 +51,7 @@ main (int argc, char **argv)
   Demo::getArgs(argc, argv);
 
   pcl::Super4PCS<PointNT,PointNT> align;
-  Demo::setOptionsFromArgs(align.options_);
+//  Demo::setOptionsFromArgs(align.options_);
 
   // Downsample
 //  pcl::console::print_highlight ("Downsampling...\n");

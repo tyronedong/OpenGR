@@ -38,55 +38,33 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_SUPER4PCS_HPP_
-#define PCL_REGISTRATION_SUPER4PCS_HPP_
+#ifndef PCL_REGISTRATION_OPENGR_HPP_
+#define PCL_REGISTRATION_OPENGR_HPP_
 
 #include <pcl/io/ply_io.h>
-#include <pcl/registration/super4pcs.h>
-#include <super4pcs/algorithms/super4pcs.h>
-
-
-struct TransformVisitor {
-    inline void operator()(
-            float fraction,
-            float best_LCP,
-            Eigen::Ref<GlobalRegistration::Match4PCSBase::MatrixType> /*transformation*/) const {
-      if(fraction >= 0)
-        {
-          printf("done: %d%c best: %f                  \r",
-                 static_cast<int>(fraction * 100), '%', best_LCP);
-          fflush(stdout);
-        }
-    }
-    constexpr bool needsGlobalTransformation() const { return false; }
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+namespace pcl {
 template <typename PointSource, typename PointTarget> void
 pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSource &output, const Eigen::Matrix4f& guess)
 {
-  using namespace GlobalRegistration;
+  using namespace gr;
 
   // Initialize results
   final_transformation_ = guess;
 
-  constexpr Utils::LogLevel loglvl = Utils::Verbose;
-  using SamplerType   = GlobalRegistration::Sampling::UniformDistSampler;
-  using TrVisitorType = typename std::conditional <loglvl==Utils::NoLog,
-                            Match4PCSBase::DummyTransformVisitor,
-                            TransformVisitor>::type;
+  constexpr ::gr::Utils::LogLevel loglvl = ::gr::Utils::Verbose;
 
-  Utils::Logger logger(loglvl);
-  MatchSuper4PCS matcher(options_, logger);
+  gr::Utils::Logger logger(loglvl);
+  MatcherType matcher(options_, logger);
 
   SamplerType sampler;
-  TrVisitorType visitor;
+  TransformVisitor visitor;
 
-  std::vector<GlobalRegistration::Point3D> set1, set2;
+  std::vector<gr::Point3D> set1, set2;
 
   // init Super4PCS point cloud internal structure
-  auto fillPointSet = [] (const PointCloudSource& m, std::vector<GlobalRegistration::Point3D>& out) {
+  auto fillPointSet = [] (const PointCloudSource& m, std::vector<gr::Point3D>& out) {
       out.clear();
       out.reserve(m.size());
 
@@ -99,7 +77,7 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
   fillPointSet(*target_, set1);
   fillPointSet(*input_, set2);;
 
-  fitness_score_ = matcher.ComputeTransformation(set1, &set2, final_transformation_, sampler, visitor);
+  float score = matcher.ComputeTransformation(set1, set2, final_transformation_, sampler, visitor);
 
   transformPointCloud (*input_, output, final_transformation_);
 
@@ -107,7 +85,7 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
 
   converged_ = true;
 }
-
+}
 
 #endif
 

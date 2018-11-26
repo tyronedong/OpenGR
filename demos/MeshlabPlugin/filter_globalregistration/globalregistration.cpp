@@ -22,8 +22,10 @@
 ****************************************************************************/
 
 #include "globalregistration.h"
-#include "super4pcs/algorithms/super4pcs.h"
-#include "super4pcs/algorithms/4pcs.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/Functor4pcs.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/PointPairFilter.h"
 #include <QtScript>
 
 // Constructor usually performs only two simple tasks of filling the two lists
@@ -101,8 +103,10 @@ void GlobalRegistrationPlugin::initParameterSet(QAction *action,MeshDocument &md
     }
 }
 
+
+using MatrixType = Eigen::Matrix<float, 4, 4>;
+
 struct RealTimeTransformVisitor {
-    using MatrixType = typename GlobalRegistration::Match4PCSBase::MatrixType;
     CMeshO* mesh = nullptr;
     GlobalRegistrationPlugin* plugin;
     inline void operator() (
@@ -117,7 +121,6 @@ struct RealTimeTransformVisitor {
 };
 
 struct TransformVisitor {
-    using MatrixType = typename GlobalRegistration::Match4PCSBase::MatrixType;
     CMeshO* mesh = nullptr;
     GlobalRegistrationPlugin* plugin;
     inline void operator() (
@@ -128,6 +131,49 @@ struct TransformVisitor {
     }
     constexpr bool needsGlobalTransformation() { return false; }
 };
+
+// init Super4PCS point cloud internal structure
+auto fillPointSet = [] (const CMeshO& m, std::vector<gr::Point3D>& out) {
+    using gr::Point3D;
+    Point3D p;
+    out.clear();
+    out.reserve(m.vert.size());
+
+    // TODO: copy other point-wise information, if any
+    for(size_t i = 0; i< m.vert.size(); i++){
+        const auto& vertex = m.vert[i];
+        vertex.P().ToEigenVector(p.pos());
+        out.push_back(p);
+    }
+};
+
+template <typename MatcherType>
+float align ( CMeshO* refMesh, CMeshO* trgMesh,
+              RichParameterSet & par,
+              MatrixType & mat,
+              typename MatcherType::TransformVisitor & v) {
+
+    using SamplerType   = gr::UniformDistSampler;
+    using OptionType    = typename MatcherType::OptionsType;
+
+    OptionType opt;
+    opt.configureOverlap(par.getAbsPerc("overlap")/100.f);
+    opt.delta                 = par.getFloat("delta");
+    opt.sample_size           = par.getInt("nbSamples");
+    opt.max_normal_difference = par.getFloat("norm_diff");
+    opt.max_color_distance    = par.getFloat("color_diff");
+    opt.max_time_seconds      = par.getInt("max_time_seconds");
+
+    std::vector<gr::Point3D> set1, set2;
+    fillPointSet(*refMesh, set1);
+    fillPointSet(*trgMesh, set2);
+
+    gr::Utils::Logger logger (gr::Utils::LogLevel::NoLog);
+    SamplerType sampler;
+    MatcherType matcher (opt, logger);
+
+    return matcher.ComputeTransformation(set1, set2, mat, sampler, v);
+}
 
 // The Real Core Function doing the actual mesh processing.
 // Move Vertex of a random quantity
@@ -142,60 +188,26 @@ bool GlobalRegistrationPlugin::applyFilter(QAction */*filter*/,
     CMeshO *refMesh=&mmref->cm;
     CMeshO *trgMesh=&mmtrg->cm;
 
-    using Sampler = GlobalRegistration::Sampling::UniformDistSampler;
-
-//    Log("Initializing Super4PCS. Delta=%f, overlap=%f", delta, overlap);
-
-    GlobalRegistration::Match4PCSOptions opt;
-    opt.configureOverlap(par.getAbsPerc("overlap")/100.f);
-    opt.delta                 = par.getFloat("delta");
-    opt.sample_size           = par.getInt("nbSamples");
-    opt.max_normal_difference = par.getFloat("norm_diff");
-    opt.max_color_distance    = par.getFloat("color_diff");
-    opt.max_time_seconds      = par.getInt("max_time_seconds");
-
     bool useSuper4PCS         = par.getBool("useSuper4PCS");
 
+    MatrixType mat;
+    float score = -1;
 
-    GlobalRegistration::Utils::Logger logger (GlobalRegistration::Utils::LogLevel::NoLog);
-    GlobalRegistration::Match4PCSBase* matcher = nullptr;
-    Sampler sampler;
-
-    if (useSuper4PCS)
-        matcher = new GlobalRegistration::MatchSuper4PCS (opt, logger);
-    else
-        matcher = new GlobalRegistration::Match4PCS (opt, logger);
-
-    GlobalRegistration::Match4PCSBase::MatrixType mat;
-    std::vector<GlobalRegistration::Point3D> set1, set2;
-
-    // init Super4PCS point cloud internal structure
-    auto fillPointSet = [] (const CMeshO& m, std::vector<GlobalRegistration::Point3D>& out) {
-        using GlobalRegistration::Point3D;
-        Point3D p;
-        out.clear();
-        out.reserve(m.vert.size());
-
-        // TODO: copy other point-wise information, if any
-        for(size_t i = 0; i< m.vert.size(); i++){
-            const auto& vertex = m.vert[i];
-            vertex.P().ToEigenVector(p.pos());
-            out.push_back(p);
-        }
-    };
-    fillPointSet(*refMesh, set1);
-    fillPointSet(*trgMesh, set2);
-
-    // run
     TransformVisitor v;
     v.mesh = trgMesh;
     v.plugin = this;
 
-    float score = matcher->ComputeTransformation(set1, &set2, mat, sampler, v);
+    if (useSuper4PCS) {
+        using MatcherType = gr::Match4pcsBase<gr::FunctorSuper4PCS, TransformVisitor, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        score = align< MatcherType >(refMesh, trgMesh, par, mat, v);
+    } else {
+        using MatcherType = gr::Match4pcsBase<gr::Functor4PCS, TransformVisitor, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        score = align< MatcherType >(refMesh, trgMesh, par, mat, v);
+    }
+
+    // run
     Log("Final LCP = %f", score);
     v.mesh->Tr.FromEigenMatrix(mat);
-
-    delete matcher;
 
     return true;
 }

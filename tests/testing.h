@@ -47,8 +47,8 @@
 // Part of this file has been adapted from the Eigen library.
 
 
-#ifndef _SUPER4PCS_TESTING_H_
-#define _SUPER4PCS_TESTING_H_
+#ifndef _OPENGR_TESTING_H_
+#define _OPENGR_TESTING_H_
 
 #include <iostream>
 #include <vector>
@@ -57,97 +57,74 @@
 #include <sstream>
 #include <ctime>
 
-#include "super4pcs/shared4pcs.h"
+#include "gr/shared.h"
+#include "gr/algorithms/matchBase.h"
 
 #define DEFAULT_REPEAT 10
 
 #define SUPER4PCS_PP_MAKE_STRING2(S) #S
 #define SUPER4PCS_PP_MAKE_STRING(S) SUPER4PCS_PP_MAKE_STRING2(S)
 
-namespace GlobalRegistration {
+namespace gr {
 namespace Testing {
 
 //! Matcher class providing public visilibility of internal routines
-template <class BaseMatcher>
-class TestMatcher : public BaseMatcher {
+template <class _MatchBaseType>
+class TestMatcher : public _MatchBaseType {
 public:
-    using Scalar                = typename BaseMatcher::Scalar;
-    using MatrixType            = typename BaseMatcher::MatrixType;
-    using PairsVector           = typename BaseMatcher::PairsVector;
-    using DefaultSampler        = typename BaseMatcher::DefaultSampler;
-    using DummyTransformVisitor = typename BaseMatcher::DummyTransformVisitor;
+    using MatchBaseType         = _MatchBaseType;
+    using Scalar                = typename MatchBaseType::Scalar;
+    using VectorType            = typename MatchBaseType::VectorType;
+    using MatrixType            = typename MatchBaseType::MatrixType;
+    using TransformVisitor      = typename MatchBaseType::TransformVisitor;
+    using OptionsType           = typename MatchBaseType::OptionsType;
 
-    using BaseMatcher::BaseMatcher;
+    // Alias types from CongruentSetExplorationBase
+    using Traits               = typename MatchBaseType::Traits;
+    using CongruentBaseType    = typename MatchBaseType::CongruentBaseType;
+    using Set                  = typename MatchBaseType::Set;
+    using Coordinates          = typename MatchBaseType::Coordinates;
 
-    template < typename Sampler = DefaultSampler,
-               typename Visitor = DummyTransformVisitor>
+    // inherit constructor
+    using MatchBaseType::MatchBaseType;
+
+    template < typename Sampler>
     inline Scalar
     ComputeTransformation(const std::vector<Point3D>& P,
                           std::vector<Point3D>* Q,
                           Eigen::Ref<MatrixType> transformation,
-                          const Sampler& s = Sampler(),
-                          const Visitor& v = Visitor()){
-        return BaseMatcher::ComputeTransformation(P, Q,
+                          const Sampler& s,
+                          TransformVisitor& v ){
+        return MatchBaseType::ComputeTransformation(P, Q,
                                                   transformation,
                                                   s,
                                                   v);
     }
 
-    template < typename Sampler = DefaultSampler>
+    template < typename Sampler >
     inline void init(const std::vector<Point3D>& P,
                      const std::vector<Point3D>& Q,
-                     const Sampler& sampler = Sampler())
-    { BaseMatcher::init(P,Q, sampler); }
+                     const Sampler& sampler )
+    { MatchBaseType::init(P,Q, sampler); }
 
     inline bool SelectQuadrilateral(Scalar &inv1, Scalar &inv2,
                                     int& base1, int& base2,
                                     int& base3, int& base4)
     {
-        return BaseMatcher::SelectQuadrilateral(inv1, inv2,
+        return MatchBaseType::SelectQuadrilateral(inv1, inv2,
                                                 base1, base2, base3, base4);
     }
 
     inline const std::vector<Point3D>& base3D() const
-    { return BaseMatcher::base3D(); }
-
-    virtual void
-    ExtractPairs( Scalar pair_distance,
-                  Scalar pair_normals_angle,
-                  Scalar pair_distance_epsilon, int base_point1,
-                  int base_point2,
-                  PairsVector* pairs) const
-    {
-        BaseMatcher::ExtractPairs(pair_distance,
-                                  pair_normals_angle,
-                                  pair_distance_epsilon,
-                                  base_point1,
-                                  base_point2,
-                                  pairs);
-    }
-
-    virtual bool
-    FindCongruentQuadrilaterals(Scalar inv1, Scalar inv2,
-                                Scalar distance_threshold1,
-                                Scalar distance_threshold2,
-                                const PairsVector& P_pairs,
-                                const PairsVector& Q_pairs,
-                                std::vector<Quadrilateral>* quadrilaterals) const
-    {
-        return BaseMatcher::FindCongruentQuadrilaterals(inv1, inv2,
-                                                        distance_threshold1,
-                                                        distance_threshold2,
-                                                        P_pairs,
-                                                        Q_pairs,
-                                                        quadrilaterals);
-    }
+    { return MatchBaseType::base3D(); }
 
     inline bool TryCongruentSet(int base_id1,
                                 int base_id2,
                                 int base_id3,
                                 int base_id4,
-                                const std::vector<Quadrilateral> &congruent_quads,
+                                const Set &congruent_quads,
                                 size_t &nbCongruent){
-        return BaseMatcher::TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
+        return MatchBaseType::TryCongruentSet(base_id1, base_id2, base_id3, base_id4,
                                             congruent_quads,
                                             nbCongruent);
     }
@@ -211,8 +188,8 @@ void verify_impl(bool condition, const char *testname, const char *file, int lin
   }
 }
 
-#define VERIFY(a) GlobalRegistration::Testing::verify_impl(a, \
-                  GlobalRegistration::Testing::g_test_stack.back().c_str(), __FILE__, \
+#define VERIFY(a) gr::Testing::verify_impl(a, \
+                  gr::Testing::g_test_stack.back().c_str(), __FILE__, \
                   __LINE__, SUPER4PCS_PP_MAKE_STRING(a))
 
 #if defined (_MSC_VER) && ! defined (__INTEL_COMPILER)
@@ -223,10 +200,10 @@ void verify_impl(bool condition, const char *testname, const char *file, int lin
 
 #define CALL_SUBTEST(FUNC) do { \
     MYPRAGMA("omp critical") \
-    { GlobalRegistration::Testing::g_test_stack.push_back(SUPER4PCS_PP_MAKE_STRING(FUNC)); }\
+    { gr::Testing::g_test_stack.push_back(SUPER4PCS_PP_MAKE_STRING(FUNC)); }\
     FUNC; \
     MYPRAGMA("omp critical") \
-    { GlobalRegistration::Testing::g_test_stack.pop_back(); } \
+    { gr::Testing::g_test_stack.pop_back(); } \
   } while (0)
 
 inline void set_repeat_from_string(const char *str)
@@ -296,12 +273,12 @@ static bool init_testing(int argc, const char *argv[])
     return false;
   }
 
-  char *env_SUPER4PCS_REPEAT = getenv("SUPER4PCS_REPEAT");
-  if(!g_has_set_repeat && env_SUPER4PCS_REPEAT)
-    set_repeat_from_string(env_SUPER4PCS_REPEAT);
-  char *env_SUPER4PCS_SEED = getenv("SUPER4PCS_SEED");
-  if(!g_has_set_seed && env_SUPER4PCS_SEED)
-    set_seed_from_string(env_SUPER4PCS_SEED);
+  char *env_OPENGR_REPEAT = getenv("SUPER4PCS_REPEAT");
+  if(!g_has_set_repeat && env_OPENGR_REPEAT)
+    set_repeat_from_string(env_OPENGR_REPEAT);
+  char *env_OPENGR_SEED = getenv("SUPER4PCS_SEED");
+  if(!g_has_set_seed && env_OPENGR_SEED)
+    set_seed_from_string(env_OPENGR_SEED);
 
   if(!g_has_set_seed) g_seed = (unsigned int) time(NULL);
   if(!g_has_set_repeat) g_repeat = DEFAULT_REPEAT;
@@ -319,4 +296,4 @@ static bool init_testing(int argc, const char *argv[])
 } // namespace Testing
 } // namespace Super4PCS
 
-#endif // _SUPER4PCS_TESTING_H_
+#endif // _OPENGR_TESTING_H_

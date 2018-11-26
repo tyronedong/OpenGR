@@ -11,6 +11,7 @@ OPTION (IO_USE_BOOST "Use boost::filesystem for texture loading" TRUE)
 OPTION (ENABLE_TIMING "Enable computation time recording" FALSE)
 OPTION (OpenGR_USE_CHEALPIX "Use Chealpix for orientation filtering (deprecated)" FALSE)
 OPTION (DL_DATASETS "Download demo datasets and associated run scripts" FALSE)
+OPTION (OpenGR_USE_WEIGHTED_LCP "Use gaussian weights for point samples when computing LCP" FALSE)
 
 ################################################################################
 ## DO NOT EDIT AFTER THIS LINE
@@ -60,6 +61,11 @@ if (ENABLE_TIMING)
     ADD_DEFINITIONS( -DTEST_GLOBAL_TIMINGS )
     message (STATUS "OPT: Enable timing recording")
 endif (ENABLE_TIMING)
+
+if (OpenGR_USE_WEIGHTED_LCP)
+    ADD_DEFINITIONS( -DOPENGR_USE_WEIGHTED_LCP )
+    message (STATUS "Enable Weighted LCP")
+endif (OpenGR_USE_WEIGHTED_LCP)
 
 if (DL_DATASETS)
     add_custom_target(dl-datasets)
@@ -126,10 +132,16 @@ message(STATUS "STB root path: ${STB_INCLUDE_DIR}")
 
 include_directories(${SRC_DIR})
 
-add_subdirectory(${SRC_DIR}/super4pcs/io)
-add_subdirectory(${SRC_DIR}/super4pcs/utils)
-add_subdirectory(${SRC_DIR}/super4pcs/accelerators)
-add_subdirectory(${SRC_DIR}/super4pcs/algorithms)
+add_subdirectory(${SRC_DIR}/gr/io)
+add_subdirectory(${SRC_DIR}/gr/utils)
+add_subdirectory(${SRC_DIR}/gr/accelerators)
+add_subdirectory(${SRC_DIR}/gr/algorithms)
+
+# Add main target
+add_custom_target(opengr DEPENDS opengr_utils opengr_io opengr_accel opengr_algo )
+if(OpenGR_USE_CHEALPIX)
+    add_dependencies(opengr chealpix)
+endif(OpenGR_USE_CHEALPIX)
 
 ################################################################################
 ## Demos, tests, assets and scripts
@@ -256,6 +268,7 @@ configure_package_config_file(
 install(EXPORT OpenGR-IOLibTargets    DESTINATION ${config_install_dir})
 install(EXPORT OpenGR-AlgoLibTargets  DESTINATION ${config_install_dir})
 install(EXPORT OpenGR-AccelLibTargets DESTINATION ${config_install_dir})
+install(EXPORT OpenGR-UtilsLibTargets DESTINATION ${config_install_dir})
 
 if(OpenGR_USE_CHEALPIX)
     install(EXPORT chealpixTargets DESTINATION ${config_install_dir})

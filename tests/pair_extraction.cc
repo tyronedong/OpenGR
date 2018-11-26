@@ -48,13 +48,17 @@
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
 
-#include "super4pcs/algorithms/4pcs.h"
-#include "super4pcs/algorithms/super4pcs.h"
-#include "super4pcs/accelerators/pairExtraction/bruteForceFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionFunctor.h"
-#include "super4pcs/accelerators/pairExtraction/intersectionPrimitive.h"
-#include "super4pcs/utils/timer.h"
-#include "super4pcs/accelerators/bbox.h"
+#include "gr/algorithms/matchBase.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/Functor4pcs.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/FunctorBrute4pcs.h"
+#include "gr/accelerators/pairExtraction/bruteForceFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionFunctor.h"
+#include "gr/accelerators/pairExtraction/intersectionPrimitive.h"
+#include "gr/utils/timer.h"
+#include "gr/algorithms/PointPairFilter.h"
+#include "gr/sampling.h"
 
 #include <Eigen/Dense>
 
@@ -69,7 +73,7 @@
 
 #define TRACE
 
-using namespace GlobalRegistration;
+using namespace gr;
 
 struct MyPairCreationFunctor{
   typedef std::pair<unsigned int, unsigned int>ResPair;
@@ -90,10 +94,11 @@ struct MyPairCreationFunctor{
 };
 
 struct TrVisitorType {
+    template <typename Derived>
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<Match4PCSBase::MatrixType> /*transformation*/) {
+            const Eigen::MatrixBase<Derived>& /*transformation*/) {
 #ifdef TRACE
         std::cout << "New LCP: "
                   << static_cast<int>(fraction * 100)
@@ -129,7 +134,7 @@ void testFunction( Scalar r, Scalar epsilon,
                    unsigned int minNodeSize){
 
   // Init required structures
-  GlobalRegistration::Utils::Timer t;
+  gr::Utils::Timer t;
   std::vector< std::pair<unsigned int, unsigned int> > p2;
   p2.reserve(nbPoints*nbPoints);
 
@@ -228,7 +233,7 @@ template<typename Scalar,
          template <typename,typename,int,typename> class _Functor>
 void callSubTests()
 {
-    using namespace GlobalRegistration::Accelerators::PairExtraction;
+    using namespace gr::Accelerators::PairExtraction;
 
     typedef  Eigen::Matrix<Scalar, Dim, 1> EigenPoint;
     typedef  HyperSphere< EigenPoint, Dim, Scalar > Sphere;
@@ -249,14 +254,20 @@ void callSubTests()
     }
 }
 
-template <typename MatchType>
-void callMatchSubTests()
+template <template <typename, typename> typename FunctorType>
+void callMatch4SubTestsWithFunctor()
 {
-    using Scalar = typename MatchType::Scalar;
-    using PairsVector = typename MatchType::PairsVector;
+    using MatcherType = gr::Match4pcsBase<FunctorType, TrVisitorType, gr::DummyPointFilter, gr::DummyPointFilter::Options>;
+    using Scalar = typename MatcherType::Scalar;
+    using PairsVector = typename MatcherType::PairsVector;
+    using OptionType  = typename MatcherType::OptionsType;
+    using SamplerType = gr::UniformDistSampler;
 
-    Match4PCSOptions opt;
+    SamplerType sampler;
+
+    OptionType opt;
     opt.delta = 0.1;
+    opt.dummyFilteringResponse = true;
     VERIFY(opt.configureOverlap(0.5));
 
     const size_t nbPointP = 200;
@@ -267,7 +278,7 @@ void callMatchSubTests()
     Scalar normal_angle1 = 0.6;
     Scalar normal_angle2 = 0.4;
 
-    Scalar pair_distance_epsilon = MatchType::distance_factor * opt.delta;
+    Scalar pair_distance_epsilon = MatcherType::distance_factor * opt.delta;
 
 #pragma omp parallel for
     for(int i = 0; i < Testing::g_repeat; ++i)
@@ -287,17 +298,17 @@ void callMatchSubTests()
 
 
         // extract point using matcher
-        Testing::TestMatcher<MatchType> match (opt, logger);
-        match.init(P, Q);
+        Testing::TestMatcher<MatcherType> match (opt, logger);
+        match.init(P, Q, sampler);
 
         std::vector<std::pair<int, int>> pairs1, pairs2;
-        match.ExtractPairs(distance1,
+        match.getFunctor().ExtractPairs(distance1,
                            normal_angle1,
                            pair_distance_epsilon,
                            0,
                            1,
                            &pairs1);
-        match.ExtractPairs(distance2,
+        match.getFunctor().ExtractPairs(distance2,
                            normal_angle2,
                            pair_distance_epsilon,
                            2,
@@ -329,6 +340,25 @@ void callMatchSubTests()
 
 }
 
+void callMatch4SubTests() {
+
+  using std::cout;
+  using std::endl;
+
+  cout << "Extract pairs using Functor4PCS" << endl;
+  callMatch4SubTestsWithFunctor<Functor4PCS>();
+  cout << "Ok..." << endl;
+
+  cout << "Extract pairs using Functor4PCS" << endl;
+  callMatch4SubTestsWithFunctor<FunctorBrute4PCS>();
+  cout << "Ok..." << endl;
+
+  cout << "Extract pairs using FunctorSuper4PCS" << endl;
+  callMatch4SubTestsWithFunctor<FunctorSuper4PCS>();
+  cout << "Ok..." << endl;
+}
+
+
 int main(int argc, const char **argv) {
     if(!Testing::init_testing(argc, argv))
     {
@@ -337,7 +367,7 @@ int main(int argc, const char **argv) {
 
     using std::cout;
     using std::endl;
-    using namespace GlobalRegistration::Accelerators::PairExtraction;
+    using namespace gr::Accelerators::PairExtraction;
 
 
     cout << "Extract pairs in 2 dimensions (BRUTE FORCE)..." << endl;
@@ -376,13 +406,7 @@ int main(int argc, const char **argv) {
     callSubTests<long double, 4, IntersectionFunctor>();
     cout << "Ok..." << endl;
 
-    cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<Match4PCS>();
-    cout << "Ok..." << endl;
-
-    cout << "Extract pairs using Match4PCS" << endl;
-    callMatchSubTests<MatchSuper4PCS>();
-    cout << "Ok..." << endl;
+    callMatch4SubTests();
 
     return EXIT_SUCCESS;
 }

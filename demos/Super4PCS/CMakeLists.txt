@@ -5,5 +5,9 @@ set(Demo_Super4PCS_SRC
 )
 
 add_executable(${PROJECT_NAME} ${Demo_Super4PCS_SRC})
-target_link_libraries(${PROJECT_NAME} opengr_algo opengr_utils)
+target_link_libraries(${PROJECT_NAME} opengr_utils opengr_io opengr_accel opengr_algo)
+add_dependencies(${PROJECT_NAME} opengr)
+if(OpenGR_USE_CHEALPIX)
+    target_link_libraries(${PROJECT_NAME} chealpix)
+endif(OpenGR_USE_CHEALPIX)
 install( TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin  )

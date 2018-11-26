@@ -42,17 +42,17 @@
 // and applications.
 
 
-#ifndef _SUPER4PCS_DEMO_UTILS_H_
-#define _SUPER4PCS_DEMO_UTILS_H_
+#ifndef _OPENGR_DEMO_UTILS_H_
+#define _OPENGR_DEMO_UTILS_H_
 
 #include <fstream>
 #include <iostream>
 #include <string>
 
-#include <super4pcs/shared4pcs.h>
-#include <super4pcs/utils/logger.h>
+#include <gr/shared.h>
+#include <gr/utils/logger.h>
 
-namespace GlobalRegistration {
+namespace gr {
 namespace Demo {
 // First input.
 static std::string input1 = "input1.obj";
@@ -161,7 +161,8 @@ static inline int getArgs(int argc,
   return 0;
 }
 
-static inline bool setOptionsFromArgs( Match4PCSOptions &options,
+template <typename OptionType>
+static inline bool setOptionsFromArgs( OptionType &options,
                                        const Utils::Logger& logger = Utils::Logger())
 {
     bool overlapOk = options.configureOverlap(overlap);
@@ -179,5 +180,5 @@ static inline bool setOptionsFromArgs( Match4PCSOptions &options,
 }
 
 } // namespace Demo
-} // namespace GlobalRegistration
+} // namespace gr
 #endif

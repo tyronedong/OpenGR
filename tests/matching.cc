@@ -49,11 +49,13 @@
 // efficient acquisition of scenes at scales previously not possible. Complete
 // source code and datasets are available for research use at
 // http://geometry.cs.ucl.ac.uk/projects/2014/super4PCS/.
-
-#include "super4pcs/algorithms/4pcs.h"
-#include "super4pcs/algorithms/super4pcs.h"
-#include "super4pcs/io/io.h"
-#include "super4pcs/utils/geometry.h"
+#include "gr/algorithms/matchBase.h"
+#include "gr/algorithms/match4pcsBase.h"
+#include "gr/algorithms/Functor4pcs.h"
+#include "gr/algorithms/FunctorSuper4pcs.h"
+#include "gr/algorithms/PointPairFilter.h"
+#include "gr/io/io.h"
+#include "gr/utils/geometry.h"
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -72,7 +74,7 @@
 #define sqr(x) ((x) * (x))
 
 using namespace std;
-using namespace GlobalRegistration;
+using namespace gr;
 
 using Scalar = Point3D::Scalar;
 enum {Dim = 3};
@@ -81,15 +83,17 @@ typedef Eigen::Transform<Scalar, Dim, Eigen::Affine> Transform;
 const int nbSet = 2;
 
 struct TrVisitorType {
+    template <typename Derived>
     inline void operator() (
             float fraction,
             float best_LCP,
-            Eigen::Ref<Match4PCSBase::MatrixType> /*transformation*/) {
-        std::cout << "New LCP: "
-                  << static_cast<int>(fraction * 100)
-                  << '%'
-                  << best_LCP
-                  <<std::endl;
+            const Eigen::MatrixBase<Derived>& /*transformation*/) {
+        if (fraction >= 0)
+          {
+            printf("done: %d%c best: %f                  \r",
+                   static_cast<int>(fraction * 100), '%', best_LCP);
+            fflush(stdout);
+          }
     }
     constexpr bool needsGlobalTransformation() const { return false; }
 };
@@ -109,13 +113,18 @@ std::array<std::string, nbSet> confFiles = {
 };
 
 std::array<Scalar, nbSet> deltas  = {
-    0.005,
-    0.005,
+    0.006,
+    0.003,
 };
 
 std::array<Scalar, nbSet> overlaps = {
-    0.8,
-    0.8,
+    0.9,
+    0.7,
+};
+
+std::array<bool, nbSet> swapPQ {
+    true,
+    false,
 };
 
 std::array<Scalar, nbSet> n_points = {
@@ -169,6 +178,8 @@ extractFilesAndTrFromStandfordConfFile(
 
         if (tokens.size() == 9){
             if (tokens[0].compare("bmesh") == 0){
+                // skip problematic models
+                if (tokens[1].compare("ArmadilloSide_165.ply") == 0) continue;
 
                 string inputfile = filesystem::path(confFilePath).parent_path().string()+string("/")+tokens[1];
                 VERIFY(filesystem::exists(inputfile) && filesystem::is_regular_file(inputfile));
@@ -206,7 +217,8 @@ void test_model(const vector<Transform> &transforms,
                 vector<Point3D> &mergedset,
                 int i,
                 int param_i){
-    using namespace GlobalRegistration;
+    using namespace gr;
+    using SamplerType   = gr::UniformDistSampler;
 
     const string input1 = files.at(i-1);
     const string input2 = files.at(i);
@@ -223,6 +235,8 @@ void test_model(const vector<Transform> &transforms,
     VERIFY(iomanager.ReadObject((char *)input1.c_str(), set1, tex_coords1, normals1, tris1, mtls1));
     VERIFY(iomanager.ReadObject((char *)input2.c_str(), set2, tex_coords2, normals2, tris2, mtls2));
 
+
+    using MatrixType = Eigen::Matrix<typename Point3D::Scalar, 4, 4>;
     // clean only when we have pset to avoid wrong face to point indexation
     if (tris1.size() == 0)
         Utils::CleanInvalidNormals(set1, normals1);
@@ -233,39 +247,44 @@ void test_model(const vector<Transform> &transforms,
     // we compare only pairwise matching, so we don't want to
     // accumulate error during the matching process
     // Transforms Q by the new transformation.
-    {
-        Match4PCSBase::MatrixType transformation = transforms[i-1].inverse().matrix();
-        for (int j = 0; j < set1.size(); ++j) {
-            set1[j].pos() = (transformation * set1[j].pos().homogeneous()).head<3>();
-
-//            cv::Mat first(4, 1, CV_64F), transformed;
-//            first.at<double>(0, 0) = set1[j].x();
-//            first.at<double>(1, 0) = set1[j].y();
-//            first.at<double>(2, 0) = set1[j].z();
-//            first.at<double>(3, 0) = 1;
-//            transformed = transformation * first;
-//            set1[j].x() = transformed.at<double>(0, 0);
-//            set1[j].y() = transformed.at<double>(1, 0);
-//            set1[j].z() = transformed.at<double>(2, 0);
-        }
-    }
+    Utils::TransformPointCloud( set1, transforms[i-1].inverse().matrix() );
 
     mergedset.insert(mergedset.end(), set1.begin(), set1.end());
 
+#ifdef WRITE_OUTPUT_FILES
+    stringstream iss2;
+    iss2 << input1;
+    iss2 << "_merged.ply";
+    std::cout << "Exporting file " << iss2.str().c_str() << "\n";
+    iomanager.WriteObject(iss2.str().c_str(),
+                           mergedset,
+                           vector<Eigen::Matrix2f>(),
+                           vector<typename Point3D::VectorType>(),
+                           vector<tripple>(),
+                           vector<std::string>());
+#endif
+
     // Our matcher.
-    Match4PCSOptions options;
 
     // Set parameters.
-    Match4PCSBase::MatrixType mat (Match4PCSBase::MatrixType::Identity());
-    VERIFY(options.configureOverlap(overlaps[param_i]));
-    options.sample_size = n_points[param_i];
-    options.max_time_seconds = max_time_seconds;
-    options.delta = deltas[param_i];
+    MatrixType mat (MatrixType::Identity());
+    SamplerType sampler;
+    TrVisitorType visitor;
 
     Scalar score = 0.;
 
     if(use_super4pcs){
-        MatchSuper4PCS matcher(options, logger);
+        using MatcherType = gr::Match4pcsBase<gr::FunctorSuper4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        using OptionType  = typename MatcherType::OptionsType;
+
+        OptionType options;
+
+        VERIFY(options.configureOverlap(overlaps[param_i]));
+        options.sample_size = n_points[param_i];
+        options.max_time_seconds = max_time_seconds;
+        options.delta = deltas[param_i];
+
+        MatcherType matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -276,9 +295,22 @@ void test_model(const vector<Transform> &transforms,
              << " -c " << options.max_color_distance
              << " -t " << options.max_time_seconds
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat);
+        if (swapPQ[param_i])
+          score = matcher.ComputeTransformation(set2, mergedset, mat, sampler, visitor);
+        else
+          score = matcher.ComputeTransformation(mergedset, set2, mat, sampler, visitor);
     }else{
-        Match4PCS matcher(options, logger);
+        using MatcherType = gr::Match4pcsBase<gr::Functor4PCS, TrVisitorType, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+        using OptionType  = typename MatcherType::OptionsType;
+
+        OptionType options;
+
+        VERIFY(options.configureOverlap(overlaps[param_i]));
+        options.sample_size = n_points[param_i];
+        options.max_time_seconds = max_time_seconds;
+        options.delta = deltas[param_i];
+
+        MatcherType matcher(options, logger);
         cout << "./Super4PCS -i "
              << input1.c_str() << " "
              << input2.c_str()
@@ -290,14 +322,27 @@ void test_model(const vector<Transform> &transforms,
              << " -t " << options.max_time_seconds
              << " -x "
              << endl;
-        score = matcher.ComputeTransformation(mergedset, &set2, mat);
+        if (swapPQ[param_i])
+          score = matcher.ComputeTransformation(set2, mergedset, mat, sampler, visitor);
+        else
+          score = matcher.ComputeTransformation(mergedset, set2, mat, sampler, visitor);
     }
+
+    // get inverse transformation as we registered from mergedset to set2
+    if (swapPQ[param_i])
+      mat = mat.inverse();
+
+    Transform transformEst (mat);
+    cout << "Reference: " << endl << transforms[i].matrix() << endl;
+    cout << "Estimation: " << endl << transformEst.matrix() << endl;
 
 
 #ifdef WRITE_OUTPUT_FILES
     stringstream iss;
     iss << input2;
     iss << "_aligned.ply";
+    std::cout << "Exporting file " << iss.str().c_str() << "\n";
+    Utils::TransformPointCloud(set2, mat);
     iomanager.WriteObject(iss.str().c_str(),
                            set2,
                            tex_coords2,
@@ -306,10 +351,6 @@ void test_model(const vector<Transform> &transforms,
                            mtls2);
 #endif
 
-    Transform transformEst (mat);
-
-    cout << "Reference: " << endl << transforms[i].matrix() << endl;
-    cout << "Estimation: " << endl << transformEst.matrix() << endl;
 
     Eigen::Quaternion<Scalar>
             q    (transformEst.rotation()),
@@ -333,18 +374,6 @@ void test_model(const vector<Transform> &transforms,
     VERIFY(rotDiff <= 0.2);
     VERIFY(trDiff <= 0.1);
     VERIFY(rotDiff + trDiff <= 0.2);
-
-#ifdef WRITE_OUTPUT_FILES
-    stringstream iss2;
-    iss2 << input1;
-    iss2 << "_merged.ply";
-    iomanager.WriteObject(iss2.str().c_str(),
-                           mergedset,
-                           vector<Eigen::Matrix2f>(),
-                           vector<typename Point3D::VectorType>(),
-                           vector<tripple>(),
-                           vector<std::string>());
-#endif
 }
 
 int main(int argc, const char **argv) {

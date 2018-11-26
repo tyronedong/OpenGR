@@ -38,25 +38,43 @@
  *
  */
 
-#ifndef PCL_REGISTRATION_SUPER4PCS_H_
-#define PCL_REGISTRATION_SUPER4PCS_H_
+#ifndef PCL_REGISTRATION_OPENGR_H_
+#define PCL_REGISTRATION_OPENGR_H_
 
 #include <pcl/registration/registration.h>
 #include <pcl/registration/transformation_estimation_svd.h>
-#include <super4pcs/shared4pcs.h>
+
+#include <gr/shared.h>
+#include <gr/sampling.h>
+#include <gr/utils/logger.h>
+#include <gr/algorithms/PointPairFilter.h>
+#include <gr/algorithms/match4pcsBase.h>
+#include <gr/algorithms/FunctorSuper4pcs.h>
 
 namespace pcl
 {
   /** \brief Pose estimation and alignment class using Super4CS routine.
    *
-   * This class is a wrapper to use the Super4PCS library in PCL.
-   * For more info, see Super4PCS library repository: https://github.com/nmellado/Super4PCS
+   * This class is a wrapper to use the OpenGR library in PCL.
+   * For more info, see Super4PCS library repository: https://github.com/STORM-IRIT/OpenGR
    *
    * If you use this in academic work, please cite:
    *
-   * N. Mellado, D. Aiger, N. J. Mitra
-   * SUPER 4PCS: Fast Global Pointcloud Registration via Smart Indexing.
-   * Computer Graphics Forum, Proceedings of SGP 2014, 2014.
+   * ```
+   *    N. Mellado, D. Aiger, N. J. Mitra
+   *    SUPER 4PCS: Fast Global Pointcloud Registration via Smart Indexing.
+   *    Computer Graphics Forum, Proceedings of SGP 2014, 2014.
+   * ```
+   *
+   * and
+   * ```
+   *  @MISC{openGR,
+   *    author = {Nicolas Mellado and others},
+   *    title = {OpenGR: A C++ library for 3D Global Registration},
+   *    howpublished = {https://storm-irit.github.io/OpenGR/},
+   *    year = {2017}
+   *   }
+   * ```
    *
    * \author Nicolas Mellado (nmellado0@gmail.com)
    * \ingroup registration
@@ -85,7 +103,28 @@ namespace pcl
       typedef PointIndices::ConstPtr PointIndicesConstPtr;
 
 
-      GlobalRegistration::Match4PCSOptions options_;
+      struct TransformVisitor {
+          template <typename Derived>
+          inline void operator()(
+                  float fraction,
+                  float best_LCP,
+                  const Eigen::MatrixBase<Derived>& /*transformation*/) const {
+            if(fraction >= 0)
+              {
+                printf("done: %d%c best: %f                  \r",
+                       static_cast<int>(fraction * 100), '%', best_LCP);
+                fflush(stdout);
+              }
+          }
+          constexpr bool needsGlobalTransformation() const { return false; }
+      };
+
+
+      using SamplerType   = gr::UniformDistSampler;
+      using MatcherType   = gr::Match4pcsBase<gr::FunctorSuper4PCS, TransformVisitor, gr::AdaptivePointFilter, gr::AdaptivePointFilter::Options>;
+      using OptionType    = typename MatcherType::OptionsType;
+
+      OptionType options_;
 
       /** \brief Constructor */
       Super4PCS ()
@@ -117,6 +156,7 @@ namespace pcl
   };
 }
 
+#endif
+
 #include <pcl/registration/impl/super4pcs.hpp>
 
-#endif

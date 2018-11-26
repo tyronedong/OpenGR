@@ -18,14 +18,16 @@ In a nutshell, it provides:
 ### Usage and documentation
 
  - @subpage gettingstarted : How to use the library in 180 seconds
- - @subpage compilation : Compilation instructions and supported platform(s...). Also describe how to link with the library using cmake.
  - @subpage demos
- - @subpage datasets
- - @subpage fileformats : Supported file formats
- - @subpage usage : Hints for usage and parameter tuning
- - @subpage tests : Monitor continuous integration, run tests on your platform
+   - @subpage fileformats : Supported file formats
+   - @subpage usage : Hints for usage and parameter tuning
+ - Developping with the library:
+   - @subpage compilation : Compilation instructions and supported platform(s...). Also describes how to link with the library using cmake.
+   - @subpage extend : Describes how to add new registration algorithms to the library.
+   - @subpage tests : Monitor continuous integration, run tests on your platform
  - @subpage currentrelease : Changelog and status of the current release
  - @subpage roadmap
+ - @subpage datasets
 
 ## Compilation status
 [stsimg-linux]: https://api.travis-ci.org/STORM-IRIT/OpenGR.svg?branch=master

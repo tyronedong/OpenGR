@@ -26,6 +26,7 @@ endif(@OpenGR_USE_CHEALPIX@)
 include("${CMAKE_CURRENT_LIST_DIR}/OpenGR-AccelLibTargets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/OpenGR-IOLibTargets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/OpenGR-AlgoLibTargets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/OpenGR-UtilsLibTargets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/OpenGRConfigVersion.cmake")
 
 check_required_components("@PROJECT_NAME@")
@@ -33,7 +34,7 @@ check_required_components("@PROJECT_NAME@")
 # Compute paths
 set(OpenGR_INCLUDE_DIR "@OpenGR_INSTALL_DIR@/include/")
 set(OpenGR_LIB_DIR "@OpenGR_INSTALL_DIR@/lib/")
-set(OpenGR_LIBRARIES opengr_accel opengr_io opengr_algo)
+set(OpenGR_LIBRARIES opengr_accel opengr_io opengr_algo opengr_utils)
 
 if(@OpenGR_USE_CHEALPIX@)
   list(APPEND OpenGR_LIBRARIES chealpix)

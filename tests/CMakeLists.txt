@@ -93,8 +93,7 @@ endif(OpenGR_USE_CHEALPIX)
 #############################################
 ## matching
 set(matching_SRCS
-    matching.cc
-)
+    matching.cc)
 
 find_package(Boost 1.54 COMPONENTS system filesystem QUIET)
 if (Boost_FOUND)
@@ -113,5 +112,31 @@ if (Boost_FOUND)
     add_dependencies(matching dataset-standford-armadillo dataset-standford-bunny)
     if(OpenGR_USE_CHEALPIX)
         target_link_libraries(matching ${Chealpix_LIBS} )
+    endif(OpenGR_USE_CHEALPIX)
+endif (Boost_FOUND)
+
+#############################################
+## matching3pcs
+set(matching3pcs_SRCS
+        matching3pcs.cc
+        )
+
+find_package(Boost 1.54 COMPONENTS system filesystem QUIET)
+if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_executable(matching3pcs ${matching3pcs_SRCS} ${testing_SRCS})
+    add_dependencies(buildtests matching3pcs)
+    set (matching3pcs_subtests 0 1)
+    foreach(subtest_id ${matching3pcs_subtests})
+        add_test(NAME "matching3pcs_${subtest_id}"
+                #CONFIGURATIONS Release
+                COMMAND matching3pcs ${subtest_id})
+        set_tests_properties ( "matching3pcs_${subtest_id}" PROPERTIES TIMEOUT 600) # in seconds
+    endforeach()
+    target_link_libraries(matching3pcs opengr_io opengr_accel opengr_algo opengr_utils)
+    target_link_libraries(matching3pcs ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY})
+    add_dependencies(matching3pcs dataset-standford-armadillo dataset-standford-bunny)
+    if(OpenGR_USE_CHEALPIX)
+        target_link_libraries(matching3pcs ${Chealpix_LIBS} )
     endif(OpenGR_USE_CHEALPIX)
 endif (Boost_FOUND)
