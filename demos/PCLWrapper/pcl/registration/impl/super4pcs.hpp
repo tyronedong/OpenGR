@@ -81,7 +81,7 @@ pcl::Super4PCS<PointSource, PointTarget>::computeTransformation (PointCloudSourc
 
   transformPointCloud (*input_, output, final_transformation_);
 
-  pcl::console::print_highlight ("Final score: %f\n", score);
+  pcl::console::print_highlight ("Final score: %f\n", fitness_score_);
 
   converged_ = true;
 }
