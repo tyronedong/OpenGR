@@ -282,9 +282,9 @@ void test_model(const vector<Transform> &transforms,
     cout << "trDiff = " << trDiff << endl;
 
     // use different tests, just to get more verbose output
-    VERIFY(rotDiff <= 0.2);
+    VERIFY(rotDiff <= 0.25);
     VERIFY(trDiff <= 0.1);
-    VERIFY(rotDiff + trDiff <= 0.2);
+    VERIFY(rotDiff + trDiff <= 0.25);
 
 #ifdef WRITE_OUTPUT_FILES
     stringstream iss2;
