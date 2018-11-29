@@ -24,9 +24,6 @@ set(ASSETS_DIR ${PROJECT_SOURCE_DIR}/assets)
 set(SCRIPTS_DIR ${PROJECT_SOURCE_DIR}/scripts)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# Used by Config.cmake.in
-set(OpenGR_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
-
 ################################################################################
 ## GUARDS
 ################################################################################
@@ -256,14 +253,43 @@ write_basic_package_version_file(
 )
 
 # Configure '<PROJECT-NAME>Config.cmake'
+# version to be installed
 # Use variables:
 #   * targets_export_name
 #   * PROJECT_NAME
+# Used by Config.cmake.in
+set(OpenGR_INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include")
+set(OpenGR_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+set (OpenGR_EXPORT_TARGET_DIR \${CMAKE_CURRENT_LIST_DIR})
 configure_package_config_file(
     "cmake/Config.cmake.in"
     "${project_config}"
     INSTALL_DESTINATION "${config_install_dir}"
 )
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# version to be used with the current build directory
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+# Used by Config.cmake.in
+set(OpenGR_INSTALL_INC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(OpenGR_INSTALL_LIB_DIR "${CMAKE_BINARY_DIR}/src/gr/io")
+set (OpenGR_EXPORT_TARGET_DIR "${CMAKE_BINARY_DIR}/cmake")
+configure_file(
+    "cmake/Config.cmake.in"
+    "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+)
+export(TARGETS opengr_io FILE "${CMAKE_BINARY_DIR}/cmake/OpenGR-IOLibTargets.cmake")
+export(TARGETS opengr_algo FILE "${CMAKE_BINARY_DIR}/cmake/OpenGR-AlgoLibTargets.cmake")
+export(TARGETS opengr_accel FILE "${CMAKE_BINARY_DIR}/cmake/OpenGR-AccelLibTargets.cmake")
+export(TARGETS opengr_utils FILE "${CMAKE_BINARY_DIR}/cmake/OpenGR-UtilsLibTargets.cmake")
+if(OpenGR_USE_CHEALPIX)
+    export(TARGETS chealpix FILE "${CMAKE_BINARY_DIR}/cmake/chealpixTargets.cmake")
+endif(OpenGR_USE_CHEALPIX)
+file(COPY "${version_config}" DESTINATION "${CMAKE_BINARY_DIR}/cmake"
+)
+
 
 install(EXPORT OpenGR-IOLibTargets    DESTINATION ${config_install_dir})
 install(EXPORT OpenGR-AlgoLibTargets  DESTINATION ${config_install_dir})
