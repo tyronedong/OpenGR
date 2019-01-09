@@ -4,7 +4,7 @@ It is a fork of the [Super4PCS library](https://github.com/nmellado/Super4PCS), 
 This fork is maintained by the same authors as the Super4PCS library.
 
 ### Documentation
-- [User manual](https://storm-irit.github.io/OpenGR/a00014.html)
+- [User manual](https://storm-irit.github.io/OpenGR/index.html)
 - [Class list](https://storm-irit.github.io/OpenGR/annotated.html)
 - [Developer manual](#): Coming soon.
 
