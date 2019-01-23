@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['c',['c',['../a00052.html#a8b1812d50a229a7b06b792c4c56e589d',1,'tripple']]],
+  ['center',['center',['../a00036.html#ae47c365b56760dedde92fca9bf4cf8de',1,'gr::Accelerators::PairExtraction::NdNode::center()'],['../a00025.html#a3acba258f025248eb946ba8381de3516',1,'gr::Accelerators::PairExtraction::HyperSphere::center()']]],
+  ['centroid_5fp_5f',['centroid_P_',['../a00035.html#a9ce5ac8a10a219ae0798a843a5dae364',1,'gr::MatchBase']]],
+  ['centroid_5fq_5f',['centroid_Q_',['../a00035.html#afdc00a0f4d11ca11f7f2e02836bf64a0',1,'gr::MatchBase']]],
+  ['chealmap',['ChealMap',['../a00026.html#a28d1db02ca9b90af753ec4b271e0282c',1,'gr::IndexedNormalHealSet']]],
+  ['clock',['clock',['../a00049.html#ad0a0320a154ad557430fb8ea0ba7247d',1,'gr::Utils::Timer']]],
+  ['compilation',['Compilation',['../a00002.html',1,'index']]],
+  ['computerigidtransformation',['ComputeRigidTransformation',['../a00035.html#a07228936020a700d6a0c6261a043d8aa',1,'gr::MatchBase']]],
+  ['computetransformation',['ComputeTransformation',['../a00016.html#a73ada3551b8d4560c7170534150f4b3c',1,'gr::CongruentSetExplorationBase::ComputeTransformation()'],['../a00035.html#a53143adad70e7e00ea7c3264f5097a40',1,'gr::MatchBase::ComputeTransformation()'],['../a00016.html#af13e4203a59faf3118e0c5e3da1d9db6',1,'gr::CongruentSetExplorationBase::ComputeTransformation()']]],
+  ['configureoverlap',['configureOverlap',['../a00017.html#ae9d7ef90c319665f8c1cea0b13db5c1f',1,'gr::CongruentSetExplorationOptions']]],
+  ['congruentbasetype',['CongruentBaseType',['../a00016.html#a6c5cb49c981169ede2845da170c0aecb',1,'gr::CongruentSetExplorationBase::CongruentBaseType()'],['../a00033.html#a8d382515b0c0b4f043aaee6f341143c1',1,'gr::Match3pcs::CongruentBaseType()'],['../a00034.html#a57d809e04c4af7a5693f7f84fd853485',1,'gr::Match4pcsBase::CongruentBaseType()']]],
+  ['congruentsetexplorationbase',['CongruentSetExplorationBase',['../a00016.html',1,'gr']]],
+  ['congruentsetexplorationbase',['CongruentSetExplorationBase',['../a00016.html#a58a82e22fc1d902a1e51499203d5b1bd',1,'gr::CongruentSetExplorationBase']]],
+  ['congruentsetexplorationbase_3c_20traits3pcs_2c_20_5ftransformvisitor_2c_20_5fpairfilteringfunctor_2c_20pairfilteringoptions_20_3e',['CongruentSetExplorationBase&lt; Traits3pcs, _TransformVisitor, _PairFilteringFunctor, PairFilteringOptions &gt;',['../a00016.html',1,'gr']]],
+  ['congruentsetexplorationbase_3c_20traits4pcs_2c_20_5ftransformvisitor_2c_20_5fpairfilteringfunctor_2c_20pairfilteringoptions_20_3e',['CongruentSetExplorationBase&lt; Traits4pcs, _TransformVisitor, _PairFilteringFunctor, PairFilteringOptions &gt;',['../a00016.html',1,'gr']]],
+  ['congruentsetexplorationoptions',['CongruentSetExplorationOptions',['../a00017.html',1,'gr']]],
+  ['coordinates',['Coordinates',['../a00016.html#a5939e5da0bb2777fb0f2a6b1746e0143',1,'gr::CongruentSetExplorationBase::Coordinates()'],['../a00050.html#ac0f4861c8705fa0a3c71266949ccd3a3',1,'gr::Traits3pcs::Coordinates()'],['../a00033.html#a47934a630dc399d47286b11a466375b3',1,'gr::Match3pcs::Coordinates()'],['../a00051.html#aaa162159c7f4ffb1bcd0e9c0095a13a1',1,'gr::Traits4pcs::Coordinates()'],['../a00034.html#aedc76b0b0b91185f275d276ad61cb344',1,'gr::Match4pcsBase::Coordinates()']]],
+  ['createtree',['createTree',['../a00031.html#a3acf22d7de66189df5953675508b3124',1,'gr::KdTree']]],
+  ['crtp',['CRTP',['../a00018.html',1,'gr::Utils']]],
+  ['crtp_3c_20optexts_2e_2e_2e_2c_20options_20_3e',['CRTP&lt; OptExts..., Options &gt;',['../a00018.html',1,'gr::Utils']]],
+  ['crtp_3c_20optexts_2e_2e_2e_2e_2e_2e_2c_20options_20_3e',['CRTP&lt; OptExts......, Options &gt;',['../a00018.html',1,'gr::Utils']]],
+  ['crtp_3c_20pairfilteringoptions_2e_2e_2e_2e_2e_2e_2c_20options_20_3e',['CRTP&lt; PairFilteringOptions......, Options &gt;',['../a00018.html',1,'gr::Utils']]],
+  ['current_5fcongruent_5f',['current_congruent_',['../a00016.html#a910994d3829d62d04652a4a29901e747',1,'gr::CongruentSetExplorationBase']]],
+  ['current_5ftrial_5f',['current_trial_',['../a00016.html#ad91525a2a303948726f0c2239d650824',1,'gr::CongruentSetExplorationBase']]]
+];

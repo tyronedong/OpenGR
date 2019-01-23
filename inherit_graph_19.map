@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$a00035.html" title="gr::MatchBase\&lt; _Transform\lVisitor, PairFilteringOptions...,\l CongruentSetExplorationOptions \&gt;" alt="" coords="5,49,256,105"/>
+<area shape="rect" id="node2" href="$a00016.html" title="gr::CongruentSetExploration\lBase\&lt; Traits3pcs, _TransformVisitor,\l _PairFilteringFunctor, PairFilteringOptions \&gt;" alt="" coords="304,8,600,64"/>
+<area shape="rect" id="node4" href="$a00016.html" title="gr::CongruentSetExploration\lBase\&lt; Traits4pcs, _TransformVisitor,\l _PairFilteringFunctor, PairFilteringOptions \&gt;" alt="" coords="304,89,600,145"/>
+<area shape="rect" id="node3" href="$a00033.html" title="Class for the computation of the 3PCS algorithm. " alt="" coords="664,5,864,61"/>
+<area shape="rect" id="node5" href="$a00034.html" title="Class for the computation of the 4PCS algorithm. " alt="" coords="648,86,880,157"/>
+</map>

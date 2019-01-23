@@ -1,0 +1,18 @@
+<map id="gr::CongruentSetExplorationBase&lt; _Traits, _TransformVisitor, _PairFilteringFunctor, OptExts &gt;" name="gr::CongruentSetExplorationBase&lt; _Traits, _TransformVisitor, _PairFilteringFunctor, OptExts &gt;">
+<area shape="rect" id="node2" href="$a00035.html" title="{gr::MatchBase\&lt; _Transform\lVisitor, OptExts..., Congruent\lSetExplorationOptions \&gt;\n||+ MatchBase()\l+ ~MatchBase()\l+ getFirstSampled()\l+ getSecondSampled()\l+ ComputeTransformation()\l# Log()\l# MeanDistance()\l# SelectRandomTriangle()\l# ComputeRigidTransformation()\l# Initialize()\l# init()\l}" alt="" coords="1617,1696,1847,1949"/>
+<area shape="rect" id="node3" href="$a00031.html" title="{gr::KdTree\&lt; Scalar \&gt;\n||+ _getNodes()\l+ _getPoints()\l+ _getIndices()\l+ KdTree()\l+ KdTree()\l+ add()\l+ add()\l+ finalize()\l+ aabb()\l+ ~KdTree()\l+ doQueryDist()\l+ doQueryDistIndices()\l+ doQueryDistProcessIndices()\l+ doQueryRestrictedClosest\lIndex()\l+ invalidIndex()\l# split()\l# createTree()\l# _doQueryDistIndicesWithFunctor()\l}" alt="" coords="565,917,816,1259"/>
+<area shape="rect" id="node27" href="$a00035.html" title="Abstract class for registration algorithms. " alt="" coords="1215,1365,1446,1604"/>
+<area shape="rect" id="node14" href="$a00031.html" title="3D Kdtree with reentrant queries " alt="" coords="512,455,763,811"/>
+<area shape="rect" id="node5" href="$a00122.html" title="{VectorType\n||}" alt="" coords="1327,145,1417,223"/>
+<area shape="rect" id="node6" title="STL class. " alt="" coords="858,145,985,223"/>
+<area shape="rect" id="node8" href="$a00120.html" title="{unsigned int\n||}" alt="" coords="903,594,1003,671"/>
+<area shape="rect" id="node10" href="$a00116.html" title="{KdNode\n||}" alt="" coords="401,145,473,223"/>
+<area shape="rect" id="node11" href="$a00111.html" title="{AlignedBox\&lt; Scalar, 3 \&gt;\n||}" alt="" coords="192,594,371,671"/>
+<area shape="rect" id="node13" href="$a00113.html" title="{Index\n||}" alt="" coords="1123,145,1179,223"/>
+<area shape="rect" id="node16" href="$a00109.html" title="{int\n||}" alt="" coords="110,293,149,370"/>
+<area shape="rect" id="node17" href="$a00018.html" title="{gr::Utils::CRTP\&lt; OptExts......,\l Options \&gt;\n||}" alt="" coords="1919,1042,2121,1134"/>
+<area shape="rect" id="node19" href="$a00018.html" title="CRTP class designed by Gael Guennebaud Source: http://disq.us/p/1tf4a7l https://www.onlinegdb.com/rJEhwUc&#45;m. " alt="" coords="1744,594,1923,671"/>
+<area shape="rect" id="node28" href="$a00018.html" title="{gr::Utils::CRTP\&lt; OptExts...,\l Options \&gt;\n||}" alt="" coords="1534,1042,1725,1134"/>
+<area shape="rect" id="node22" href="$a00044.html" title="The basic 3D point structure. A point potentially contains also directional information and color..." alt="" coords="1150,469,1269,796"/>
+<area shape="rect" id="node23" href="$a00032.html" title="{gr::Utils::Logger\n||+ Logger()\l+ setLogLevel()\l+ logLevel()\l+ Log()\l# print_err_impl()\l# print_err_impl()\l# print_msg_impl()\l# print_msg_impl()\l# LOG()\l}" alt="" coords="1749,991,1894,1185"/>
+</map>
